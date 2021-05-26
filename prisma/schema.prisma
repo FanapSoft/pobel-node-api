@@ -1,0 +1,143 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator clinent {
+  provider = "prisma-client-js"
+}
+
+model User {
+  Id             Int           @id @default(autoincrement())
+  CreatedAt      DateTime      @default(now())
+  UpdatedAt      DateTime      @updatedAt
+  UserName       String        @unique
+  Email          String?       @unique
+  Name           String?
+  Surname        String?
+  PodContactId   Int?
+  PodUserId      Int           @unique
+  LocalToken     String?       @unique
+  TokenExpiresAt DateTime?
+  RefreshToken   String?
+  Role           String        @default("user")
+  SSOProfile     Json
+  Tokens         Json
+  UserTargets    UserTargets[]
+}
+
+model TargetDefinitions {
+  Id          Int      @id @default(autoincrement())
+  CreatedAt   DateTime @default(now())
+  UpdatedAt   DateTime @updatedAt
+  Type        String   @unique
+  AnswerCount Int
+  DatasetId   Int
+  Dataset     Datasets @relation(fields: [DatasetId], references: [Id])
+  UMin        Float    @db.DoublePrecision
+  T           Float    @db.DoublePrecision
+  UMax        Float    @db.DoublePrecision
+  BonusFalse  Float    @db.DoublePrecision
+  BonusTrue   Float    @db.DoublePrecision
+
+  UserTargets UserTargets[]
+}
+
+model UserTargets {
+  Id                 Int               @id @default(autoincrement())
+  CreatedAt          DateTime          @default(now())
+  UpdatedAt          DateTime          @updatedAt
+  TargetDefinitionId Int
+  TargetDefinition   TargetDefinitions @relation(fields: [TargetDefinitionId], references: [Id])
+  OwnerId            Int
+  Owner              User              @relation(fields: [OwnerId], references: [Id])
+}
+
+model Datasets {
+  Id                       Int                 @id @default(autoincrement())
+  CreatedAt                DateTime            @default(now())
+  UpdatedAt                DateTime            @updatedAt
+  Name                     String
+  Description              String?
+  Type                     Int
+  LabelingStatus           Boolean             @default(true)
+  AnswerType               Int
+  FieldName                String              @db.VarChar(255)
+  IsActive                 Boolean             @default(false)
+  QuestionType             Int
+  QuestionSrc              String
+  QuestionTemplate         String
+  ItemSourcePath           String
+  ProcessedItemsSourcePath String
+  AnswerBudgetCountPerUser Int
+  CorrectGoldenAnswerIndex Int
+  AnswerReplicationCount   Int
+  TotalBudget              BigInt
+  TargetDefinitions        TargetDefinitions[]
+  DatasetItems             DatasetItems[]
+  Labels                   Labels[]
+  AnswerLogs               AnswerLogs[]
+}
+
+model DatasetItems {
+  Id                Int                 @id @default(autoincrement())
+  CreatedAt         DateTime            @default(now())
+  UpdatedAt         DateTime            @updatedAt
+  Name              String
+  Type              Int
+  FileExtension     String              @db.VarChar(30)
+  FileName          String
+  FilePath          String
+  FileSize          Int
+  LabelId           Int?
+  FinalLabelId      Int?
+  DatasetItemLabels DatasetItemLabels[]
+  IsGoldenData      Boolean
+  DatasetId         Int
+  Dataset           Datasets            @relation(fields: [DatasetId], references: [Id])
+  Labels            Labels[]
+  AnswerLogs        AnswerLogs[]
+}
+
+model Labels {
+  Id               Int                @id @default(autoincrement())
+  CreatedAt        DateTime           @default(now())
+  UpdatedAt        DateTime           @updatedAt
+  Name             String
+  DatasetId        Int
+  Dataset          Datasets           @relation(fields: [DatasetId], references: [Id])
+  DatasetItem      DatasetItems?      @relation(fields: [datasetItemsId], references: [Id])
+  DatasetItemLabel DatasetItemLabels?
+  AnswerLogs       AnswerLogs[]
+  datasetItemsId   Int?
+}
+
+model DatasetItemLabels {
+  Id            Int          @id @default(autoincrement())
+  LabelId       Int
+  Label         Labels       @relation(fields: [LabelId], references: [Id])
+  DatasetItemId Int
+  DatasetItem   DatasetItems @relation(fields: [DatasetItemId], references: [Id])
+}
+
+model AnswerLogs {
+  Id             Int     @id @default(autoincrement())
+  Ignored        Boolean
+  IgnoreReason   String
+  Answer         String
+  QuestionObject Json
+
+  DatasetId                 Int
+  Dataset                   Datasets     @relation(fields: [datasetsId], references: [Id])
+  DatasetItemId             Int
+  DatasetItem               DatasetItems @relation(fields: [datasetItemsId], references: [Id])
+  DeterminedLabelId         Int
+  DeterminedLabel           Labels       @relation(fields: [DeterminedLabelId], references: [Id])
+  DurationToAnswerInSeconds Int          @default(0)
+  datasetsId                Int
+  datasetItemsId            Int
+  labelsId                  Int
+}

@@ -1,0 +1,37 @@
+[
+  {
+    "group": "admin",
+    "permissions": [
+      {
+        "resource": "*",
+        "methods": "*",
+        "action": "allow"
+      }
+    ]
+  },
+  {
+    "group": "user",
+    "permissions": [
+      {
+        "resource": ["/User/Get/*" ],
+        "methods": ["GET"],
+        "action": "allow"
+      },
+      {
+        "resource": ["/User/Update/*" ],
+        "methods": ["PUT"],
+        "action": "allow"
+      }
+    ]
+  },
+  {
+    "group": "guest",
+    "permissions": [
+      {
+        "resources": ["/", "/auth", "/SSOCallback"],
+        "methods": [ "GET"],
+        "action": "allow"
+      }
+    ]
+  }
+]
