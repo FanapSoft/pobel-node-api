@@ -3,11 +3,13 @@ import acl from "express-acl";
 
 import authRoutes from './auth'
 import userRoutes from './user'
-import User from "../prisma/models/User";
 import datasetRoutes from "./dataset";
 import userTargetsRoutes from "./userTargets";
 import targetDefinitionsRoutes from "./targetDefinitions";
-import {handleError} from "../imports/errors";
+
+import User from "../prisma/models/User";
+
+import { handleError } from "../imports/errors";
 import httpStatus from "http-status";
 
 const ROUTER = express.Router();
@@ -18,11 +20,6 @@ acl.config({
     baseUrl: '/api',
     denyCallback: (res) => {
         return handleError(res, {code: 2004, status: httpStatus.FORBIDDEN})
-        // return res.status(403).json({
-        //     status: 'Access Denied',
-        //     success: false,
-        //     message: 'You are not authorized to access this resource'
-        // });
     }
 });
 
@@ -51,9 +48,7 @@ ROUTER.use(async function(req, res, next) {
         TokenExpiresAt: {
             gt: new Date().toISOString()
         }
-    }, 'admin');//We might not send this result to every client
-
-
+    }, 'admin');//We should not send this result to every client
 
     if(!user) {
         return handleError(res, {code: 2001, status: httpStatus.UNAUTHORIZED});

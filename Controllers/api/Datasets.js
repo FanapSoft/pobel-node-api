@@ -3,7 +3,6 @@ import httpStatus from "http-status";
 import {handleError} from "../../imports/errors";
 import acl from "../../imports/acl";
 import Dataset from "../../prisma/models/Dataset";
-import User from "../../prisma/models/User";
 
 const datasetController = {};
 

@@ -13,7 +13,12 @@
     "group": "user",
     "permissions": [
       {
-        "resource": ["/User/Get/*" ],
+        "resource": [ "/User/Get/*",
+          "/Targets/Get/*", "/Targets/GetAll/*",
+          "/TargetDefinitions/Get/*", "/TargetDefinitions/GetAll/*",
+          "/Datasets/Get/*", "/Datasets/GetAll/*",
+          "/DatasetItems/Get/*", "/DatasetItems/GetAll/*"
+        ],
         "methods": ["GET"],
         "action": "allow"
       },

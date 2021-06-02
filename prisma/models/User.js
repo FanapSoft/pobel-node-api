@@ -5,6 +5,8 @@ class User extends DBModelBase {
     constructor() {
         super();
         this.table = 'user';
+        this.client = prisma.user;
+
         this.modelPublicFields = {Id: true, UserName: true, Name: true, Email: true};
     }
 }

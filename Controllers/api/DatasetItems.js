@@ -1,11 +1,7 @@
-import bcrypt from "bcrypt";
-
-import jwt from "jsonwebtoken";
 import prisma from "../../prisma/prisma.module";
 import httpStatus from "http-status";
 import {handleError} from "../../imports/errors";
-import TargetDefinitions from "../../prisma/models/TargetDefinitions";
-import DatasetItems from "../../prisma/models/DatasetItems";
+import DatasetItem from "../../prisma/models/DatasetItem";
 import acl from "../../imports/acl";
 
 const datasetItemsController = {};
@@ -30,14 +26,13 @@ datasetItemsController.findAll = async (req, res) => {
     }
 };
 
-
 // Get User By ID
 datasetItemsController.findOne = async (req, res) => {
     const {
         id
     } = req.params;
     try {
-        let di = await DatasetItems.findById(parseInt(id), req.decoded.Role);
+        let di = await DatasetItem.findById(parseInt(id), req.decoded.Role);
 
         if (!di) {
             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
@@ -66,20 +61,20 @@ datasetItemsController.update = async (req, res) => {
         //TODO: fields to update
     } = req.body;
     try {
-        let target = await TargetDefinitions.findById(parseInt(id));
+        let di = await DatasetItem.findById(parseInt(id));
 
-        if (!target)
+        if (!di)
             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
 
-        if(!acl.currentUserCan(req.decoded, target, 'update')) {
+        if(!acl.currentUserCan(req.decoded, di, 'update')) {
             return handleError(res, {code: 2004, status: httpStatus.FORBIDDEN});
         }
 
-        Object.assign(target, req.body);
+        Object.assign(di, req.body);
 
-        const result = await prisma.user.update({
-            where: { Id: target.Id },
-            data: target,
+        const result = await prisma.datasetItems.update({
+            where: { Id: di.Id },
+            data: di,
         });
         //await user.save();
         return res.send(result);
@@ -96,7 +91,7 @@ datasetItemsController.delete = async (req, res) => {
         userId
     } = req.params;
     try {
-        let user = await prisma.user.delete({where: { Id: userId }});
+        let user = await prisma.datasetItems.delete({where: { Id: userId }});
         if (!user) {
             return res
                 .status(httpStatus.BAD_REQUEST)

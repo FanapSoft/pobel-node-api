@@ -66,8 +66,9 @@ export default function (router) {
                     UserName: profile.data.preferred_username,
                     Email: profile.data.email,
                     Name: profile.data.given_name,
+                    Surname: profile.data.family_name,
+                    Role: 'user',
                     PodUserId: profile.data.id,
-                    //Role: 'USER',
                     SSOProfile: profile.data,
                     Tokens: tokens.data
                 }
@@ -82,7 +83,6 @@ export default function (router) {
                     Email: profile.data.email,
                     Name: profile.data.given_name,
                     PodUserId: profile.data.id,
-                    Role: "user",
                     SSOProfile: profile.data,
                     Tokens: tokens.data,
                     RefreshToken: tokens.data.refresh_token,
