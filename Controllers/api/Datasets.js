@@ -1,24 +1,42 @@
-import prisma from "../../prisma/prisma.module";
+// import prisma from "../../prisma/prisma.module.js";
 import httpStatus from "http-status";
-import {handleError} from "../../imports/errors";
-import acl from "../../imports/acl";
-import Dataset from "../../prisma/models/Dataset";
+import {handleError} from "../../imports/errors.js";
+import acl from "../../imports/acl.js";
+import Dataset from "../../prisma/models/Dataset.js";
 
 const datasetController = {};
 
 // Get All Users
 datasetController.findAll = async (req, res) => {
     const {
-        limit = 10,
-        skip = 0
+        Name,
+        Description,
+        IsActive,
+        Limit = 10,
+        Skip = 0
     } = req.query;
+
+    let where = {};
+    if(Name)
+        where.Name = {
+            contains: Name
+        };
+    if(IsActive !== null && IsActive !== undefined)
+        where.IsActive = IsActive;
+    if(Description)
+        where.Description = Description;
+
+
+
     try {
-        let datasets = await prisma.datasets.findMany({
-            take: limit,
-            skip,
+        let datasets = await Dataset.client.findMany({
+            where: where,
+            take: Limit,
+            skip: Skip,
             orderBy: {
-                id: 'desc',
+                CreatedAt: 'desc',
             }});
+
         return res.send(datasets);
     } catch (error) {
         console.log(error)
@@ -48,29 +66,37 @@ datasetController.findOne = async (req, res) => {
 
 // Create Target
 datasetController.create = async (req, res, next) => {
+    console.log("req body>>>>>>>>>: ", req.body, req.params,req.query);
+
     const {
         Name,
         Description,
         Type,
         AnswerType,
         IsActive,
-        LabelingStatus
+        LabelingStatus,
+        T,
+        UMin,
+        UMax,
+        AnswerReplicationCount,
+        AnswerBudgetCountPerUser
     } = req.body;
-
-    const {
-        id
-    } = req.params;
     try {
-        let dataset = await prisma.datasets.create({
+        let dataset = await Dataset.client.create({
             data: {
                 Name,
                 Description,
                 Type,
                 AnswerType,
                 IsActive,
-                LabelingStatus
+                LabelingStatus,
+                T,
+                UMin,
+                UMax,
+                AnswerReplicationCount,
+                AnswerBudgetCountPerUser
             }
-        })
+        });
 
         if (!dataset) {
             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
@@ -89,9 +115,17 @@ datasetController.update = async (req, res) => {
         id
     } = req.params;
     const {
-        UserName,
         Name,
-        Email,
+        Description,
+        Type,
+        AnswerType,
+        IsActive,
+        LabelingStatus,
+        T,
+        UMin,
+        UMax,
+        AnswerReplicationCount,
+        AnswerBudgetCountPerUser
     } = req.body;
     try {
         let dataset = await Dataset.findById(parseInt(id))
@@ -99,10 +133,22 @@ datasetController.update = async (req, res) => {
         if (!dataset)
             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
 
-        Object.assign(dataset, req.body);
-        const result = await prisma.user.update({
+
+        const result = await Dataset.client.update({
             where: { Id: dataset.Id },
-            data: dataset,
+            data: {
+                Name,
+                Description,
+                Type,
+                AnswerType,
+                IsActive,
+                LabelingStatus,
+                T,
+                UMin,
+                UMax,
+                AnswerReplicationCount,
+                AnswerBudgetCountPerUser
+            }
         });
         return res.send(result);
     } catch (error) {
@@ -125,7 +171,7 @@ datasetController.delete = async (req, res) => {
         return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
 
     try {
-        let dataset = await prisma.datasets.delete({where: { Id: parseInt(id) }});
+        let dataset = await Dataset.client.delete({where: { Id: parseInt(id) }});
 
         return res.send(dataset);
     } catch (error) {

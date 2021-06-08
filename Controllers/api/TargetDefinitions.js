@@ -1,28 +1,30 @@
-import bcrypt from "bcrypt";
-
-import jwt from "jsonwebtoken";
-import prisma from "../../prisma/prisma.module";
+import prisma from "../../prisma/prisma.module.js";
 import httpStatus from "http-status";
-import {handleError} from "../../imports/errors";
-import User from "../../prisma/models/User";
-import acl from "../../imports/acl";
-import TargetDefinitions from "../../prisma/models/TargetDefinitions";
+import {handleError} from "../../imports/errors.js";
+import acl from "../../imports/acl.js";
+import TargetDefinitions from "../../prisma/models/TargetDefinitions.js";
 
 const targetController = {};
 
 // Get All Users
 targetController.findAll = async (req, res) => {
     const {
-        limit = 10,
-        skip = 0
+        DatasetId,
+        Limit = 10,
+        Skip = 0
     } = req.query;
+
+    let where = {};
+
+    if(DatasetId)
+        where.DatasetId = DatasetId;
+
     try {
-        let targets = await prisma.targetDefinitions.findMany({
-            take: limit,
-            skip,
-            orderBy: {
-                id: 'desc',
-            }});
+        let targets = await TargetDefinitions.client.findMany({
+            where,
+            take: Limit,
+            skip: Skip
+        });
         return res.send(targets);
     } catch (error) {
         console.log(error)
@@ -53,25 +55,34 @@ targetController.findOne = async (req, res) => {
 // Create Target
 targetController.create = async (req, res, next) => {
     const {
-        T,
+        DatasetId,
         UMin,
         UMax,
+        T,
         Type,
-        AnswerType,
-        IsActive,
-        LabelingStatus
+        AnswerCount,
+        GoldenCount,
+        BonusFalse,
+        BonusTrue
     } = req.body;
 
     try {
-        let td = await prisma.targetDefinitions.create({
+        const dataset = Dataset.findById(DatasetId);
+        if (!dataset) {
+            return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
+        }
+
+        let td = await TargetDefinitions.client.create({
             data: {
-                T,
-                UMax,
+                DatasetId: dataset.Id,
                 UMin,
+                UMax,
+                T,
                 Type,
-                AnswerType,
-                IsActive,
-                LabelingStatus
+                AnswerCount,
+                GoldenCount,
+                BonusFalse,
+                BonusTrue
             }
         });
 
@@ -92,7 +103,14 @@ targetController.update = async (req, res) => {
         id
     } = req.params;
     const {
-        //TODO: fields to update
+        UMin,
+        UMax,
+        T,
+        Type,
+        AnswerCount,
+        GoldenCount,
+        BonusFalse,
+        BonusTrue
     } = req.body;
     try {
         let target = await TargetDefinitions.findById(parseInt(id))
@@ -132,9 +150,9 @@ targetController.delete = async (req, res) => {
         return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
 
     try {
-        let user = await prisma.targetDefinitions.delete({where: { Id: parseInt(id) }});
+        let td = await TargetDefinitions.client.delete({where: { Id: parseInt(id) }});
 
-        return res.send(user);
+        return res.send(td);
     } catch (error) {
         console.log(error);
         return handleError(res, {});

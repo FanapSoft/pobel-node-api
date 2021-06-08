@@ -1,4 +1,4 @@
-import prisma from "../prisma.module";
+import prisma from "../prisma.module.js";
 
 class DBModelBase {
     constructor() {

@@ -1,7 +1,7 @@
 import express from "express";
 
-import {asyncWrapper} from "../utils/asyncWrapper";
-import userController from "../Controllers/api/User";
+import {asyncWrapper} from "../utils/asyncWrapper.js";
+import userController from "../Controllers/api/User.js";
 
 const ROUTER = express.Router();
 

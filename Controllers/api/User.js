@@ -1,8 +1,8 @@
-import prisma from "../../prisma/prisma.module";
+import prisma from "../../prisma/prisma.module.js";
 import httpStatus from "http-status";
-import User  from "../../prisma/models/User";
-import acl from '../../imports/acl'
-import {handleError} from "../../imports/errors";
+import User  from "../../prisma/models/User.js";
+import acl from '../../imports/acl.js'
+import {handleError} from "../../imports/errors.js";
 
 const userController = {};
 

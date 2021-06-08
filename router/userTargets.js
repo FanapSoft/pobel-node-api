@@ -1,5 +1,5 @@
-import {asyncWrapper} from "../utils/asyncWrapper";
-import targetController from "../Controllers/api/UserTargets";
+import {asyncWrapper} from "../utils/asyncWrapper.js";
+import targetController from "../Controllers/api/UserTargets.js";
 
 export default function (router) {
     //router.get("/api/Targets/GetAll", asyncWrapper(targetController.findAll));

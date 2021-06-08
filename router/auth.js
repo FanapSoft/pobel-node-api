@@ -1,5 +1,5 @@
 import axios from "axios";
-import prisma from "../prisma/prisma.module";
+import prisma from "../prisma/prisma.module.js";
 
 const config = {
     client_id: '19503853ya6d44dd186846fa5c2f6ea9d',

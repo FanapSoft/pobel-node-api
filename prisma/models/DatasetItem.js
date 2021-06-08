@@ -1,7 +1,7 @@
-import DBModelBase from "./DBModelBase.Class";
-import prisma from "../prisma.module";
+import DBModelBase from "./DBModelBase.Class.js";
+import prisma from "../prisma.module.js";
 
-class Dataset extends DBModelBase {
+class DatasetItems extends DBModelBase {
     constructor() {
         super();
         this.table = 'datasetItems';
@@ -10,4 +10,4 @@ class Dataset extends DBModelBase {
     }
 }
 
-export default new Dataset;
+export default new DatasetItems;

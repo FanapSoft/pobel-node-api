@@ -1,24 +1,65 @@
-import prisma from "../../prisma/prisma.module";
 import httpStatus from "http-status";
-import {handleError} from "../../imports/errors";
-import DatasetItem from "../../prisma/models/DatasetItem";
-import acl from "../../imports/acl";
+import {handleError} from "../../imports/errors.js";
+import DatasetItem from "../../prisma/models/DatasetItem.js";
+import acl from "../../imports/acl.js";
 
 const datasetItemsController = {};
 
 // Get All Users
 datasetItemsController.findAll = async (req, res) => {
     const {
-        limit = 10,
-        skip = 0
+        LabelName,
+        DatasetId,
+        IsGoldenData,
+        OnlyNonDecidedGoldens,
+        IncludeDataset,
+        OriginFolderName,
+        Limit = 10,
+        Skip = 0
     } = req.query;
+
+    let where = {}, include = {};
+
+    if(DatasetId)
+        where.DatasetId = DatasetId;
+
+    if(LabelName)
+        where.Label = {
+            Name: {
+                contains: LabelName
+            }
+        };
+    if(OriginFolderName) {
+        where.OriginFolderName = {
+            contains: OriginFolderName
+        };
+    }
+
+
+    if(IsGoldenData !== null && IsGoldenData !== undefined)
+        where.IsGoldenData = IsGoldenData;
+
+    if(OnlyNonDecidedGoldens)
+        where.ConfirmedGoldenData = OnlyNonDecidedGoldens;
+
+    if(IncludeDataset)
+        include.Dataset = true
+
+    if(!Object.keys(include).length)
+        include = null;
+
     try {
-        let datasetItems = await prisma.datasetItems.findMany({
-            take: limit,
-            skip,
+        let datasetItems = await DatasetItem.client.findMany({
+            where,
+            include,
             orderBy: {
-                id: 'desc',
-            }});
+                CreatedAt: 'desc',
+            },
+            take: Limit,
+            skip: Skip,
+
+        });
+
         return res.send(datasetItems);
     } catch (error) {
         console.log(error)
@@ -32,7 +73,7 @@ datasetItemsController.findOne = async (req, res) => {
         id
     } = req.params;
     try {
-        let di = await DatasetItem.findById(parseInt(id), req.decoded.Role);
+        let di = await DatasetItem.findById(id, req.decoded.Role);
 
         if (!di) {
             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
@@ -72,7 +113,7 @@ datasetItemsController.update = async (req, res) => {
 
         Object.assign(di, req.body);
 
-        const result = await prisma.datasetItems.update({
+        const result = await DatasetItem.client.update({
             where: { Id: di.Id },
             data: di,
         });
@@ -87,19 +128,23 @@ datasetItemsController.update = async (req, res) => {
 
 // Delete User By ID
 datasetItemsController.delete = async (req, res) => {
+    if(!acl.currentUserCan(req.decoded, null, 'delete')) {
+        return handleError(res, {code: 2004});
+    }
     const {
-        userId
+        id
     } = req.params;
+
+    if (!id)
+        return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
+
     try {
-        let user = await prisma.datasetItems.delete({where: { Id: userId }});
-        if (!user) {
-            return res
-                .status(httpStatus.BAD_REQUEST)
-                .json({ message: "User not found" });
-        }
-        return res.json({ message: "User deleted successfully!" });
+        let datasetItem = await DatasetItem.client.delete({where: { Id: parseInt(id) }});
+
+        return res.send(datasetItem);
     } catch (error) {
-        return res.status(500).json({ error: error.toString() });
+        console.log(error);
+        return handleError(res, {});
     }
 };
 

@@ -1,5 +1,5 @@
-import prisma from '../prisma.module'
-import DBModelBase from "./DBModelBase.Class";
+import prisma from '../prisma.module.js'
+import DBModelBase from "./DBModelBase.Class.js";
 
 class UserTargets extends DBModelBase {
     constructor() {

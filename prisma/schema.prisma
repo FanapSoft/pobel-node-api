@@ -11,7 +11,7 @@ generator clinent {
 }
 
 model User {
-  Id             BigInt         @id @default(autoincrement()) @db.BigInt
+  Id             BigInt         @id @default(autoincrement())
   CreatedAt      DateTime       @default(now())
   UpdatedAt      DateTime?      @updatedAt
   UserName       String         @unique
@@ -28,18 +28,18 @@ model User {
   Role           String         @default("user")
   SSOProfile     Json
   Tokens         Json
-  UserTargets    UserTargets[]
+  Targets        UserTargets[]
   Transactions   Transactions[]
 }
 
 model TargetDefinitions {
-  Id          BigInt    @id @default(autoincrement()) @db.BigInt
+  Id          BigInt    @id @default(autoincrement())
   CreatedAt   DateTime  @default(now())
   UpdatedAt   DateTime? @updatedAt
   Type        Int
   AnswerCount Int
   GoldenCount Int       @default(0)
-  DatasetId   BigInt    @db.BigInt
+  DatasetId   BigInt
   Dataset     Datasets  @relation(fields: [DatasetId], references: [Id])
   T           Float     @db.DoublePrecision
   UMin        Float     @db.DoublePrecision
@@ -54,14 +54,14 @@ model UserTargets {
   Id                 String            @id @default(uuid())
   CreatedAt          DateTime          @default(now())
   UpdatedAt          DateTime          @updatedAt
-  TargetDefinitionId BigInt            @db.BigInt
-  TargetDefinition   TargetDefinitions @relation(fields: [TargetDefinitionId], references: [Id])
-  OwnerId            BigInt            @db.BigInt
+  TargetDefinitionId BigInt
+  Definition         TargetDefinitions @relation(fields: [TargetDefinitionId], references: [Id])
+  OwnerId            BigInt
   Owner              User              @relation(fields: [OwnerId], references: [Id])
 }
 
 model Datasets {
-  Id                       BigInt              @id @default(autoincrement()) @db.BigInt
+  Id                       BigInt              @id @default(autoincrement())
   CreatedAt                DateTime            @default(now())
   UpdatedAt                DateTime?           @updatedAt
   Name                     String?
@@ -89,90 +89,89 @@ model Datasets {
   //AnswerLogs               AnswerLogs[]
   AnswerOption             AnswerOptions?
   Transactions             Transactions[]
+  AnswerLogs               AnswerLogs[]
 }
 
 model DatasetItems {
-  Id                  String              @id @default(uuid())
-  CreatedAt           DateTime            @default(now())
-  UpdatedAt           DateTime?           @updatedAt
+  Id                  String       @id @default(uuid())
+  CreatedAt           DateTime     @default(now())
+  UpdatedAt           DateTime?    @updatedAt
   Name                String
   Content             String?
   Type                Int
-  FileExtension       String              @db.VarChar(30)
+  FileExtension       String       @db.VarChar(30)
   FileName            String
   FilePath            String
   FileSize            Int
   LabelId             String?
+  Label               Labels?      @relation("Label", fields: [LabelId], references: [Id])
   FinalLabelId        String?
-  DatasetItemLabels   DatasetItemLabels[]
+  FinalLabel          Labels?      @relation("FinalLabel", fields: [FinalLabelId], references: [Id])
   IsGoldenData        Boolean
-  DatasetId           BigInt              @db.BigInt
-  Dataset             Datasets            @relation(fields: [DatasetId], references: [Id])
+  DatasetId           BigInt
+  Dataset             Datasets     @relation(fields: [DatasetId], references: [Id])
   ConfirmedGoldenData Boolean?
   OriginFolderName    String?
-  //AnswerLogs        AnswerLogs[]
-  Labels              Labels[]
+  AnswerLogs          AnswerLogs[]
 }
 
 model Labels {
-  Id                String              @id @default(uuid()) @unique
-  CreatedAt         DateTime            @default(now())
-  UpdatedAt         DateTime?           @updatedAt
-  Name              String
-  DatasetId         BigInt              @db.BigInt
-  Dataset           Datasets            @relation(fields: [DatasetId], references: [Id])
-  DatasetItemId     String?
-  DatasetItem       DatasetItems?       @relation(fields: [DatasetItemId], references: [Id])
-  DatasetItemLabels DatasetItemLabels[]
+  Id               String         @id @default(uuid())
+  CreatedAt        DateTime       @default(now())
+  UpdatedAt        DateTime?      @updatedAt
+  Name             String
+  DatasetId        BigInt
+  Dataset          Datasets       @relation(fields: [DatasetId], references: [Id])
+  DatasetItems     DatasetItems[] @relation("Label")
+  FinalDatasetItem DatasetItems?  @relation("FinalLabel")
+  AnswerLogs       AnswerLogs[]
 }
 
-model DatasetItemLabels {
-  Id            String       @id @default(uuid())
-  LabelId       String
-  Label         Labels       @relation(fields: [LabelId], references: [Id])
-  DatasetItemId String
-  DatasetItem   DatasetItems @relation(fields: [DatasetItemId], references: [Id])
-}
-
-//model AnswerLogs {
-//  Id             Int     @id @default(autoincrement())
-//  Ignored        Boolean
-//  IgnoreReason   String
-//  Answer         String
-//  QuestionObject Json
-//
-//  DatasetId                 Int
-//  Dataset                   Datasets     @relation(fields: [datasetsId], references: [Id])
-//  DatasetItemId             Int
-//  DatasetItem               DatasetItems @relation(fields: [datasetItemsId], references: [Id])
-//  DeterminedLabelId         Int
-//  DeterminedLabel           Labels       @relation(fields: [DeterminedLabelId], references: [Id])
-//  DurationToAnswerInSeconds Int          @default(0)
-//  DatasetId                BigInt             @db.BigInt
-//  DatasetItemsId            Int
-//  labelsId                  Int
+//model DatasetItemLabels {
+//  Id            String       @id @default(uuid())
+//  LabelId       String
+//  Label         Labels       @relation(fields: [LabelId], references: [Id])
+//  DatasetItemId String
+//  DatasetItem   DatasetItems @relation(fields: [DatasetItemId], references: [Id])
 //}
-model AnswerOptions {
-  Id    BigInt  @id @default(autoincrement()) @db.BigInt
-  Type  Int
-  Title String?
-  Src   String?
-  Index Int
 
-  DataSetId BigInt
-  Dataset   Datasets @relation(fields: [DataSetId], references: [Id])
+model AnswerLogs {
+  Id                        String          @id @default(uuid())
+  CreatedAt                 DateTime     @default(now())
+  Ignored                   Boolean
+  IgnoreReason              String?
+  Answer                    String
+  QuestionObject            Json?
+  DatasetId                 BigInt
+  Dataset                   Datasets     @relation(fields: [DatasetId], references: [Id])
+  DatasetItemId             String
+  DatasetItem               DatasetItems @relation(fields: [DatasetItemId], references: [Id])
+  DeterminedLabelId         String?
+  DeterminedLabel           Labels?      @relation(fields: [DeterminedLabelId], references: [Id])
+  DurationToAnswerInSeconds BigInt       @default(0)
+  CreditCalculated          Boolean      @default(false)
+}
+
+model AnswerOptions {
+  Id        BigInt   @id @default(autoincrement())
+  Type      Int
+  Title     String?
+  Src       String?
+  Index     Int
+  DatasetId BigInt
+  Dataset   Datasets @relation(fields: [DatasetId], references: [Id])
 }
 
 model Transactions {
-  Id                 BigInt    @id @default(autoincrement()) @db.BigInt
+  Id                 BigInt    @id @default(autoincrement())
   CreatedAt          DateTime  @default(now())
   UpdatedAt          DateTime? @updatedAt
-  OwnerId            BigInt    @db.BigInt
+  OwnerId            BigInt
   Owner              User      @relation(fields: [OwnerId], references: [Id])
   DebitAmount        Float     @db.DoublePrecision
   CreditAmount       Float     @db.DoublePrecision
   Reason             Int
   ReasonDescription  String?
-  ReferenceDataSetId BigInt?   @db.BigInt
+  ReferenceDataSetId BigInt?
   ReferenceDataSet   Datasets? @relation(fields: [ReferenceDataSetId], references: [Id])
 }

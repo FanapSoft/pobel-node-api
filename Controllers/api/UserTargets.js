@@ -1,14 +1,13 @@
-import bcrypt from "bcrypt";
+// import bcrypt from "bcrypt";
 
-import jwt from "jsonwebtoken";
-import prisma from "../../prisma/prisma.module";
+// import jwt from "jsonwebtoken";
+import prisma from "../../prisma/prisma.module.js";
 import httpStatus from "http-status";
-import acl from "../../imports/acl";
-import {handleError} from "../../imports/errors";
-import User from "../../prisma/models/User";
-import TargetDefinitions from "../../prisma/models/TargetDefinitions";
-import UserTargets from "../../prisma/models/UserTargets";
-import targetController from "./TargetDefinitions";
+import acl from "../../imports/acl.js";
+import {handleError} from "../../imports/errors.js";
+// import User from "../../prisma/models/User";
+// import TargetDefinitions from "../../prisma/models/TargetDefinitions";
+import UserTargets from "../../prisma/models/UserTargets.js";
 
 const userController = {};
 
@@ -52,41 +51,51 @@ userController.findOne = async (req, res) => {
     }
 };
 
+/**
+ *
+ * @param DatasetId
+ * @return {"targetEnded": true,"noTarget": true}
+ * @constructor
+ */
+userController.GetCurrentTargetStatus =  (req, res) => {
+    //TODO: check if user has any active target
+}
+
 // Create Target
-targetController.create = async (req, res, next) => {
-    const {
-        T,
-        UMin,
-        UMax,
-        Type,
-        AnswerType,
-        IsActive,
-        LabelingStatus
-    } = req.body;
-
-    try {
-        let td = await prisma.userTargets.create({
-            data: {
-                T,
-                UMax,
-                UMin,
-                Type,
-                AnswerType,
-                IsActive,
-                LabelingStatus
-            }
-        });
-
-        if (!td) {
-            return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
-        }
-
-        return res.send(td);
-    } catch (error) {
-        console.log(error);
-        return handleError(res, {});
-    }
-};
+// targetController.create = async (req, res, next) => {
+//     const {
+//         T,
+//         UMin,
+//         UMax,
+//         Type,
+//         AnswerType,
+//         IsActive,
+//         LabelingStatus
+//     } = req.body;
+//
+//     try {
+//         let td = await prisma.userTargets.create({
+//             data: {
+//                 T,
+//                 UMax,
+//                 UMin,
+//                 Type,
+//                 AnswerType,
+//                 IsActive,
+//                 LabelingStatus
+//             }
+//         });
+//
+//         if (!td) {
+//             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
+//         }
+//
+//         return res.send(td);
+//     } catch (error) {
+//         console.log(error);
+//         return handleError(res, {});
+//     }
+// };
 
 // Update User By ID
 /*
@@ -136,7 +145,7 @@ userController.delete = async (req, res) => {
         return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
 
     try {
-        let user = await prisma.userTargets.delete({where: { Id: parseInt(id) }});
+        let user = await UserTargets.client.delete({where: { Id: parseInt(id) }});
 
         return res.send(user);
     } catch (error) {
