@@ -5,15 +5,13 @@ process.env.NODE_ENV = 'test';
 import chai from 'chai';
 import chaiHttp  from 'chai-http';
 import server from '../app.js';
-import { expect } from "chai";
-
-let should = chai.should();
+// let should = chai.should();
 chai.use(chaiHttp);
 
-describe('Labels(s)', () => {
-    it('GetAll and Get/:id passed', (done) => {
+describe('TargetDefinitions', () => {
+    it('GetAll / Get/:id', (done) => {
         chai.request(server)
-            .get('/api/Labels/GetAll')
+            .get('/api/TargetDefinitions/GetAll')
             .set('token', 'test')
             .end((err, res) => {
                 res.should.have.status(200);
@@ -21,7 +19,7 @@ describe('Labels(s)', () => {
                 //res.body.length.should.be.eql(0);
                 if(res.body.length > 0) {
                     chai.request(server)
-                        .get('/api/Datasets/Get/' + res.body[0].Id)
+                        .get('/api/TargetDefinitions/Get/' + res.body[0].Id)
                         .set('token', 'test')
                         .end((err, res) => {
                             res.should.have.status(200);

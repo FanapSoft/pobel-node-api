@@ -1,8 +1,9 @@
 //const prisma = require('../prisma/prisma.module');
-const faker = require('faker');
-const fakerFa = require('faker/locale/fa');
+import faker from 'faker';
+import fakerFa from 'faker/locale/fa.js';
 
-const { PrismaClient } = require('@prisma/client')
+import pkg from '@prisma/client'
+const { PrismaClient } = pkg
 const prisma = new PrismaClient();
 
 async function generateUsers() {

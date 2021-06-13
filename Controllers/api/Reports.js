@@ -36,7 +36,6 @@ reportController.answersCountTrend = async (req, res) => {
     const periodDates = generateDates(From, To);
 
 
-
     try {
         let datasets = await Dataset.client.findMany({
             where: where,

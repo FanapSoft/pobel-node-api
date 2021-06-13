@@ -14,9 +14,9 @@
     "permissions": [
       {
         "resource": [ "/User/Get/*",
-          "/Targets/Get/*", "/Targets/GetAll/*",
-          "/TargetDefinitions/Get/*", "/TargetDefinitions/GetAll/*",
-          "/Datasets/Get/*", "/Datasets/GetAll/*",
+          "/Targets/Get/*", "/Targets/GetAll*",
+          "/TargetDefinitions/Get/*", "/TargetDefinitions/GetAll*",
+          "/Datasets/Get/*", "/Datasets/GetAll*",
           "/DatasetItems/Get/*", "/DatasetItems/GetAll/*"
         ],
         "methods": ["GET"],
@@ -25,6 +25,11 @@
       {
         "resource": ["/User/Update/*" ],
         "methods": ["PUT"],
+        "action": "allow"
+      },
+      {
+        "resource": ["/Answers/SubmitBatchAnswer"],
+        "methods": ["POST"],
         "action": "allow"
       }
     ]

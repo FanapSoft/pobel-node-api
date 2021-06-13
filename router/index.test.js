@@ -47,6 +47,7 @@ ROUTER.use(async function(req, res, next) {
     }
 
     const user = {
+        Id: 'b1d179a0-9c49-48c1-a674-6aaf0803e86a',
         UserName: 'Test',
         Role: 'admin',
         Name: 'Test',

@@ -5,13 +5,13 @@ process.env.NODE_ENV = 'test';
 import chai from 'chai';
 import chaiHttp  from 'chai-http';
 import server from '../app.js';
-import { expect } from "chai";
+// import { expect } from "chai";
 
 let should = chai.should();
 chai.use(chaiHttp);
 
-describe('Dataset(s)', () => {
-    it('GetAll and Get/:id passed', (done) => {
+describe('Datasets', () => {
+    it('GetAll / Get/:id', (done) => {
         chai.request(server)
             .get('/api/Datasets/GetAll')
             .set('token', 'test')
@@ -26,10 +26,10 @@ describe('Dataset(s)', () => {
                         .end((err, res) => {
                             res.should.have.status(200);
                             res.body.should.be.a('object');
+
+                            done();
                         });
                 }
-
-                done();
             });
     });
 
@@ -37,16 +37,15 @@ describe('Dataset(s)', () => {
         chai.request(server)
             .post('/api/Datasets/Create')
             // .type('form')
-            //.set('token', 'test')
-            .set('content-type', 'application/x-www-form-urlencoded')//application/x-www-form-urlencoded
+            .set('token', 'test')
+            .set('content-type', "application/x-www-form-urlencoded")//application/x-www-form-urlencoded
             .send({
-                _method: 'POST',
                 Name: 'Test Dataset',
                 Description: 'Test Dataset',
                 Type: 1,
                 AnswerType: 1,
                 IsActive: true,
-                LabelingStatus: true,
+                LabelingStatus: 1,
                 T: 1,
                 UMin: 1.1,
                 UMax: 2.1,
@@ -55,11 +54,10 @@ describe('Dataset(s)', () => {
             })
             .end((err, res) => {
                 if(err) {
-                    console.log('err>>>',err);
+                    console.log('err: ',err);
                 }
 
                 res.should.have.status(200);
-                console.log(' im here ')
                 res.body.should.be.a('object');
                 //res.body.length.should.be.eql(0);
                 chai.request(server)
@@ -72,7 +70,7 @@ describe('Dataset(s)', () => {
                         Type: 1,
                         AnswerType: 1,
                         IsActive: true,
-                        LabelingStatus: true,
+                        LabelingStatus: 2,
                         T: 1,
                         UMin: 1.1,
                         UMax: 2.1,
@@ -82,10 +80,17 @@ describe('Dataset(s)', () => {
                     .end((err, res) => {
                         res.should.have.status(200);
                         res.body.should.be.a('object');
+
+                        chai.request(server)
+                            .delete('/api/Datasets/Delete/' + res.body.Id)
+                            .set('token', 'test')
+                            .set('content-type', 'application/x-www-form-urlencoded')
+                            .end((err, res) => {
+                                res.should.have.status(200);
+                                done();
+                            })
+
                     });
-
-
-                done();
             });
     });
 

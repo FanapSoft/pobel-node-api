@@ -22,6 +22,9 @@ targetController.findAll = async (req, res) => {
     try {
         let targets = await TargetDefinitions.client.findMany({
             where,
+            orderBy: {
+                CreatedAt: 'desc'
+            },
             take: Limit,
             skip: Skip
         });
@@ -39,7 +42,7 @@ targetController.findOne = async (req, res) => {
         id
     } = req.params;
     try {
-        let target = await TargetDefinitions.findById(parseInt(id), req.decoded.Role);
+        let target = await TargetDefinitions.findById(id, req.decoded.Role);
 
         if (!target) {
             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
@@ -67,7 +70,7 @@ targetController.create = async (req, res, next) => {
     } = req.body;
 
     try {
-        const dataset = Dataset.findById(DatasetId);
+        const dataset = TargetDefinitions.findById(DatasetId);
         if (!dataset) {
             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
         }
@@ -113,22 +116,28 @@ targetController.update = async (req, res) => {
         BonusTrue
     } = req.body;
     try {
-        let target = await TargetDefinitions.findById(parseInt(id))
+        let target = await TargetDefinitions.findById(id)
 
         if (!target)
             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
 
-        if(!acl.currentUserCan(req.decoded, target, 'update')) {
+        if(!acl.currentUserCan(req.decoded, null, 'update')) {
             return handleError(res, {code: 2004, status: httpStatus.FORBIDDEN});
         }
 
-        Object.assign(target, req.body);
-
         const result = await prisma.user.update({
             where: { Id: target.Id },
-            data: target,
+            data: {
+                UMin,
+                UMax,
+                T,
+                Type,
+                AnswerCount,
+                GoldenCount,
+                BonusFalse,
+                BonusTrue
+            },
         });
-        //await user.save();
         return res.send(result);
     } catch (error) {
         console.log(error);
@@ -150,7 +159,7 @@ targetController.delete = async (req, res) => {
         return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
 
     try {
-        let td = await TargetDefinitions.client.delete({where: { Id: parseInt(id) }});
+        let td = await TargetDefinitions.client.delete({where: { Id: id }});
 
         return res.send(td);
     } catch (error) {

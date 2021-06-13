@@ -11,9 +11,6 @@ datasetItemsController.findAll = async (req, res) => {
         LabelName,
         DatasetId,
         IsGoldenData,
-        OnlyNonDecidedGoldens,
-        IncludeDataset,
-        OriginFolderName,
         Limit = 10,
         Skip = 0
     } = req.query;
@@ -24,26 +21,12 @@ datasetItemsController.findAll = async (req, res) => {
         where.DatasetId = DatasetId;
 
     if(LabelName)
-        where.Label = {
-            Name: {
-                contains: LabelName
-            }
+        where.Name = {
+            contains: LabelName
         };
-    if(OriginFolderName) {
-        where.OriginFolderName = {
-            contains: OriginFolderName
-        };
-    }
-
 
     if(IsGoldenData !== null && IsGoldenData !== undefined)
         where.IsGoldenData = IsGoldenData;
-
-    if(OnlyNonDecidedGoldens)
-        where.ConfirmedGoldenData = OnlyNonDecidedGoldens;
-
-    if(IncludeDataset)
-        include.Dataset = true
 
     if(!Object.keys(include).length)
         include = null;
@@ -102,7 +85,7 @@ datasetItemsController.update = async (req, res) => {
         //TODO: fields to update
     } = req.body;
     try {
-        let di = await DatasetItem.findById(parseInt(id));
+        let di = await DatasetItem.findById(id);
 
         if (!di)
             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
@@ -139,7 +122,7 @@ datasetItemsController.delete = async (req, res) => {
         return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
 
     try {
-        let datasetItem = await DatasetItem.client.delete({where: { Id: parseInt(id) }});
+        let datasetItem = await DatasetItem.client.delete({where: { Id: id }});
 
         return res.send(datasetItem);
     } catch (error) {

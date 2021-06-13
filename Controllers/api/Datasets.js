@@ -24,19 +24,19 @@ datasetController.findAll = async (req, res) => {
     if(IsActive !== null && IsActive !== undefined)
         where.IsActive = IsActive;
     if(Description)
-        where.Description = Description;
-
-
+        where.Description = {
+            contains: Description
+        };
 
     try {
         let datasets = await Dataset.client.findMany({
-            where: where,
-            take: Limit,
-            skip: Skip,
+            where,
             orderBy: {
                 CreatedAt: 'desc',
-            }});
-
+            },
+            take: Limit,
+            skip: Skip
+        });
         return res.send(datasets);
     } catch (error) {
         console.log(error)
@@ -51,7 +51,7 @@ datasetController.findOne = async (req, res) => {
         id
     } = req.params;
     try {
-        let dataset = await Dataset.findById(parseInt(id), req.decoded.Role);
+        let dataset = await Dataset.findById(id, req.decoded.Role);
 
         if (!dataset) {
             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
@@ -66,8 +66,6 @@ datasetController.findOne = async (req, res) => {
 
 // Create Target
 datasetController.create = async (req, res, next) => {
-    console.log("req body>>>>>>>>>: ", req.body, req.params,req.query);
-
     const {
         Name,
         Description,
@@ -86,15 +84,15 @@ datasetController.create = async (req, res, next) => {
             data: {
                 Name,
                 Description,
-                Type,
-                AnswerType,
-                IsActive,
-                LabelingStatus,
-                T,
-                UMin,
-                UMax,
-                AnswerReplicationCount,
-                AnswerBudgetCountPerUser
+                Type: JSON.parse(Type),
+                AnswerType: JSON.parse(AnswerType),
+                IsActive: JSON.parse(IsActive),
+                LabelingStatus: JSON.parse(LabelingStatus),
+                T: JSON.parse(T),
+                UMin: JSON.parse(UMin),
+                UMax: JSON.parse(UMax),
+                AnswerReplicationCount: JSON.parse(AnswerReplicationCount),
+                AnswerBudgetCountPerUser: JSON.parse(AnswerBudgetCountPerUser)
             }
         });
 
@@ -128,7 +126,7 @@ datasetController.update = async (req, res) => {
         AnswerBudgetCountPerUser
     } = req.body;
     try {
-        let dataset = await Dataset.findById(parseInt(id))
+        let dataset = await Dataset.findById(id)
 
         if (!dataset)
             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
@@ -139,15 +137,15 @@ datasetController.update = async (req, res) => {
             data: {
                 Name,
                 Description,
-                Type,
-                AnswerType,
-                IsActive,
-                LabelingStatus,
-                T,
-                UMin,
-                UMax,
-                AnswerReplicationCount,
-                AnswerBudgetCountPerUser
+                Type: JSON.parse(Type),
+                AnswerType: JSON.parse(AnswerType),
+                IsActive: JSON.parse(IsActive),
+                LabelingStatus: JSON.parse(LabelingStatus),
+                T: JSON.parse(T),
+                UMin: JSON.parse(UMin),
+                UMax: JSON.parse(UMax),
+                AnswerReplicationCount: JSON.parse(AnswerReplicationCount),
+                AnswerBudgetCountPerUser: JSON.parse(AnswerBudgetCountPerUser)
             }
         });
         return res.send(result);
@@ -171,7 +169,7 @@ datasetController.delete = async (req, res) => {
         return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
 
     try {
-        let dataset = await Dataset.client.delete({where: { Id: parseInt(id) }});
+        let dataset = await Dataset.client.delete({where: { Id: id }});
 
         return res.send(dataset);
     } catch (error) {

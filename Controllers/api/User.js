@@ -8,8 +8,26 @@ const userController = {};
 
 // Get All Users
 userController.findAll = async (req, res) => {
+    const {
+        Name,
+        Description,
+        IsActive,
+        Limit = 10,
+        Skip = 0
+    } = req.query;
+
+    let where = {};
+    if(Name)
+        where.Name = {
+            contains: Name
+        };
+    if(IsActive !== null && IsActive !== undefined)
+        where.IsActive = IsActive;
+    if(Description)
+        where.Description = Description;
+
     try {
-        const users = await prisma.user.findMany({});
+        const users = await User.client.findMany({});
         return res.status(200).send(users);
     } catch (error) {
         console.log(error)
@@ -23,7 +41,7 @@ userController.findOne = async (req, res) => {
         id
     } = req.params;
     try {
-        let user = await User.findById(parseInt(id), req.decoded.Role);
+        let user = await User.findById(id, req.decoded.Role);
 
         if(!acl.currentUserCan(req.decoded, user, 'viewOne')) {
             return handleError(res, {code: 2004});
@@ -52,7 +70,7 @@ userController.update = async (req, res) => {
         Email,
     } = req.body;
     try {
-        let user = await User.findById(parseInt(id))
+        let user = await User.findById(id)
 
         if (!user)
             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
@@ -89,7 +107,7 @@ userController.delete = async (req, res) => {
         return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
 
     try {
-        let user = await prisma.user.delete({where: { Id: parseInt(id) }});
+        let user = await prisma.user.delete({where: { Id: id }});
 
         return res.send(user);
     } catch (error) {

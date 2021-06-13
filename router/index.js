@@ -42,28 +42,25 @@ authRoutes(ROUTER);
 ROUTER.use(async function(req, res, next) {
     const token = req.headers['token'];
 
-    if (!token) {
+    if (!token)
         return handleError(res, {code: 2002, status: httpStatus.UNAUTHORIZED});
-    }
 
     const user = await User.findByObject({
         LocalToken: token,
         TokenExpiresAt: {
             gt: new Date().toISOString()
         }
-    }, 'admin');//We should not send this result to every client
+    }, 'admin');
 
-    if(!user) {
+    if(!user)
         return handleError(res, {code: 2001, status: httpStatus.UNAUTHORIZED});
-        //return res.status(402).send({error: 'Invalid token or user'});
-    }
 
     req.decoded = {
         ...user,
         role: user.Role
     };
 
-    return next()
+    return next();
 });
 
 ROUTER.use(acl.authorize);

@@ -30,7 +30,12 @@ const errors = [
     {
         code: 3001,
         message: 'No results'
-    }
+    },
+    {
+        code: 3002,
+        message: 'Invalid parameters'
+    },
+
 ];
 
 export function findCode(code = 1000) {
