@@ -5,153 +5,83 @@ import prisma from "../../prisma/prisma.module.js";
 import httpStatus from "http-status";
 import acl from "../../imports/acl.js";
 import {handleError} from "../../imports/errors.js";
-// import User from "../../prisma/models/User";
-// import TargetDefinitions from "../../prisma/models/TargetDefinitions";
-import UserTargets from "../../prisma/models/UserTargets.js";
+import User from "../../prisma/models/User.js";
+import UserTarget from "../../prisma/models/UserTarget.js";
 
 const userController = {};
 
-// Get All Users
-userController.findAll = async (req, res) => {
-    const {
-        limit = 10,
-        skip = 0
-    } = req.query;
-    try {
-        let targets = await prisma.userTargets.findMany({
-            take: limit,
-            skip,
-            orderBy: {
-                id: 'desc',
-            }});
-        return res.send(targets);
-    } catch (error) {
-        console.log(error)
-        return handleError(res, {});
-    }
-};
-
-
-// Get User By ID
-userController.findOne = async (req, res) => {
-    const {
-        id
-    } = req.params;
-    try {
-        let target = await UserTargets.findById(parseInt(id), req.decoded.Role);
-
-        if (!target) {
-            return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
-        }
-
-        return res.send(target);
-    } catch (error) {
-        console.log(error);
-        return handleError(res, {});
-    }
-};
-
 /**
  *
- * @param DatasetId
+ * @param OwnerId
+ * @param TargetDefinitionId
  * @return {"targetEnded": true,"noTarget": true}
  * @constructor
  */
-userController.GetCurrentTargetStatus =  (req, res) => {
-    //TODO: check if user has any active target
-}
-
-// Create Target
-// targetController.create = async (req, res, next) => {
-//     const {
-//         T,
-//         UMin,
-//         UMax,
-//         Type,
-//         AnswerType,
-//         IsActive,
-//         LabelingStatus
-//     } = req.body;
-//
-//     try {
-//         let td = await prisma.userTargets.create({
-//             data: {
-//                 T,
-//                 UMax,
-//                 UMin,
-//                 Type,
-//                 AnswerType,
-//                 IsActive,
-//                 LabelingStatus
-//             }
-//         });
-//
-//         if (!td) {
-//             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
-//         }
-//
-//         return res.send(td);
-//     } catch (error) {
-//         console.log(error);
-//         return handleError(res, {});
-//     }
-// };
-
-// Update User By ID
-/*
-userController.update = async (req, res) => {
+userController.activateTarget =  async (req, res) => {
     const {
-        id
-    } = req.params;
-    const {
-        //TODO: fields to update
+        OwnerId,
+        TargetDefinitionId
     } = req.body;
+
+    let uId = OwnerId
+    if(req.decoded.Role !== 'admin') {
+        uId = req.decoded.Id;
+    }
+
     try {
-        let target = await UserTargets.findById(parseInt(id))
+        const tmpTarget = await UserTarget.client.findMany({
+            where: {
+                OwnerId: uId
+            },
+            orderBy: {
+                CreatedAt: 'desc'
+            },
+            take: 1
+        });
 
-        if (!target)
-            return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
-
-        if(!acl.currentUserCan(req.decoded, target, 'update')) {
-            return handleError(res, {code: 2004, status: httpStatus.FORBIDDEN});
+        if(!tmpTarget || !tmpTarget.length || (tmpTarget.length && tmpTarget[0].TargetDefinitionId !== TargetDefinitionId)) {
+            const result = await UserTarget.client.create({
+                data: {
+                    Definition: {
+                        connect: {
+                            Id: TargetDefinitionId
+                        }
+                    },
+                    Owner: {
+                        connect: {
+                            Id: uId
+                        }
+                    }
+                }
+            });
         }
 
-        Object.assign(target, req.body);
-
-        const result = await prisma.user.update({
-            where: { Id: target.Id },
-            data: target,
-        });
-        //await user.save();
-        return res.send(result);
+        return res.send({success: true});
     } catch (error) {
         console.log(error);
         return handleError(res, {});
     }
-};
-*/
+}
 
-
-// Delete By ID
-userController.delete = async (req, res) => {
-    if(!acl.currentUserCan(req.decoded, null, 'delete')) {
-        return handleError(res, {code: 2004});
-    }
+userController.getCurrentTargetStatus =  async (req, res) => {
     const {
-        id
-    } = req.params;
+        UserId,
+        DatasetId
+    } = req.query;
 
-    if (!id)
-        return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
+    let uId = UserId ? UserId : req.decoded.Id
+    if(req.decoded.Role !== 'admin') {
+        uId = req.decoded.Id;
+    }
 
     try {
-        let user = await UserTargets.client.delete({where: { Id: parseInt(id) }});
-
-        return res.send(user);
+        //TODO: count answers and cache them
+        return res.send({success: true});
     } catch (error) {
         console.log(error);
         return handleError(res, {});
     }
-};
+}
+
 
 export default userController;

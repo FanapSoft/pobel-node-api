@@ -17,19 +17,21 @@ describe('DatasetItem(s)', () => {
             .set('token', 'test')
             .end((err, res) => {
                 res.should.have.status(200);
-                res.body.should.be.a('array');
+                res.body.should.be.a('object');
                 //res.body.length.should.be.eql(0);
-                if(res.body.length > 0) {
+                if(res.body.items.length > 0) {
                     chai.request(server)
-                        .get('/api/DatasetItems/Get/' + res.body[0].Id)
+                        .get('/api/DatasetItems/Get/' + res.body.items[0].Id)
                         .set('token', 'test')
                         .end((err, res) => {
                             res.should.have.status(200);
                             res.body.should.be.a('object');
+
+                            done();
                         });
                 }
 
-                done();
+
             });
     });
 });

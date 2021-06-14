@@ -1,13 +1,13 @@
 import prisma from '../prisma.module.js'
 import DBModelBase from "./DBModelBase.Class.js";
 
-class TargetDefinitions extends DBModelBase {
+class UserTarget extends DBModelBase {
     constructor() {
         super();
-        this.table = 'targetDefinitions';
-        this.client = prisma.targetDefinitions;
+        this.table = 'userTargets';
+        this.client = prisma.userTargets;
         this.modelPublicFields = {Id: true, Name: true, Description: true, Type: true, AnswerType: true, IsActive: true,  LabelingStatus: true};
     }
 }
 
-export default new TargetDefinitions;
+export default new UserTarget;

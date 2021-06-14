@@ -10,7 +10,7 @@ const userController = {};
 userController.findAll = async (req, res) => {
     const {
         Name,
-        Description,
+        UserName,
         IsActive,
         Limit = 10,
         Skip = 0
@@ -23,12 +23,22 @@ userController.findAll = async (req, res) => {
         };
     if(IsActive !== null && IsActive !== undefined)
         where.IsActive = IsActive;
-    if(Description)
-        where.Description = Description;
+    if(UserName)
+        where.UserName = UserName;
 
     try {
-        const users = await User.client.findMany({});
-        return res.status(200).send(users);
+        const items = await User.client.findMany({
+            where,
+            orderBy: {
+                CreatedAt: 'desc'
+            },
+            skip: Skip,
+            take: Limit
+        });
+        const totalCount = await User.client.count({
+            where,
+        });
+        return res.send({totalCount, items});
     } catch (error) {
         console.log(error)
         return handleError(res, {});
@@ -65,9 +75,8 @@ userController.update = async (req, res) => {
         id
     } = req.params;
     const {
-        UserName,
         Name,
-        Email,
+        IsActive
     } = req.body;
     try {
         let user = await User.findById(id)
@@ -79,13 +88,16 @@ userController.update = async (req, res) => {
             return handleError(res, {code: 2004, status: httpStatus.FORBIDDEN});
         }
 
-        Object.assign(user, req.body);
+        if(IsActive !== null)
+            user.IsActive = IsActive;
+        if(Name !== null)
+            user.Name = Name;
 
         const result = await prisma.user.update({
             where: { Id: user.Id },
             data: user,
         });
-        //await user.save();
+
         return res.send(result);
     } catch (error) {
         console.log(error);

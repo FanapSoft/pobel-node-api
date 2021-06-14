@@ -11,8 +11,8 @@
  *         - Type
  *       properties:
  *         Id:
- *           type: number
- *           format: BigInt
+ *           type: string
+ *           format: uuid
  *           description: Auto generated unique id
  *         Type:
  *           type: integer
@@ -51,6 +51,7 @@
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
 import targetController from "../Controllers/api/TargetDefinitions.js";
+import {body, check} from "express-validator";
 
 export default function (router) {
     /**
@@ -63,6 +64,8 @@ export default function (router) {
      *     produces:
      *       - application/json
      *     parameters:
+     *       - name: DatasetId
+     *         in: query
      *       - name: Skip
      *         in: query
      *       - name: Limit
@@ -111,24 +114,33 @@ export default function (router) {
      *      content:
      *       application/json:
      *        schema:
-     *          $ref: "#/components/schemas/Dataset"
+     *          $ref: "#/components/schemas/TargetDefinition"
      *     responses:
      *       200:
-     *         description: Returns the created dataset
+     *         description: Returns the created TargetDefinition
      *         type: object
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: "#/components/schemas/Dataset"
+     *               $ref: "#/components/schemas/TargetDefinition"
      */
-    router.post("/api/TargetDefinitions/create", asyncWrapper(targetController.create));
+    router.post("/api/TargetDefinitions/create", [
+        check('UMin').notEmpty().toFloat(),
+        check('UMax').notEmpty().toFloat(),
+        check('T').notEmpty().toFloat(),
+        check('Type').notEmpty().toInt(),
+        check('BonusFalse').notEmpty().toFloat(),
+        check('BonusTrue').notEmpty().toFloat(),
+        check('AnswerCount').notEmpty().toInt(),
+        check('GoldenCount').notEmpty().toInt(),
+    ], asyncWrapper(targetController.create));
     /**
      * @swagger
      * /api/TargetDefinitions/Update/{id}:
      *   put:
      *     tags:
      *       - TargetDefinition
-     *     description: Update a dataset
+     *     description: Update a TargetDefinition
      *     produces:
      *       - application/json
      *
@@ -136,35 +148,44 @@ export default function (router) {
      *      content:
      *       application/json:
      *        schema:
-     *          $ref: "#/components/schemas/Dataset"
+     *          $ref: "#/components/schemas/TargetDefinition"
      *     responses:
      *       200:
-     *         description: Returns the created dataset
+     *         description: Returns the updated TargetDefinition
      *         type: object
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: "#/components/schemas/Dataset"
+     *               $ref: "#/components/schemas/TargetDefinition"
      *
      */
-    router.put("/api/TargetDefinitions/Update/:id", asyncWrapper(targetController.update));
+    router.put("/api/TargetDefinitions/Update/:id", [
+        body('UMin').optional({ checkFalsy: true }).toFloat(),
+        body('UMax').optional({ checkFalsy: true }).toFloat(),
+        body('T').optional({ checkFalsy: true }).toFloat(),
+        body('Type').optional({ checkFalsy: true }).toInt(),
+        body('BonusFalse').optional({ checkFalsy: true }).toFloat(),
+        body('BonusTrue').optional({ checkFalsy: true }).toFloat(),
+        body('AnswerCount').optional({ checkFalsy: true }).toInt(),
+        body('GoldenCount').optional({ checkFalsy: true }).toInt(),
+    ], asyncWrapper(targetController.update));
     /**
      * @swagger
      * /api/TargetDefinitions/Delete/{id}:
      *   delete:
      *     tags:
      *       - TargetDefinition
-     *     description: Get a dataset
+     *     description: delete a TargetDefinition
      *     produces:
      *       - application/json
      *     responses:
      *       200:
-     *         description: Returns the deleted dataset
+     *         description: Returns the deleted TargetDefinition
      *         type: object
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: "#/components/schemas/Dataset"
+     *               $ref: "#/components/schemas/TargetDefinition"
      *
      *
      */

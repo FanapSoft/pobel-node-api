@@ -17,7 +17,7 @@ describe('Answers', () => {
             .set('token', 'test')
             .end((err, res) => {
                 res.should.have.status(200);
-                res.body.should.be.a('array');
+                res.body.should.be.a('object');
 
                 done();
             });
@@ -29,7 +29,7 @@ describe('Answers', () => {
             .set('token', 'test')
             .set('content-type', "application/x-www-form-urlencoded")
             .send({
-                answers: [
+                Answers: [
                     {
                         Ignored: true,
                         IgnoreReason: 'No reason',
@@ -87,9 +87,6 @@ describe('Answers', () => {
                         console.log("Total results: ", totalCount, "Limited to user and dataset: ", res.body.totalCount)
                         done();
                     });
-
-
-
             });
     });
 });

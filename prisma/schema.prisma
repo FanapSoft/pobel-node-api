@@ -28,12 +28,12 @@ model User {
   Role           String         @default("user")
   SSOProfile     Json
   Tokens         Json
-  Targets        UserTargets[]
+  Targets        UserTarget[]
   Transactions   Transactions[]
   AnswerLogs     AnswerLogs[]
 }
 
-model TargetDefinitions {
+model TargetDefinition {
   Id          String        @id @default(uuid())
   CreatedAt   DateTime      @default(now())
   UpdatedAt   DateTime?     @updatedAt
@@ -47,15 +47,15 @@ model TargetDefinitions {
   UMax        Float         @db.DoublePrecision
   BonusFalse  Float         @default(0) @db.DoublePrecision
   BonusTrue   Float         @default(0) @db.DoublePrecision
-  UserTargets UserTargets[]
+  UserTarget UserTarget[]
 }
 
-model UserTargets {
+model UserTarget {
   Id                 String            @id @default(uuid())
   CreatedAt          DateTime          @default(now())
   UpdatedAt          DateTime          @updatedAt
   TargetDefinitionId String
-  Definition         TargetDefinitions @relation(fields: [TargetDefinitionId], references: [Id])
+  TargetDefinition   TargetDefinition @relation(fields: [TargetDefinitionId], references: [Id])
   OwnerId            String
   Owner              User              @relation(fields: [OwnerId], references: [Id])
 }
@@ -83,7 +83,7 @@ model Datasets {
   CorrectGoldenAnswerIndex Int                 @default(0)
   AnswerReplicationCount   Int                 @default(0)
   TotalBudget              Decimal             @default(0.0) @db.Decimal(18, 2)
-  TargetDefinitions        TargetDefinitions[]
+  TargetDefinition        TargetDefinition[]
   DatasetItems             DatasetItems[]
   Labels                   Labels[]
   //AnswerLogs               AnswerLogs[]

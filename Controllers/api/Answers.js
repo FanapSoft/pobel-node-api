@@ -26,20 +26,18 @@ answersController.findAll = async (req, res) => {
     if(UserId)
         where.UserId = UserId;
 
-    if(From) {
-        where.CreatedAt= {
+    if(From)
+        where.CreatedAt = {
             gte: new Date(From).toISOString()
         }
-    }
 
-    if(To) {
-        where.CreatedAt= {
+    if(To)
+        where.CreatedAt = {
             lte: new Date(To).toISOString()
         }
-    }
 
     try {
-        let answers = await Answer.client.findMany({
+        const items = await Answer.client.findMany({
             where,
             orderBy: {
                 CreatedAt: 'desc',
@@ -47,7 +45,10 @@ answersController.findAll = async (req, res) => {
             take: Limit,
             skip: Skip
         });
-        return res.send(answers);
+        const totalCount = await Answer.client.count({
+            where,
+        });
+        return res.send({totalCount, items});
     } catch (error) {
         console.log(error)
         return handleError(res, {});
@@ -76,38 +77,37 @@ answersController.findOne = async (req, res) => {
 // Create Target
 answersController.submitBatchAnswer = async (req, res, next) => {
     const {
-        answers
+        Answers
     } = req.body;
 
-    if(!answers || !Array.isArray(answers) || !answers.length) {
+    if(!Answers || !Array.isArray(Answers) || !Answers.length) {
         return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3000, message:'Invalid answers'}});
     }
 
     let storedAnswers = [];
 
-    for(const [index, item] of answers.entries()) {
+    for(const [index, item] of Answers.entries()) {
         try {
             let ds = await Dataset.findById(item.DatasetId, req.decoded.Role);
 
-            if (!ds) {
-                return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3000, message:'Invalid dataset: ' + item.DatasetId}});
-            }
+            if (!ds)
+                return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid dataset: ' + item.DatasetId}});
+
             let dsi = await DatasetItem.findById(item.DatasetItemId, req.decoded.Role);
 
-            if (!dsi) {
-                return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3000, message:'Invalid dataset item: ' + item.DatasetId}});
-            }
+            if (!dsi)
+                return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid dataset item: ' + item.DatasetId}});
 
             let dataset = await Answer.client.create({
                 data: {
                     UserId: req.decoded.Id,
-                    Ignored: item.Ignored,
+                    Ignored: JSON.parse(item.Ignored),
                     IgnoreReason: item.IgnoreReason,
                     DatasetId: item.DatasetId,
                     DatasetItemId: item.DatasetItemId,
-                    Answer: item.AnswerIndex,
+                    Answer: JSON.parse(item.AnswerIndex),
                     QuestionObject: item.QuestionObject,
-                    DurationToAnswerInSeconds: item.DurationToAnswerInSeconds,
+                    DurationToAnswerInSeconds: JSON.parse(item.DurationToAnswerInSeconds),
                 }
             });
 

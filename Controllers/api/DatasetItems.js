@@ -32,7 +32,7 @@ datasetItemsController.findAll = async (req, res) => {
         include = null;
 
     try {
-        let datasetItems = await DatasetItem.client.findMany({
+        let items = await DatasetItem.client.findMany({
             where,
             include,
             orderBy: {
@@ -42,8 +42,10 @@ datasetItemsController.findAll = async (req, res) => {
             skip: Skip,
 
         });
-
-        return res.send(datasetItems);
+        const totalCount = await DatasetItem.client.count({
+            where,
+        });
+        return res.send({totalCount, items});
     } catch (error) {
         console.log(error)
         return handleError(res, {});

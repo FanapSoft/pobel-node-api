@@ -3,6 +3,7 @@ import httpStatus from "http-status";
 import {handleError} from "../../imports/errors.js";
 import acl from "../../imports/acl.js";
 import Dataset from "../../prisma/models/Dataset.js";
+import {body} from "express-validator";
 
 const datasetController = {};
 
@@ -29,7 +30,7 @@ datasetController.findAll = async (req, res) => {
         };
 
     try {
-        let datasets = await Dataset.client.findMany({
+        let items = await Dataset.client.findMany({
             where,
             orderBy: {
                 CreatedAt: 'desc',
@@ -37,7 +38,11 @@ datasetController.findAll = async (req, res) => {
             take: Limit,
             skip: Skip
         });
-        return res.send(datasets);
+
+        const totalCount = await Dataset.client.count({
+            where,
+        });
+        return res.send({totalCount, items});
     } catch (error) {
         console.log(error)
         return handleError(res, {});
@@ -50,11 +55,12 @@ datasetController.findOne = async (req, res) => {
     const {
         id
     } = req.params;
+
     try {
         let dataset = await Dataset.findById(id, req.decoded.Role);
 
         if (!dataset) {
-            return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
+            return handleError(res, {code: 3002, status: httpStatus.BAD_REQUEST});
         }
 
         return res.send(dataset);
@@ -112,41 +118,26 @@ datasetController.update = async (req, res) => {
     const {
         id
     } = req.params;
-    const {
-        Name,
-        Description,
-        Type,
-        AnswerType,
-        IsActive,
-        LabelingStatus,
-        T,
-        UMin,
-        UMax,
-        AnswerReplicationCount,
-        AnswerBudgetCountPerUser
-    } = req.body;
+
     try {
         let dataset = await Dataset.findById(id)
 
         if (!dataset)
             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
 
-
+        const editableParams = [
+            "Name", "Description", "Type", "AnswerType", "IsActive", "LabelingStatus",
+            "T", "UMin", "UMax", "AnswerReplicationCount", "AnswerBudgetCountPerUser"
+        ];
+        const params = {};
+        editableParams.forEach(item => {
+            if(req.body[item] !== undefined) {
+                params[item] = req.body[item]
+            }
+        });
         const result = await Dataset.client.update({
             where: { Id: dataset.Id },
-            data: {
-                Name,
-                Description,
-                Type: JSON.parse(Type),
-                AnswerType: JSON.parse(AnswerType),
-                IsActive: JSON.parse(IsActive),
-                LabelingStatus: JSON.parse(LabelingStatus),
-                T: JSON.parse(T),
-                UMin: JSON.parse(UMin),
-                UMax: JSON.parse(UMax),
-                AnswerReplicationCount: JSON.parse(AnswerReplicationCount),
-                AnswerBudgetCountPerUser: JSON.parse(AnswerBudgetCountPerUser)
-            }
+            data: params
         });
         return res.send(result);
     } catch (error) {

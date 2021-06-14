@@ -15,8 +15,8 @@
  *         - IsActive
  *       properties:
  *         Id:
- *           type: number
- *           format: BigInt
+ *           type: string
+ *           format: uuid
  *
  *           description: Auto generated unique id
  *         Name:
@@ -81,7 +81,7 @@
  *       type: object
  *       properties:
  *         type:
- *           $ref:	"#/components/schemas/AnswerType"
+ *           $ref:    "#/components/schemas/AnswerType"
  *         title:
  *           type: string
  *           nullable: true
@@ -120,6 +120,7 @@
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
 import datasetController from "../Controllers/api/Datasets.js";
+import {body, check} from 'express-validator';
 
 export default function (router) {
     /**
@@ -197,7 +198,19 @@ export default function (router) {
      *             schema:
      *               $ref: "#/components/schemas/Dataset"
      */
-    router.post("/api/Datasets/Create", asyncWrapper(datasetController.create));
+    router.post("/api/Datasets/Create", [
+        body('Name').notEmpty(),
+        body('Description').notEmpty(),
+        body('Type').toInt(),
+        body('UMin').toFloat(),
+        body('UMax').toFloat(),
+        body('T').toFloat(),
+        body('IsActive').toBoolean(),
+        body('AnswerType').toInt(),
+        body('AnswerReplicationCount').toInt(),
+        body('AnswerBudgetCountPerUser').toInt(),
+        body('LabelingStatus').toInt()
+    ], asyncWrapper(datasetController.create));
     /**
      * @swagger
      * /api/Datasets/Update/{id}:
@@ -223,7 +236,19 @@ export default function (router) {
      *               $ref: "#/components/schemas/Dataset"
      *
      */
-    router.put("/api/Datasets/Update/:id", asyncWrapper(datasetController.update));
+    router.put("/api/Datasets/Update/:id", [
+        body('Name').optional({checkFalsy: true}).notEmpty(),
+        body('Description').optional({checkFalsy: true}).notEmpty(),
+        body('Type').optional({checkFalsy: true}).toInt(),
+        body('UMin').optional({checkFalsy: true}).toFloat(),
+        body('UMax').optional({checkFalsy: true}).toFloat(),
+        body('T').optional({checkFalsy: true}).toFloat(),
+        body('IsActive').optional({checkFalsy: true}).toBoolean(),
+        body('AnswerType').optional({checkFalsy: true}).toInt(),
+        body('AnswerReplicationCount').optional({checkFalsy: true}).toInt(),
+        body('AnswerBudgetCountPerUser').optional({checkFalsy: true}).toInt(),
+        body('LabelingStatus').optional({checkFalsy: true}).toInt()
+    ], asyncWrapper(datasetController.update));
     /**
      * @swagger
      * /api/Datasets/Delete/{id}:

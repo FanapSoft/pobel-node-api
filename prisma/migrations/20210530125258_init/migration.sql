@@ -22,7 +22,7 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
-CREATE TABLE "TargetDefinitions" (
+CREATE TABLE "TargetDefinition" (
     "Id" BIGSERIAL NOT NULL,
     "CreatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "UpdatedAt" TIMESTAMP(3) NOT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE "TargetDefinitions" (
 );
 
 -- CreateTable
-CREATE TABLE "UserTargets" (
+CREATE TABLE "UserTarget" (
     "Id" TEXT NOT NULL,
     "CreatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "UpdatedAt" TIMESTAMP(3) NOT NULL,
@@ -155,7 +155,7 @@ CREATE UNIQUE INDEX "User.PodUserId_unique" ON "User"("PodUserId");
 CREATE UNIQUE INDEX "User.LocalToken_unique" ON "User"("LocalToken");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "TargetDefinitions.Type_unique" ON "TargetDefinitions"("Type");
+CREATE UNIQUE INDEX "TargetDefinition.Type_unique" ON "TargetDefinition"("Type");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "AnswerOptions_DataSetId_unique" ON "AnswerOptions"("DataSetId");
@@ -182,13 +182,13 @@ ALTER TABLE "DatasetItemLabels" ADD FOREIGN KEY ("LabelId") REFERENCES "Labels"(
 ALTER TABLE "DatasetItemLabels" ADD FOREIGN KEY ("DatasetItemId") REFERENCES "DatasetItems"("Id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserTargets" ADD FOREIGN KEY ("TargetDefinitionId") REFERENCES "TargetDefinitions"("Id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "UserTarget" ADD FOREIGN KEY ("TargetDefinitionId") REFERENCES "TargetDefinition"("Id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserTargets" ADD FOREIGN KEY ("OwnerId") REFERENCES "User"("Id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "UserTarget" ADD FOREIGN KEY ("OwnerId") REFERENCES "User"("Id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "AnswerOptions" ADD FOREIGN KEY ("DataSetId") REFERENCES "Datasets"("Id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TargetDefinitions" ADD FOREIGN KEY ("DatasetId") REFERENCES "Datasets"("Id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "TargetDefinition" ADD FOREIGN KEY ("DatasetId") REFERENCES "Datasets"("Id") ON DELETE CASCADE ON UPDATE CASCADE;

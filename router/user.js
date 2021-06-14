@@ -6,12 +6,13 @@
  *       type: object
  *       required:
  *         - Name
+ *         - UserName
  *         - PodContactId
  *         - Email
  *       properties:
  *         Id:
- *           type: number
- *           format: BigInt
+ *           type: string
+ *           format: uuid
  *         UserName:
  *           type: string
  *         Name:
@@ -38,13 +39,9 @@
  *           items:
  *             $ref: "#/components/schemas/User"
  */
-
-import express from "express";
-
 import {asyncWrapper} from "../utils/asyncWrapper.js";
 import userController from "../Controllers/api/User.js";
-
-const ROUTER = express.Router();
+import {check, validationResult} from 'express-validator';
 
 export default function (router) {
     /**
@@ -112,8 +109,10 @@ export default function (router) {
      *     requestBody:
      *      content:
      *       application/json:
-     *        schema:
-     *          $ref: "#/components/schemas/User"
+     *         Name:
+     *           type: string
+     *         IsActive:
+     *           type: boolean
      *     responses:
      *       200:
      *         description: Returns the created dataset
@@ -124,7 +123,10 @@ export default function (router) {
      *               $ref: "#/components/schemas/User"
      *
      */
-    router.put("/api/User/Update/:id", asyncWrapper(userController.update));
+    router.put("/api/User/Update/:id", [
+        check("Name").optional({ checkFalsy: true }).isString(),
+        check("IsActive").optional({ checkFalsy: true }).isString()
+    ], asyncWrapper(userController.update));
     /**
      * @swagger
      * /api/User/Delete/{id}:
