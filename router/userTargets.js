@@ -26,7 +26,13 @@
  *           items:
  *             $ref: "#/components/schemas/UserTarget"
  *           nullable: true
- *
+ *     TargetStatusOutput:
+ *       type: object
+ *       properties:
+ *         targetEnded:
+ *           type: boolean
+ *         noTarget:
+ *           type: boolean
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
 import targetController from "../Controllers/api/UserTargets.js";
@@ -72,11 +78,17 @@ export default function (router) {
      *     description: check user current target
      *     produces:
      *       - application/json
-     *     requestBody:
-     *       content:
-     *         application/json:
-     *          schema:
-     *            $ref: "#/components/schemas/UserTarget"
+     *     parameters:
+     *       - name: UserId
+     *         in: query
+     *         schema:
+     *           type: string
+     *           format: uuid
+     *       - name: DatasetId
+     *         in: query
+     *         schema:
+     *           type: string
+     *           format: uuid
      *     responses:
      *       200:
      *         description: Returns the created UserTarget
@@ -84,7 +96,7 @@ export default function (router) {
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: "#/components/schemas/UserTarget"
+     *               $ref: "#/components/schemas/TargetStatusOutput"
      */
     router.get("/api/Targets/GetCurrentTargetStatus", asyncWrapper(targetController.getCurrentTargetStatus));
 

@@ -28,12 +28,12 @@ model User {
   Role           String         @default("user")
   SSOProfile     Json
   Tokens         Json
-  Targets        UserTarget[]
+  Targets        UserTargets[]
   Transactions   Transactions[]
   AnswerLogs     AnswerLogs[]
 }
 
-model TargetDefinition {
+model TargetDefinitions {
   Id          String        @id @default(uuid())
   CreatedAt   DateTime      @default(now())
   UpdatedAt   DateTime?     @updatedAt
@@ -47,15 +47,15 @@ model TargetDefinition {
   UMax        Float         @db.DoublePrecision
   BonusFalse  Float         @default(0) @db.DoublePrecision
   BonusTrue   Float         @default(0) @db.DoublePrecision
-  UserTarget UserTarget[]
+  UserTargets UserTargets[]
 }
 
-model UserTarget {
+model UserTargets {
   Id                 String            @id @default(uuid())
   CreatedAt          DateTime          @default(now())
   UpdatedAt          DateTime          @updatedAt
   TargetDefinitionId String
-  TargetDefinition   TargetDefinition @relation(fields: [TargetDefinitionId], references: [Id])
+  TargetDefinition   TargetDefinitions @relation(fields: [TargetDefinitionId], references: [Id])
   OwnerId            String
   Owner              User              @relation(fields: [OwnerId], references: [Id])
 }
@@ -83,7 +83,7 @@ model Datasets {
   CorrectGoldenAnswerIndex Int                 @default(0)
   AnswerReplicationCount   Int                 @default(0)
   TotalBudget              Decimal             @default(0.0) @db.Decimal(18, 2)
-  TargetDefinition        TargetDefinition[]
+  TargetDefinition        TargetDefinitions[]
   DatasetItems             DatasetItems[]
   Labels                   Labels[]
   //AnswerLogs               AnswerLogs[]
@@ -96,13 +96,13 @@ model DatasetItems {
   Id                  String       @id @default(uuid())
   CreatedAt           DateTime     @default(now())
   UpdatedAt           DateTime?    @updatedAt
-  Name                String
+  Name                String?
   Content             String?
   Type                Int
-  FileExtension       String       @db.VarChar(30)
-  FileName            String
-  FilePath            String
-  FileSize            Int
+  FileExtension       String?       @db.VarChar(30)
+  FileName            String?
+  FilePath            String?
+  FileSize            Int?
   LabelId             String?
   Label               Labels?      @relation("Label", fields: [LabelId], references: [Id])
   FinalLabelId        String?
