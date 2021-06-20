@@ -42,7 +42,7 @@ userController.activateTarget =  async (req, res) => {
         if(!tmpTarget || !tmpTarget.length || (tmpTarget.length && tmpTarget[0].TargetDefinitionId !== TargetDefinitionId)) {
             const result = await UserTarget.client.create({
                 data: {
-                    Definition: {
+                    TargetDefinition: {
                         connect: {
                             Id: TargetDefinitionId
                         }

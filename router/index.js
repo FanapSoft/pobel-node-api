@@ -9,11 +9,13 @@ import targetDefinitionsRoutes from "./targetDefinitions.js";
 import datasetItems from "./datasetItems.js";
 import reports from "./reports.js";
 import answers from "./answers.js";
+import questions from "./questions.js";
 
 import User from "../prisma/models/User.js";
 
 import { handleError } from "../imports/errors.js";
 import httpStatus from "http-status";
+
 
 const ROUTER = express.Router();
 
@@ -75,6 +77,7 @@ targetDefinitionsRoutes(ROUTER);
 datasetItems(ROUTER);
 reports(ROUTER);
 answers(ROUTER);
+questions(ROUTER);
 //
 // export { ROUTER };
 export default function (app) {

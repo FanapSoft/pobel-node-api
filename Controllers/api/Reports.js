@@ -3,69 +3,104 @@
 import {handleError} from "../../imports/errors.js";
 // import acl from "../../imports/acl.js";
 import Dataset from "../../prisma/models/Dataset.js";
+import prisma from "../../prisma/prisma.module.js";
+import {validationResult} from "express-validator";
+import moment from 'jalali-moment'
 
 const reportController = {};
 
-// Get All Users
+
 reportController.answersCountTrend = async (req, res) => {
-    const {
+    let {
         UserId,
         From,
         To,
         DatasetId
     } = req.query;
 
-    let where = {};
-    if(UserId)
-        where.UserId = {
-            contains: UserId
-        };
-    if(From)
-        where.CreatedAt = {
-            gte: From
-        };
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
 
-    if(To)
-        where.CreatedAt = {
-            lte: To
-        };
+    if(!From)
+        From = moment().utc(false).add(-30, "days").toISOString(); //30 days ago
+   if(!To)
+       To = new Date().toISOString();
+
+   const dif = {
+       from: moment(From),
+       to: moment(To)
+   }
+   const range = dif.to.diff(dif.from, 'days');
+    if(range > 30 || range < 0) {
+        return handleError(res, {error: {code: 3002, message: 'Invalid from and(or) to dates'}});
+    }
+
+    let userIdString = '', datasetIdString = '';
     if(DatasetId)
-        where.DatasetId = DatasetId;
-
-    if(From || To)
-    const periodDates = generateDates(From, To);
-
+        datasetIdString = " AND \"AnswerLogs\".\"DatasetId\" = '" + DatasetId + "' "
+    if(UserId) {
+        if(UserId !== req.decoded.Id && req.decoded.role !== 'admin') {
+            return handleError(res, {error: {code: 3002, message: 'You can not view results for others!'}});
+        }
+        userIdString = " AND \"AnswerLogs\".\"UserId\" = '" + UserId + "' "
+    }
 
     try {
-        let datasets = await Dataset.client.findMany({
-            where: where,
-        });
-        return res.send(datasets);
+        let result = await prisma.$queryRaw("select date(d) as day, count(\"AnswerLogs\".\"Id\") \n" +
+            "from generate_series(\n" +
+            "  date('"+ From +"'), \n" +
+            "  date('"+ To +"'), \n" +
+            "  '1 day'\n" +
+            ") d \n" +
+            "\n" +
+            "left join \"AnswerLogs\" on date(\"AnswerLogs\".\"CreatedAt\") = d " + userIdString +  datasetIdString + " \n" +
+            "group by day order by day;\n");
+        return res.send(result);
     } catch (error) {
         console.log(error)
         return handleError(res, {});
     }
 };
 
+reportController.scoreboard = async (req, res) => {
+    let {
+        From,
+        DatasetId,
+        Skip = 0,
+        Limit = 10
+    } = req.query;
 
-function generateDates(From, To) {
-    //let differenceInTime  = new Date(To).getTime() - new Date(From).getTime();
-    //let totalDays = differenceInTime / (1000 * 3600 * 24);
-
-    let isDone = false;
-    let counter = 0;
-    let result = [];
-    while(!isDone) {
-        let f = new Date(From);
-        let out = new Date(f.getTime() + (1000 * 3600 * 24 * counter));
-        if(out.getTime() > new Date(To)) {
-            isDone = true;
-        }
-        counter++;
-        result.push(out);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
 
-    return result;
-}
+    if(!From)
+        From = moment().utc(false).add(-30, "days").toISOString(); //30 days ago
+
+   if(new Date() < new Date(From)) {
+       return handleError(res, {error: {code: 3002, message: 'Invalid from date'}});
+   }
+
+    let datasetIdString = '';
+    if(DatasetId)
+        datasetIdString = " AND AL.\"DatasetId\" = '" + DatasetId + "' ";
+
+    try {
+        let result = await prisma.$queryRaw("SELECT AL.\"UserId\" , U.\"Name\", U.\"Surname\", COUNT(AL.\"Id\") AS Count\n" +
+            "FROM \"AnswerLogs\" AL\n" +
+            "JOIN \"User\" U ON  U.\"Id\" = AL.\"UserId\" AND date(AL.\"CreatedAt\") > date('"+ From +"')  " + datasetIdString + " \n" +
+            "GROUP BY AL.\"UserId\", U.\"Name\", U.\"Surname\"\n" +
+            "ORDER BY Count DESC " +
+            " OFFSET " + Skip + "\n" +
+            " LIMIT " + Limit + "");
+        return res.send(result);
+    } catch (error) {
+        console.log(error)
+        return handleError(res, {});
+    }
+};
 
 export default reportController;

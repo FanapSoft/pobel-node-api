@@ -36,7 +36,7 @@ const options = {
     openapi: '3.0.0',
     info: {
       version: '0.1.0',
-      title: 'POD <<POBEL>> NodeJS Backend',
+      title: 'POD ♯ POBEL NodeJS Backend',
       description: 'POBEL Backend API written in Node.js',
       contact: {
         name: "POBEL",

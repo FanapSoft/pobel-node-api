@@ -87,7 +87,7 @@ model Datasets {
   DatasetItems             DatasetItems[]
   Labels                   Labels[]
   //AnswerLogs               AnswerLogs[]
-  AnswerOption             AnswerOptions?
+  AnswerOptions            AnswerOptions[]
   Transactions             Transactions[]
   AnswerLogs               AnswerLogs[]
 }

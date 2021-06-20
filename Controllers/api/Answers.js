@@ -64,7 +64,7 @@ answersController.findOne = async (req, res) => {
         let answer = await Answer.findById(id, req.decoded.Role);
 
         if (!answer) {
-            return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
+            return handleError(res, {code: 3002, status: httpStatus.BAD_REQUEST});
         }
 
         return res.send(answer);
@@ -81,7 +81,7 @@ answersController.submitBatchAnswer = async (req, res, next) => {
     } = req.body;
 
     if(!Answers || !Array.isArray(Answers) || !Answers.length) {
-        return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3000, message:'Invalid answers'}});
+        return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid Answers'}});
     }
 
     let storedAnswers = [];

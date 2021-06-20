@@ -59,12 +59,13 @@ export default function (router) {
      *            $ref: "#/components/schemas/UserTarget"
      *     responses:
      *       200:
-     *         description: Returns the created UserTarget
+     *         description: Return activation result
      *         type: object
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: "#/components/schemas/UserTarget"
+     *               content:
+     *
      */
     router.post("/api/Targets/ActivateTarget", asyncWrapper(targetController.activateTarget));
     /**
