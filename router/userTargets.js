@@ -36,6 +36,7 @@
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
 import targetController from "../Controllers/api/UserTargets.js";
+import {check} from "express-validator";
 
 export default function (router) {
     //router.get("/api/Targets/GetAll", asyncWrapper(targetController.findAll));
@@ -80,26 +81,31 @@ export default function (router) {
      *     produces:
      *       - application/json
      *     parameters:
-     *       - name: UserId
+     *       - name: DatasetId
      *         in: query
+     *         required: true
      *         schema:
      *           type: string
      *           format: uuid
-     *       - name: DatasetId
+     *       - name: UserId
      *         in: query
+     *         description: defaults to current loggedIn user id
      *         schema:
      *           type: string
      *           format: uuid
      *     responses:
      *       200:
-     *         description: Returns the created UserTarget
+     *         description: Returns user target status
      *         type: object
      *         content:
      *           application/json:
      *             schema:
      *               $ref: "#/components/schemas/TargetStatusOutput"
      */
-    router.get("/api/Targets/GetCurrentTargetStatus", asyncWrapper(targetController.getCurrentTargetStatus));
+    router.get("/api/Targets/GetCurrentTargetStatus", [
+        check('DatasetId').notEmpty().isString().isLength({max: 80}).escape(),
+        check('UserId').optional({checkFalsy: true}).isString().isLength({max: 80}).escape()
+    ], asyncWrapper(targetController.getCurrentTargetStatus));
 
     //router.delete("/api/Targets/Delete/:id", asyncWrapper(targetController.delete));
 }

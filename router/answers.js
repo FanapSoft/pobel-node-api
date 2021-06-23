@@ -48,13 +48,11 @@
  *           items:
  *             $ref: "#/components/schemas/Answer"
  *           nullable: true
- *     SubmitBatchAnswerInput:
+ *     AnswersStats:
  *       type: object
  *       properties:
- *         Answers:
- *           type: array
- *           items:
- *             $ref: #/components/schemas/SubmitAnswerInput
+ *         totalCount:
+ *           type: integer
  *     SubmitAnswerInput:
  *       type: object
  *       properties:
@@ -73,6 +71,13 @@
  *           type string
  *         DurationToAnswerInSeconds:
  *           type: string
+ *     SubmitBatchAnswerInput:
+ *       type: object
+ *       properties:
+ *         Answers:
+ *           type: array
+ *           items:
+ *             $ref: #/components/schemas/SubmitAnswerInput
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
 import answersController from "../Controllers/api/Answers.js";
@@ -105,12 +110,12 @@ export default function (router) {
      *         in: query
      *     responses:
      *       200:
-     *         description: An array of datasetItems
+     *         description: An array of answers
      *         type: array
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: "#/components/schemas/Answers"
+     *               $ref: "#/components/schemas/AnswersPaged"
      *
      */
     router.get("/api/Answers/GetAll", asyncWrapper(answersController.findAll));
@@ -130,9 +135,11 @@ export default function (router) {
      *         in: query
      *     responses:
      *       200:
-     *         description: An array of datasetItems
-     *         type: array
-     *         totalCount: Integer
+     *         type: object
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: "#/components/schemas/AnswersStats"
      *
      */
     router.get("/api/Answers/Stats", asyncWrapper(answersController.stats));
@@ -142,7 +149,7 @@ export default function (router) {
      *   post:
      *     tags:
      *       - Answers
-     *     description: Get a list of answers
+     *     description: Submit a list of answers
      *     produces:
      *       - application/json
      *     requestBody:
@@ -152,9 +159,7 @@ export default function (router) {
      *             $ref: #/components/schemas/SubmitBatchAnswerInput
      *     responses:
      *       200:
-     *         description: An array of datasetItems
-     *         type: array
-     *         content: Array of inserted answers
+     *         description: Array of inserted answers
      */
     router.post("/api/Answers/SubmitBatchAnswer", [
         check('answers.*.Ignored').notEmpty().toBoolean(),

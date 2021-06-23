@@ -90,7 +90,7 @@ targetController.create = async (req, res, next) => {
         });
 
         if (!td) {
-            return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
+            return handleError(res, {code: 1000});
         }
 
         return res.send(td);
@@ -142,7 +142,7 @@ targetController.delete = async (req, res) => {
     } = req.params;
 
     if (!id)
-        return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
+        return handleError(res, {code: 3002, status: httpStatus.BAD_REQUEST});
 
     try {
         let td = await TargetDefinition.client.delete({where: { Id: id }});

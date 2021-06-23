@@ -55,7 +55,6 @@ answersController.findAll = async (req, res) => {
     }
 };
 
-// Get User By ID
 answersController.findOne = async (req, res) => {
     const {
         id
@@ -74,7 +73,6 @@ answersController.findOne = async (req, res) => {
     }
 };
 
-// Create Target
 answersController.submitBatchAnswer = async (req, res, next) => {
     const {
         Answers
@@ -89,15 +87,15 @@ answersController.submitBatchAnswer = async (req, res, next) => {
     for(const [index, item] of Answers.entries()) {
         try {
             let ds = await Dataset.findById(item.DatasetId, req.decoded.Role);
-
             if (!ds)
                 return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid dataset: ' + item.DatasetId}});
 
             let dsi = await DatasetItem.findById(item.DatasetItemId, req.decoded.Role);
-
             if (!dsi)
                 return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid dataset item: ' + item.DatasetId}});
 
+
+            //TODO: Calculate the correct answer point
             let dataset = await Answer.client.create({
                 data: {
                     UserId: req.decoded.Id,
@@ -108,6 +106,12 @@ answersController.submitBatchAnswer = async (req, res, next) => {
                     Answer: JSON.parse(item.AnswerIndex),
                     QuestionObject: item.QuestionObject,
                     DurationToAnswerInSeconds: JSON.parse(item.DurationToAnswerInSeconds),
+                }
+            });
+            await DatasetItem.client.update({
+                where: { Id: dsi.Id },
+                data: {
+                    AnswersCount: dsi.AnswersCount + 1
                 }
             });
 
@@ -125,7 +129,6 @@ answersController.submitBatchAnswer = async (req, res, next) => {
     return res.send(storedAnswers);
 };
 
-// Create Target
 answersController.stats = async (req, res, next) => {
     const {
         UserId,

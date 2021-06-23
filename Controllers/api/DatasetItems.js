@@ -79,36 +79,36 @@ datasetItemsController.create = async (req, res, next) => {
 };
 
 // Update User By ID
-datasetItemsController.update = async (req, res) => {
-    const {
-        id
-    } = req.params;
-    const {
-        //TODO: fields to update
-    } = req.body;
-    try {
-        let di = await DatasetItem.findById(id);
-
-        if (!di)
-            return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
-
-        if(!acl.currentUserCan(req.decoded, di, 'update')) {
-            return handleError(res, {code: 2004, status: httpStatus.FORBIDDEN});
-        }
-
-        Object.assign(di, req.body);
-
-        const result = await DatasetItem.client.update({
-            where: { Id: di.Id },
-            data: di,
-        });
-        //await user.save();
-        return res.send(result);
-    } catch (error) {
-        console.log(error);
-        return handleError(res, {});
-    }
-};
+// datasetItemsController.update = async (req, res) => {
+//     const {
+//         id
+//     } = req.params;
+//     const {
+//         //TODO: fields to update
+//     } = req.body;
+//     try {
+//         let di = await DatasetItem.findById(id);
+//
+//         if (!di)
+//             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
+//
+//         if(!acl.currentUserCan(req.decoded, di, 'update')) {
+//             return handleError(res, {code: 2004, status: httpStatus.FORBIDDEN});
+//         }
+//
+//         Object.assign(di, req.body);
+//
+//         const result = await DatasetItem.client.update({
+//             where: { Id: di.Id },
+//             data: di,
+//         });
+//         //await user.save();
+//         return res.send(result);
+//     } catch (error) {
+//         console.log(error);
+//         return handleError(res, {});
+//     }
+// };
 
 
 // Delete User By ID

@@ -7,9 +7,6 @@
  *       required:
  *         - Name
  *         - Description
- *         - UMin
- *         - UMax
- *         - T
  *         - Type
  *         - LabelingStatus
  *         - IsActive
@@ -17,7 +14,6 @@
  *         Id:
  *           type: string
  *           format: uuid
- *
  *           description: Auto generated unique id
  *         Name:
  *           type: string
@@ -26,15 +22,6 @@
  *           type: string
  *           description: Short description about the dataset
  *           nullable: true
- *         UMin:
- *           type: number
- *           format: float
- *         UMax:
- *           type: number
- *           format: float
- *         T:
- *           type: number
- *           format: float
  *         Type:
  *           type: integer
  *           enum: [0,1,2,3]

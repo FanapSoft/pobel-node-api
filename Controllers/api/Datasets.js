@@ -79,9 +79,6 @@ datasetController.create = async (req, res, next) => {
         AnswerType,
         IsActive,
         LabelingStatus,
-        T,
-        UMin,
-        UMax,
         AnswerReplicationCount,
         AnswerBudgetCountPerUser
     } = req.body;
@@ -94,9 +91,6 @@ datasetController.create = async (req, res, next) => {
                 AnswerType: JSON.parse(AnswerType),
                 IsActive: JSON.parse(IsActive),
                 LabelingStatus: JSON.parse(LabelingStatus),
-                T: JSON.parse(T),
-                UMin: JSON.parse(UMin),
-                UMax: JSON.parse(UMax),
                 AnswerReplicationCount: JSON.parse(AnswerReplicationCount),
                 AnswerBudgetCountPerUser: JSON.parse(AnswerBudgetCountPerUser)
             }
@@ -127,7 +121,7 @@ datasetController.update = async (req, res) => {
 
         const editableParams = [
             "Name", "Description", "Type", "AnswerType", "IsActive", "LabelingStatus",
-            "T", "UMin", "UMax", "AnswerReplicationCount", "AnswerBudgetCountPerUser"
+            "AnswerReplicationCount", "AnswerBudgetCountPerUser"
         ];
         const params = {};
         editableParams.forEach(item => {

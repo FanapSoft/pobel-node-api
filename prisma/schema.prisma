@@ -58,6 +58,7 @@ model UserTargets {
   TargetDefinition   TargetDefinitions @relation(fields: [TargetDefinitionId], references: [Id])
   OwnerId            String
   Owner              User              @relation(fields: [OwnerId], references: [Id])
+  TargetEnded        Boolean
 }
 
 model Datasets {
@@ -67,12 +68,9 @@ model Datasets {
   Name                     String?
   Description              String?
   Type                     Int
-  T                        Float               @db.DoublePrecision
-  UMin                     Float               @db.DoublePrecision
-  UMax                     Float               @db.DoublePrecision
   LabelingStatus           Int
   AnswerType               Int                 @default(0)
-  FieldName                String?             @db.VarChar(255)
+  FieldName                String?             @db.VarChar(255) //deprecated
   IsActive                 Boolean             @default(false)
   QuestionType             Int                 @default(0)
   QuestionSrc              String?
@@ -83,34 +81,34 @@ model Datasets {
   CorrectGoldenAnswerIndex Int                 @default(0)
   AnswerReplicationCount   Int                 @default(0)
   TotalBudget              Decimal             @default(0.0) @db.Decimal(18, 2)
-  TargetDefinition        TargetDefinitions[]
+  TargetDefinition         TargetDefinitions[]
   DatasetItems             DatasetItems[]
   Labels                   Labels[]
-  //AnswerLogs               AnswerLogs[]
   AnswerOptions            AnswerOptions[]
   Transactions             Transactions[]
   AnswerLogs               AnswerLogs[]
 }
 
 model DatasetItems {
-  Id                  String       @id @default(uuid())
-  CreatedAt           DateTime     @default(now())
-  UpdatedAt           DateTime?    @updatedAt
-  Name                String?
-  Content             String?
-  Type                Int
-  FileExtension       String?       @db.VarChar(30)
-  FileName            String?
-  FilePath            String?
-  FileSize            Int?
-  LabelId             String?
-  Label               Labels?      @relation("Label", fields: [LabelId], references: [Id])
-  FinalLabelId        String?
-  FinalLabel          Labels?      @relation("FinalLabel", fields: [FinalLabelId], references: [Id])
-  IsGoldenData        Boolean
-  DatasetId           String
-  Dataset             Datasets     @relation(fields: [DatasetId], references: [Id])
-  AnswerLogs          AnswerLogs[]
+  Id            String       @id @default(uuid())
+  CreatedAt     DateTime     @default(now())
+  UpdatedAt     DateTime?    @updatedAt
+  Name          String?
+  Content       String?
+  Type          Int
+  AnswersCount  Int          @default(0)
+  FileExtension String?      @db.VarChar(30)
+  FileName      String?
+  FilePath      String?
+  FileSize      Int?
+  LabelId       String?
+  Label         Labels?      @relation("Label", fields: [LabelId], references: [Id])
+  FinalLabelId  String?
+  FinalLabel    Labels?      @relation("FinalLabel", fields: [FinalLabelId], references: [Id])
+  IsGoldenData  Boolean
+  DatasetId     String
+  Dataset       Datasets     @relation(fields: [DatasetId], references: [Id])
+  AnswerLogs    AnswerLogs[]
 }
 
 model Labels {

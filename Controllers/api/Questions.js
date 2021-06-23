@@ -15,6 +15,7 @@ questionsController.getQuestions = async (req, res) => {
     let {
         DatasetId,
         LabelId,
+        OnlyOneLabel = true,
         Count
     } = req.query;
 
@@ -68,27 +69,41 @@ questionsController.getQuestions = async (req, res) => {
         let datasetItems = null;
         let label = null;
 
-        if(!LabelId) {
-            datasetItems = await prisma.$queryRaw('SELECT * FROM ((SELECT "Id", "LabelId", "Name", "FileName", "IsGoldenData", "Type" FROM "DatasetItems" WHERE "DatasetId" = ' + "'" + DatasetId + "'  AND \"IsGoldenData\" = " + true + " ORDER BY random() LIMIT 1)" +
-            'UNION (SELECT "Id", "LabelId", "Name", "FileName", "IsGoldenData", "Type" FROM "DatasetItems" WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " ORDER BY random() LIMIT " + (Count - 1) + ")) AS T1 ORDER BY random()");
+        const positiveGoldens = Math.floor(25 / 100 * Count);
+        const negativeGoldens = Math.ceil(20 / 100 * Count);
+        const noneGoldens =  Count - (positiveGoldens + negativeGoldens);
+
+        if (OnlyOneLabel) {
+            if(LabelId) {
+                label = await Label.findById(LabelId, 'admin');
+            } else {
+                label = await prisma.$queryRaw('SELECT * from "Labels" WHERE "DatasetId" = '+ "'" + DatasetId + "' ORDER BY random() Limit 1;");
+                label = label[0];
+            }
+            datasetItems = await prisma.$queryRaw('SELECT * FROM (' +
+                '(SELECT "Id", "LabelId", "Name", "FileName", "IsGoldenData", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "'  AND \"IsGoldenData\" = " + true + " AND \"LabelId\" = '" + label.Id +  "' AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  "   AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + req.decoded.Id + "' ) ORDER BY random() LIMIT " + positiveGoldens + ")" +
+                'UNION (SELECT "Id", "LabelId", "Name", "FileName", "IsGoldenData", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"LabelId\" <> '" + label.Id +  "' AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  "  AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + req.decoded.Id + "' ) ORDER BY random() LIMIT  " + negativeGoldens + ")" +
+                'UNION (SELECT "Id", "LabelId", "Name", "FileName", "IsGoldenData", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"LabelId\" = '" + label.Id +  "' AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  "  AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + req.decoded.Id + "' ) ORDER BY random() LIMIT  " + noneGoldens + ")" +
+                ") AS T1 ORDER BY random()");
         } else {
-            label = await Label.findById(LabelId, 'admin');
-            datasetItems = await prisma.$queryRaw('SELECT * FROM ((SELECT "Id", "LabelId", "Name", "FileName", "IsGoldenData", "Type" FROM "DatasetItems" WHERE "DatasetId" = ' + "'" + DatasetId + "'  AND \"IsGoldenData\" = " + true + " AND \"LabelId\" = '" + label.Id +  "' ORDER BY random() LIMIT 1)" +
-                'UNION (SELECT "Id", "LabelId", "Name", "FileName", "IsGoldenData", "Type" FROM "DatasetItems" WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"LabelId\" = '" + label.Id +  "' ORDER BY random() LIMIT " + (Count - 1) + ")) AS T1 ORDER BY random()");
-       }
+            datasetItems = await prisma.$queryRaw('SELECT * FROM (' +
+                '(SELECT "Id", "LabelId", "Name", "FileName", "IsGoldenData", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "'  AND \"IsGoldenData\" = " + true + " AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  " AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + req.decoded.Id + "' ) ORDER BY random() LIMIT " + positiveGoldens + ")" +
+            'UNION (SELECT "Id", "LabelId", "Name", "FileName", "IsGoldenData", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  " AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + req.decoded.Id + "' ) ORDER BY random() LIMIT " + (negativeGoldens + noneGoldens) + ")" +
+            ") AS T1 ORDER BY random()");
+        }
 
         if(datasetItems && datasetItems.length) {
             for (let item of datasetItems) {
                 questions.push({
-                    G: req.decoded.role === 'admin'? item.IsGoldenData : undefined,
+                    G: req.decoded.role === 'admin' ? item.IsGoldenData : undefined,
                     DatasetItemId: item.Id,
-                    AnswerType: 0,
-                    Title: null,
+                    AnswerType: ds.AnswerType,
+                    Title: null, //TODO: calculate from ds.questiontemplate
+                    ItemName: item.Name,
                     Options: ds.AnswerOptions,
                     QuestionType: 0,
                     QuestionSubjectFileSrc: null,//TODO: Idk what is it for
-                    QuestionFileSrc: null,//TODO: Idk what is it for
-                    //DatasetItem: item,
+                    QuestionFileSrc: null,//TODO: put datasetitem file src so user can get the image
                     Label: label? label : undefined
                 });
             }

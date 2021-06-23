@@ -46,9 +46,6 @@ describe('Datasets', () => {
                 AnswerType: 1,
                 IsActive: true,
                 LabelingStatus: 1,
-                T: 1,
-                UMin: 1.1,
-                UMax: 2.1,
                 AnswerReplicationCount: 0,
                 AnswerBudgetCountPerUser:1
             })
@@ -71,9 +68,6 @@ describe('Datasets', () => {
                         AnswerType: 1,
                         IsActive: true,
                         LabelingStatus: 2,
-                        T: 1,
-                        UMin: 1.1,
-                        UMax: 2.1,
                         AnswerReplicationCount: 0,
                         AnswerBudgetCountPerUser:1
                     })

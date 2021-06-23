@@ -41,6 +41,8 @@
  *           type: boolean
  *         DatasetId:
  *           type: string
+ *         AnswersCount:
+ *           type: integer
  *     DatasetItemsPaged:
  *       type: object
  *       properties:

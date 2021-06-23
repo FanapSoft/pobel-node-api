@@ -28,4 +28,19 @@ describe('UserTargets', () => {
                 done();
             });
     });
+        it('GetCurrentTargetStatus', (done) => {
+        chai.request(server)
+            .get('/api/Targets/GetCurrentTargetStatus?DatasetId=10B16B1A-5945-422F-C83B-08D8695976C6')
+            .set('token', 'test')
+            .end((err, res) => {
+                if(err)
+                    console.log('err: ',err);
+
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                done();
+            });
+    });
+
+
 });

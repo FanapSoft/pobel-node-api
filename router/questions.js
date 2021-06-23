@@ -81,6 +81,7 @@ export default function (router) {
     router.get("/api/Questions/GetQuestions", [
         check("DatasetId").not().isEmpty().isLength({max: 50}).trim().escape(),
         check("LabelId").optional({checkFalsy: true}).isLength({max: 50}).trim().escape(),
-        check("Count").optional({checkFalsy: true}).toInt().isInt({max: 20})
+        check("OnlyOneLabel").optional({checkFalsy: true}).isBoolean().toBoolean(),
+        check("Count").optional({checkFalsy: true}).toInt().isInt({max: 20}).toInt()
     ], asyncWrapper(questionsController.getQuestions));
 }

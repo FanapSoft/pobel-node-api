@@ -1,12 +1,13 @@
 // import bcrypt from "bcrypt";
 
 // import jwt from "jsonwebtoken";
-import prisma from "../../prisma/prisma.module.js";
-import httpStatus from "http-status";
-import acl from "../../imports/acl.js";
+// import prisma from "../../prisma/prisma.module.js";
+// import httpStatus from "http-status";
+// import acl from "../../imports/acl.js";
 import {handleError} from "../../imports/errors.js";
-import User from "../../prisma/models/User.js";
 import UserTarget from "../../prisma/models/UserTarget.js";
+import Answer from "../../prisma/models/Answer.js";
+import {validationResult} from "express-validator";
 
 const userController = {};
 
@@ -39,6 +40,7 @@ userController.activateTarget =  async (req, res) => {
             take: 1
         });
 
+        //TODO: improve condition by new scenario
         if(!tmpTarget || !tmpTarget.length || (tmpTarget.length && tmpTarget[0].TargetDefinitionId !== TargetDefinitionId)) {
             const result = await UserTarget.client.create({
                 data: {
@@ -69,6 +71,11 @@ userController.getCurrentTargetStatus =  async (req, res) => {
         DatasetId
     } = req.query;
 
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
     let uId = UserId ? UserId : req.decoded.Id
     if(req.decoded.Role !== 'admin') {
         uId = req.decoded.Id;
@@ -76,7 +83,32 @@ userController.getCurrentTargetStatus =  async (req, res) => {
 
     try {
         //TODO: count answers and cache them
-        return res.send({success: true});
+        const answersCount = await Answer.client.count({
+            where: {
+                UserId: uId,
+                DatasetId: DatasetId
+            }
+        });
+        const userTargets = await UserTarget.client.findMany({
+            where: {
+                OwnerId: uId
+            },
+            orderBy: {
+                CreatedAt: 'desc'
+            },
+            include: {
+                TargetDefinition: true
+            }
+        });
+
+        let targetEnded = false, noTarget = false;
+        if(!userTargets.length || (userTargets.length && !userTargets[0].TargetDefinition)) {
+            noTarget = true;
+        } else if(userTargets.length && userTargets[0].TargetDefinition.AnswerCount <= answersCount) {
+            targetEnded = true;
+        }
+
+        return res.send({noTarget, targetEnded});
     } catch (error) {
         console.log(error);
         return handleError(res, {});

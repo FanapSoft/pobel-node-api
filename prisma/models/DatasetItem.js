@@ -6,7 +6,7 @@ class DatasetItems extends DBModelBase {
         super();
         this.table = 'datasetItems';
         this.client = prisma.datasetItems
-        this.modelPublicFields = {Id: true, Name: true, Type: true, FileName: true, FileExtension: true, LabelId: true};
+        this.modelPublicFields = {Id: true, Name: true, Type: true, FileName: true, FileExtension: true, LabelId: true, AnswersCount: true};
     }
 }
 

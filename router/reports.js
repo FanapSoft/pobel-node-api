@@ -108,7 +108,4 @@ export default function (router) {
         check('Limit').optional({checkFalsy: true}).isInt({max: 50}),
         check('Skip').optional({checkFalsy: true}).isInt(),
     ], asyncWrapper(reportsController.scoreboard));
-
-
-
 }
