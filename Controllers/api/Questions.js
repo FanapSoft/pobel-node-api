@@ -7,6 +7,7 @@ import Dataset from "../../prisma/models/Dataset.js";
 import httpStatus from "http-status";
 import UserTarget from "../../prisma/models/UserTarget.js";
 import Answer from "../../prisma/models/Answer.js";
+import QuestionRequestLog from "../../prisma/models/QuestionRequestLog.js";
 
 const questionsController = {};
 
@@ -14,6 +15,7 @@ const questionsController = {};
 questionsController.getQuestions = async (req, res) => {
     let {
         DatasetId,
+        OwnerId,
         LabelId,
         OnlyOneLabel = true,
         Count
@@ -22,6 +24,11 @@ questionsController.getQuestions = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
+    }
+
+    let uId = OwnerId ? OwnerId : req.decoded.Id;
+    if(req.decoded.Role !== 'admin') {
+        uId = req.decoded.Id;
     }
 
     if(!Count || Count > 20) {
@@ -42,6 +49,10 @@ questionsController.getQuestions = async (req, res) => {
             return handleError(res, {code: 3002, status: httpStatus.BAD_REQUEST});
         }
 
+        if(ds.LabelingStatus === 0) {
+            return handleError(res, {status: httpStatus.EXPECTATION_FAILED, error: {code: 3300}});
+        }
+
         const answersCount = Answer.client.count({
             where: {
                 DatasetId,
@@ -49,9 +60,10 @@ questionsController.getQuestions = async (req, res) => {
             }
         });
 
-        const userTarget = UserTarget.client.findMany({
+        const userTargets = UserTarget.client.findMany({
             where: {
-                OwnerId: req.decoded.Id
+                OwnerId: req.decoded.Id,
+                DatasetId: newTargetDefinition.DatasetId
             },
             include: {
                 TargetDefinition: true
@@ -62,8 +74,8 @@ questionsController.getQuestions = async (req, res) => {
             take: 1
         });
 
-        if(!userTarget || (userTarget.TargetDefinition && userTarget.TargetDefinition.AnswerCount <= answersCount)) {
-            return handleError(res, {status: httpStatus.EXPECTATION_FAILED, error: {code: 2004, message: 'تارگت ندارید یا تارگت شما به پایان رسیده است.'}});
+        if(!userTargets.length || (userTargets[0].TargetDefinition && userTargets.TargetDefinition.TargetEnded)) {
+            return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3203});
         }
 
         let datasetItems = null;
@@ -76,6 +88,9 @@ questionsController.getQuestions = async (req, res) => {
         if (OnlyOneLabel) {
             if(LabelId) {
                 label = await Label.findById(LabelId, 'admin');
+                if(!label) {
+                    return handleError(res, {status: httpStatus.EXPECTATION_FAILED, error: {code: 3002, message: 'Invalid LabelId'}});
+                }
             } else {
                 label = await prisma.$queryRaw('SELECT * from "Labels" WHERE "DatasetId" = '+ "'" + DatasetId + "' ORDER BY random() Limit 1;");
                 label = label[0];
@@ -92,21 +107,47 @@ questionsController.getQuestions = async (req, res) => {
             ") AS T1 ORDER BY random()");
         }
 
+        //TODO: is incomplete
         if(datasetItems && datasetItems.length) {
+            const generatedQuestion = await QuestionRequestLog.client.create({
+                DatasetId: ds.Id,
+                LabelId: Label ? Label.Id : null,
+                Type: Label ? QuestionRequestLog.types.GRID : QuestionRequestLog.types.LINEAR,
+                OwnerId: uId,
+                DatasetItems: datasetItems.map(item => {return {id: item.id, g: item.IsGoldenData}}),
+                ItemsCount: datasetItems.length
+            });
+
             for (let item of datasetItems) {
+                let itemJob = item.filePath;
+                itemJob = fieldName.split('\\')[4];
+
                 questions.push({
                     G: req.decoded.role === 'admin' ? item.IsGoldenData : undefined,
                     DatasetItemId: item.Id,
                     AnswerType: ds.AnswerType,
                     Title: null, //TODO: calculate from ds.questiontemplate
                     ItemName: item.Name,
+                    ItemJob: itemJob,
                     Options: ds.AnswerOptions,
-                    QuestionType: 0,
-                    QuestionSubjectFileSrc: null,//TODO: Idk what is it for
-                    QuestionFileSrc: null,//TODO: put datasetitem file src so user can get the image
-                    Label: label? label : undefined
+                    //QuestionType: 0,
+                    //QuestionSubjectFileSrc: null,//TODO: Idk what is it for
+                    //QuestionFileSrc: null,//TODO: put datasetitem file src so user can get the image
+                    Label: label? label : undefined,
+                    QuestionId: generatedQuestion.Id
                 });
             }
+        } else {
+            Dataset.client.update({
+                where: {
+                    Id: ds.Id
+                },
+                data: {
+                    LabelingStatus: 0
+                }
+            });
+
+            return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3300});
         }
 
         return res.send(questions);

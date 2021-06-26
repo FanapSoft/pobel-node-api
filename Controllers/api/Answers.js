@@ -3,6 +3,7 @@ import {handleError} from "../../imports/errors.js";
 import Answer from "../../prisma/models/Answer.js";
 import Dataset from "../../prisma/models/Dataset.js";
 import DatasetItem from "../../prisma/models/DatasetItem.js";
+import QuestionRequestLog from "../../prisma/models/QuestionRequestLog.js";
 
 const answersController = {};
 
@@ -75,28 +76,47 @@ answersController.findOne = async (req, res) => {
 
 answersController.submitBatchAnswer = async (req, res, next) => {
     const {
-        Answers
+        Answers,
+        QuestionId
     } = req.body;
 
     if(!Answers || !Array.isArray(Answers) || !Answers.length) {
-        return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid Answers'}});
+        return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid Answers array'}});
     }
 
-    let storedAnswers = [];
+    let storedAnswers = [], question;
+
+    question = QuestionRequestLog.findById(QuestionId, 'admin');
+    if(!question) {
+        return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid QuestionId'}});
+    }
 
     for(const [index, item] of Answers.entries()) {
         try {
-            let ds = await Dataset.findById(item.DatasetId, req.decoded.Role);
-            if (!ds)
+            //let ds = await Dataset.findById(item.DatasetId, req.decoded.Role);
+            if (question.DatasetId !== item.DatasetId)
                 return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid dataset: ' + item.DatasetId}});
+
+            if(!question.DatasetItems.includes(item.DatasetItemId)) {
+                return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'This item does not belongs to current question: ' + item.DatasetItemId}});
+            }
 
             let dsi = await DatasetItem.findById(item.DatasetItemId, req.decoded.Role);
             if (!dsi)
                 return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid dataset item: ' + item.DatasetId}});
 
+            let answerType = Answer.answerTypes.NORMAL, goldenType = Answer.goldenTypes.ISNOTGOLDEN;
 
-            //TODO: Calculate the correct answer point
-            let dataset = await Answer.client.create({
+            if(dsi.IsGoldenData) {
+                answerType = Answer.answerTypes.GOLDEN;
+                goldenType = Answer.goldenTypes.POSITIVE;
+            }
+            else if(question.LabelId && dsi.LabelId !== question.LabelId) {
+                answerType = Answer.answerTypes.GOLDEN;
+                goldenType = Answer.goldenTypes.NEGATIVE;
+            }
+
+            let answer = await Answer.client.create({
                 data: {
                     UserId: req.decoded.Id,
                     Ignored: JSON.parse(item.Ignored),
@@ -106,6 +126,8 @@ answersController.submitBatchAnswer = async (req, res, next) => {
                     Answer: JSON.parse(item.AnswerIndex),
                     QuestionObject: item.QuestionObject,
                     DurationToAnswerInSeconds: JSON.parse(item.DurationToAnswerInSeconds),
+                    AnswerType: answerType,
+                    GoldenType: goldenType
                 }
             });
             await DatasetItem.client.update({
@@ -116,8 +138,7 @@ answersController.submitBatchAnswer = async (req, res, next) => {
             });
 
             storedAnswers.push({
-                id: dataset.Id,
-                targetEnded: false
+                id: answer.Id
             });
 
         } catch (error) {

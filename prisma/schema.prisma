@@ -31,6 +31,7 @@ model User {
   Targets        UserTargets[]
   Transactions   Transactions[]
   AnswerLogs     AnswerLogs[]
+  QuestionLogs   QuestionLogs[]
 }
 
 model TargetDefinitions {
@@ -47,6 +48,8 @@ model TargetDefinitions {
   UMax        Float         @db.DoublePrecision
   BonusFalse  Float         @default(0) @db.DoublePrecision
   BonusTrue   Float         @default(0) @db.DoublePrecision
+  BonusSkip   Float         @default(1) @db.DoublePrecision
+  BonusReport Float         @default(1) @db.DoublePrecision
   UserTargets UserTargets[]
 }
 
@@ -58,7 +61,9 @@ model UserTargets {
   TargetDefinition   TargetDefinitions @relation(fields: [TargetDefinitionId], references: [Id])
   OwnerId            String
   Owner              User              @relation(fields: [OwnerId], references: [Id])
-  TargetEnded        Boolean
+  TargetEnded        Boolean           @default(false)
+  DatasetId          String
+  Dataset            Datasets          @relation(fields: [DatasetId], references: [Id])
 }
 
 model Datasets {
@@ -87,6 +92,8 @@ model Datasets {
   AnswerOptions            AnswerOptions[]
   Transactions             Transactions[]
   AnswerLogs               AnswerLogs[]
+  UserTargets              UserTargets[]
+  QuestionLogs             QuestionLogs[]
 }
 
 model DatasetItems {
@@ -121,6 +128,7 @@ model Labels {
   DatasetItems     DatasetItems[] @relation("Label")
   FinalDatasetItem DatasetItems?  @relation("FinalLabel")
   AnswerLogs       AnswerLogs[]
+  QuestionLogs     QuestionLogs[]
 }
 
 //model DatasetItemLabels {
@@ -161,7 +169,7 @@ model AnswerOptions {
 }
 
 model Transactions {
-  Id                 BigInt    @id @default(autoincrement())
+  Id                 String    @id @default(uuid())
   CreatedAt          DateTime  @default(now())
   UpdatedAt          DateTime? @updatedAt
   OwnerId            String
@@ -172,4 +180,19 @@ model Transactions {
   ReasonDescription  String?
   ReferenceDatasetId String?
   ReferenceDataset   Datasets? @relation(fields: [ReferenceDatasetId], references: [Id])
+}
+
+model QuestionRequestLogs {
+  Id           String   @id @default(uuid())
+  CreatedAt    DateTime @default(now())
+  OwnerId      String
+  Owner        User     @relation(fields: [OwnerId], references: [Id])
+  DatasetId    String
+  Dataset      Datasets @relation(fields: [DatasetId], references: [Id])
+  LabelId      String?
+  Label        Labels?   @relation(fields: [LabelId], references: [Id])
+  Type         Int
+  IsDone       Boolean  @default(false)
+  DatasetItems Json
+  ItemsCount   Int
 }

@@ -32,6 +32,20 @@
  *       items:
  *         $ref: "#/components/schemas/Question"
  *       nullable: true
+ *
+ *     QuestionRequestLog:
+ *       type: object
+ *       properties:
+ *         DatasetId:
+ *           type: string
+ *           format: uuid
+ *         LabelId:
+ *           type: string
+ *           format: uuid
+ *         Type:
+ *           type: integer
+ *           enum: [0,1,2]
+ *           description: 0.sentiment, 1.linear, 2.grid
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
 import questionsController from "../Controllers/api/Questions.js";
@@ -60,6 +74,11 @@ export default function (router) {
      *         schema:
      *           type: string
      *           format: uuid
+     *       - name: OwnerId
+     *         in: query
+     *         schema:
+     *           type: string
+     *           format: uuid
      *       - name: Count
      *         in: query
      *         schema:
@@ -80,6 +99,7 @@ export default function (router) {
      */
     router.get("/api/Questions/GetQuestions", [
         check("DatasetId").not().isEmpty().isLength({max: 50}).trim().escape(),
+        check("OwnerId").optional({checkFalsy: true}).isEmpty().isLength({max: 50}).trim().escape(),
         check("LabelId").optional({checkFalsy: true}).isLength({max: 50}).trim().escape(),
         check("OnlyOneLabel").optional({checkFalsy: true}).isBoolean().toBoolean(),
         check("Count").optional({checkFalsy: true}).toInt().isInt({max: 20}).toInt()

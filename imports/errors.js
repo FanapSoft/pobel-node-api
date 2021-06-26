@@ -36,6 +36,35 @@ const errors = [
         message: 'Invalid parameters'
     },
 
+    /**
+     * 3200 to 3300 is for userTarget
+     */
+    {
+        code: 3200,
+        message: 'New target should be bigger than previous target'
+    },
+    {
+        code: 3201,
+        message: 'You can not change your target before converting your points to money'
+    },
+    {
+        code: 3202,
+        message: 'Your target ended choose a new target'
+    },
+    {
+        code: 3203,
+        message: 'No target Or target ended'
+    },
+
+    /**
+     * 3300 to 3400 is for datasets
+     */
+    {
+        code: 3300,
+        message: 'Labeling on this dataset has been ended'
+    },
+
+
 ];
 
 export function findCode(code = 1000) {

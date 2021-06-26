@@ -8,6 +8,8 @@ import {handleError} from "../../imports/errors.js";
 import UserTarget from "../../prisma/models/UserTarget.js";
 import Answer from "../../prisma/models/Answer.js";
 import {validationResult} from "express-validator";
+import TargetDefinition from "../../prisma/models/TargetDefinition.js";
+import httpStatus from "http-status";
 
 const userController = {};
 
@@ -24,48 +26,97 @@ userController.activateTarget =  async (req, res) => {
         TargetDefinitionId
     } = req.body;
 
-    let uId = OwnerId
+    let uId = OwnerId ? OwnerId : req.decoded.Id;
     if(req.decoded.Role !== 'admin') {
         uId = req.decoded.Id;
     }
 
     try {
-        const tmpTarget = await UserTarget.client.findMany({
-            where: {
-                OwnerId: uId
-            },
-            orderBy: {
-                CreatedAt: 'desc'
-            },
-            take: 1
-        });
-
-        //TODO: improve condition by new scenario
-        if(!tmpTarget || !tmpTarget.length || (tmpTarget.length && tmpTarget[0].TargetDefinitionId !== TargetDefinitionId)) {
-            const result = await UserTarget.client.create({
-                data: {
-                    TargetDefinition: {
-                        connect: {
-                            Id: TargetDefinitionId
-                        }
-                    },
-                    Owner: {
-                        connect: {
-                            Id: uId
-                        }
-                    }
+        const newTargetDefinition = await TargetDefinition.findById(TargetDefinitionId, 'admin');
+        if(!newTargetDefinition) {
+            return handleError(res, {
+                status: httpStatus.BAD_REQUEST,
+                error: {
+                    code: 3002,
+                    message: 'Invalid target definition'
                 }
             });
         }
 
-        return res.send({success: true});
+        const tmpTargets = await UserTarget.client.findMany({
+            where: {
+                OwnerId: uId,
+                DatasetId: newTargetDefinition.DatasetId
+            },
+            orderBy: {
+                CreatedAt: 'desc'
+            },
+            include: {
+                TargetDefinition: true
+            },
+            take: 1
+        });
+
+        if(!tmpTargets || !tmpTargets.length) {
+            await UserTarget.createTarget(uId, newTargetDefinition.DatasetId, TargetDefinitionId);
+            return res.send({success: true});
+        } else {
+            if (tmpTargets[0].TargetDefinition) {
+                const oldTarget = tmpTargets[0].TargetDefinition;
+                if(oldTarget.Id === newTargetDefinition.Id) {
+                    return res.send({success: true});
+                }
+
+                if(newTargetDefinition.AnswerCount < oldTarget.AnswerCount) {
+                    return handleError(res, {
+                        code: 3200,
+                        status: httpStatus.EXPECTATION_FAILED,
+                    });
+                }
+
+                const userAnswersCount = await Answer.client.count({
+                    where: {
+                        UserId: uId,
+                        DatasetId: oldTarget.DatasetId,
+                        CreditCalculated: false
+                    }
+                });
+
+                if(oldTarget.AnswerCount <= userAnswersCount) {
+                    await UserTarget.client.update({
+                        where: {
+                            Id: tmpTargets[0].Id
+                        },
+                        data: {
+                            TargetEnded: true
+                        }
+                    });
+
+                    return handleError(res, {
+                        status: httpStatus.EXPECTATION_FAILED,
+                        code: 3201,
+                    });
+                }
+
+                await UserTarget.createTarget(uId, newTargetDefinition.DatasetId, TargetDefinitionId);
+                return res.send({success: true});
+            } else {
+                return handleError(res, {
+                    status: httpStatus.EXPECTATION_FAILED,
+                    error: {
+                        code: 1000,
+                        message: 'Target definition not existed'
+                    }
+                });
+            }
+        }
     } catch (error) {
         console.log(error);
         return handleError(res, {});
     }
 }
 
-userController.getCurrentTargetStatus =  async (req, res) => {
+userController.getCurrentTargetStatus = async (req, res) => {
     const {
         UserId,
         DatasetId
@@ -76,36 +127,39 @@ userController.getCurrentTargetStatus =  async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    let uId = UserId ? UserId : req.decoded.Id
+    let uId = UserId ? UserId : req.decoded.Id;
     if(req.decoded.Role !== 'admin') {
         uId = req.decoded.Id;
     }
 
     try {
-        //TODO: count answers and cache them
-        const answersCount = await Answer.client.count({
-            where: {
-                UserId: uId,
-                DatasetId: DatasetId
-            }
-        });
         const userTargets = await UserTarget.client.findMany({
             where: {
-                OwnerId: uId
+                OwnerId: uId,
+                DatasetId: DatasetId
             },
             orderBy: {
                 CreatedAt: 'desc'
             },
             include: {
                 TargetDefinition: true
-            }
+            },
+            take: 1
         });
 
         let targetEnded = false, noTarget = false;
-        if(!userTargets.length || (userTargets.length && !userTargets[0].TargetDefinition)) {
+        if(!userTargets || !userTargets.length) {
             noTarget = true;
-        } else if(userTargets.length && userTargets[0].TargetDefinition.AnswerCount <= answersCount) {
-            targetEnded = true;
+        } else {
+            const currentTarget = userTargets[0].TargetDefinition;
+            // const userAnswersCount = await Answer.client.count({
+            //     where: {
+            //         UserId: uId,
+            //         DatasetId: currentTarget.DatasetId,
+            //         CreditCalculated: false
+            //     }
+            // });
+            targetEnded = currentTarget.TargetEnded === null;
         }
 
         return res.send({noTarget, targetEnded});

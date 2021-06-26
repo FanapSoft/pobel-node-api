@@ -38,6 +38,12 @@
  *         BonusFalse:
  *           type: number
  *           format: float
+ *         BonusSkip:
+ *           type: number
+ *           format: float
+ *         BonusReport:
+ *           type: number
+ *           format: float
  *     TargetDefinitionsPaged:
  *       type: object
  *       properties:

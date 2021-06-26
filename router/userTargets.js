@@ -6,6 +6,7 @@
  *       type: object
  *       required:
  *         - TargetDefinitionId
+ *         - DatasetId
  *         - OwnerId
  *       properties:
  *         Id:
@@ -14,8 +15,14 @@
  *           description: Auto generated unique id
  *         TargetDefinitionId:
  *           type: string
+ *           format: uuid
+ *         DatasetId:
+ *           type: string
+ *           format: uuid
  *         OwnerId:
  *           type: string
+ *           format: uuid
+ *
  *     UserTargetsPaged:
  *       type: object
  *       properties:
@@ -39,36 +46,6 @@ import targetController from "../Controllers/api/UserTargets.js";
 import {check} from "express-validator";
 
 export default function (router) {
-    //router.get("/api/Targets/GetAll", asyncWrapper(targetController.findAll));
-    //router.get("/api/Targets/Get/:id", asyncWrapper(targetController.findOne));
-
-    /**
-     * @swagger
-     * /api/Targets/ActivateTarget:
-     *   post:
-     *     security:
-     *       apiToken: []
-     *     tags:
-     *       - UserTargets
-     *     description: Activate target for a user
-     *     produces:
-     *       - application/json
-     *     requestBody:
-     *       content:
-     *         application/json:
-     *          schema:
-     *            $ref: "#/components/schemas/UserTarget"
-     *     responses:
-     *       200:
-     *         description: Return activation result
-     *         type: object
-     *         content:
-     *           application/json:
-     *             schema:
-     *               content:
-     *
-     */
-    router.post("/api/Targets/ActivateTarget", asyncWrapper(targetController.activateTarget));
     /**
      * @swagger
      * /api/Targets/GetCurrentTargetStatus:
@@ -107,5 +84,34 @@ export default function (router) {
         check('UserId').optional({checkFalsy: true}).isString().isLength({max: 80}).escape()
     ], asyncWrapper(targetController.getCurrentTargetStatus));
 
-    //router.delete("/api/Targets/Delete/:id", asyncWrapper(targetController.delete));
+    /**
+     * @swagger
+     * /api/Targets/ActivateTarget:
+     *   post:
+     *     security:
+     *       apiToken: []
+     *     tags:
+     *       - UserTargets
+     *     description: Activate target for a user
+     *     produces:
+     *       - application/json
+     *     requestBody:
+     *       content:
+     *         application/json:
+     *          schema:
+     *            $ref: "#/components/schemas/UserTarget"
+     *     responses:
+     *       200:
+     *         description: Return activation result
+     *         type: object
+     *         content:
+     *           application/json:
+     *             schema:
+     *               content:
+     *
+     */
+    router.post("/api/Targets/ActivateTarget", [
+        check('TargetDefinitionId').notEmpty().isString().isLength({max: 80}).escape(),
+        check('OwnerId').optional({checkFalsy: true}).isString().isLength({max: 80}).escape()
+    ], asyncWrapper(targetController.activateTarget));
 }

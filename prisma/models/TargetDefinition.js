@@ -6,7 +6,7 @@ class TargetDefinition extends DBModelBase {
         super();
         this.table = 'targetDefinitions';
         this.client = prisma.targetDefinitions;
-        this.modelPublicFields = {Id: true, Type: true, AnswerCount: true, GoldenCount: true, T: true, UMin: true, UMax: true, BonusFalse: true, BonusTrue: true};
+        this.modelPublicFields = {Id: true, Type: true, AnswerCount: true, GoldenCount: true, T: true, UMin: true, UMax: true, BonusFalse: true, BonusTrue: true, BonusSkip: true,BonusReport: true};
     }
 }
 

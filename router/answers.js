@@ -26,6 +26,14 @@
  *           type: string
  *         Answer:
  *           type: int
+ *         AnswerType:
+ *           type: integer
+ *           enum: [0,1,2]
+ *           description: 0.Golden 1.Normal 2.Skip 3.Report
+ *         GoldenType:
+ *           type: integer
+ *           enum: [0,1,2]
+ *           description: 0.Is not golden 1.Positive golden 2.Negative golden
  *         QuestionObject:
  *           type: string
  *         DatasetId:
@@ -63,21 +71,32 @@
  *           nullable: true
  *         DatasetId:
  *           type: string
+ *           required: true
  *         DatasetItemId:
  *           type: string
+ *           required: true
  *         AnswerIndex:
- *           type: int
+ *           type: integer
+ *           required: true
  *         QuestionObject:
- *           type string
+ *           type: string
  *         DurationToAnswerInSeconds:
  *           type: string
+ *         AnswerType:
+ *           type: integer
+ *           enum: [0,1,2,3]
+ *           description:   "0-GOLDEN\n\n  1-NORMAL\n\n  2-SKIP\n\n  3-REPORT"
+ *         GoldenType:
+ *           type: integer
+ *           enum: [0,1,2]
+ *           description:  "0-ISNOTGOLDEN\n\n 1-POSITIVE\n\n 2-NEGATIVE"
  *     SubmitBatchAnswerInput:
  *       type: object
  *       properties:
  *         Answers:
  *           type: array
  *           items:
- *             $ref: #/components/schemas/SubmitAnswerInput
+ *             $ref: "#/components/schemas/SubmitAnswerInput"
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
 import answersController from "../Controllers/api/Answers.js";
@@ -152,14 +171,25 @@ export default function (router) {
      *     description: Submit a list of answers
      *     produces:
      *       - application/json
-     *     requestBody:
-     *       content:
-     *         application/json:
-     *           schema:
-     *             $ref: #/components/schemas/SubmitBatchAnswerInput
+     *           consumes
+     *             - application/json
+     *     parameters:
+     *       - in: body
+     *         schema:
+     *           $ref: "#/components/schemas/SubmitBatchAnswerInput"
      *     responses:
      *       200:
      *         description: Array of inserted answers
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   id:
+     *                     type: string
+     *                     format: uuid
      */
     router.post("/api/Answers/SubmitBatchAnswer", [
         check('answers.*.Ignored').notEmpty().toBoolean(),
@@ -168,9 +198,8 @@ export default function (router) {
         check('answers.*.DatasetItemId').isString().notEmpty(),
         check('answers.*.AnswerIndex').notEmpty().toInt(),
         check('answers.*.QuestionObject').isString().isJSON(),
-        check('answers.*.DurationToAnswerInSeconds').notEmpty().toInt()
+        check('answers.*.DurationToAnswerInSeconds').notEmpty().toInt(),
+        check('answers.*.AnswerType').notEmpty().toInt(),
+        check('answers.*.GoldenType').notEmpty().toInt()
     ], asyncWrapper(answersController.submitBatchAnswer));
-    //router.post("/api/Datasets/create", asyncWrapper(datasetController.create));
-    //router.put("/api/Datasets/Update/:id", asyncWrapper(datasetController.update));
-    //router.delete("/api/Datasets/Delete/:id", asyncWrapper(datasetController.delete));
 }
