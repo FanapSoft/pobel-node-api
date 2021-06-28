@@ -11,46 +11,49 @@ generator clinent {
 }
 
 model User {
-  Id             String         @id @default(uuid())
-  CreatedAt      DateTime       @default(now())
-  UpdatedAt      DateTime?      @updatedAt
-  UserName       String         @unique
-  Email          String?        @unique
+  Id             String                @id @default(uuid())
+  CreatedAt      DateTime              @default(now())
+  UpdatedAt      DateTime?             @updatedAt
+  UserName       String                @unique
+  Email          String?               @unique
   Name           String?
   Surname        String?
-  PodUserId      Int            @unique
+  PodUserId      Int                   @unique
   PodContactId   Int?
   ProfileImage   String?
-  PhoneNumber    String?        @db.VarChar(32)
-  LocalToken     String?        @unique
+  PhoneNumber    String?               @db.VarChar(32)
+  LocalToken     String?               @unique
   TokenExpiresAt DateTime?
   RefreshToken   String?
-  Role           String         @default("user")
+  Role           String                @default("user")
   SSOProfile     Json
   Tokens         Json
   Targets        UserTargets[]
   Transactions   Transactions[]
   AnswerLogs     AnswerLogs[]
-  QuestionLogs   QuestionLogs[]
+  QuestionLogs   QuestionRequestLogs[]
 }
 
 model TargetDefinitions {
-  Id          String        @id @default(uuid())
-  CreatedAt   DateTime      @default(now())
-  UpdatedAt   DateTime?     @updatedAt
-  Type        Int
-  AnswerCount Int
-  GoldenCount Int           @default(0)
-  DatasetId   String
-  Dataset     Datasets      @relation(fields: [DatasetId], references: [Id])
-  T           Float         @db.DoublePrecision
-  UMin        Float         @db.DoublePrecision
-  UMax        Float         @db.DoublePrecision
-  BonusFalse  Float         @default(0) @db.DoublePrecision
-  BonusTrue   Float         @default(0) @db.DoublePrecision
-  BonusSkip   Float         @default(1) @db.DoublePrecision
-  BonusReport Float         @default(1) @db.DoublePrecision
-  UserTargets UserTargets[]
+  Id                 String        @id @default(uuid())
+  CreatedAt          DateTime      @default(now())
+  UpdatedAt          DateTime?     @updatedAt
+  Type               Int
+  AnswerCount        Int
+  GoldenCount        Int           @default(0)
+  DatasetId          String
+  Dataset            Datasets      @relation(fields: [DatasetId], references: [Id])
+  T                  Float         @db.DoublePrecision
+  UMin               Float         @db.DoublePrecision
+  UMax               Float         @db.DoublePrecision
+  BonusFalseNegative Float         @default(0) @db.DoublePrecision
+  BonusFalsePositive Float         @default(0) @db.DoublePrecision
+  BonusTrueNegative  Float         @default(0) @db.DoublePrecision
+  BonusTruePositive  Float         @default(0) @db.DoublePrecision
+  BonusSkip          Float         @default(1) @db.DoublePrecision
+  BonusReport        Float         @default(1) @db.DoublePrecision
+  Deleted            Boolean       @default(false)
+  UserTargets        UserTargets[]
 }
 
 model UserTargets {
@@ -67,25 +70,25 @@ model UserTargets {
 }
 
 model Datasets {
-  Id                       String              @id @default(uuid())
-  CreatedAt                DateTime            @default(now())
-  UpdatedAt                DateTime?           @updatedAt
+  Id                       String                @id @default(uuid())
+  CreatedAt                DateTime              @default(now())
+  UpdatedAt                DateTime?             @updatedAt
   Name                     String?
   Description              String?
   Type                     Int
   LabelingStatus           Int
-  AnswerType               Int                 @default(0)
-  FieldName                String?             @db.VarChar(255) //deprecated
-  IsActive                 Boolean             @default(false)
-  QuestionType             Int                 @default(0)
+  AnswerType               Int                   @default(0)
+  FieldName                String?               @db.VarChar(255) //deprecated
+  IsActive                 Boolean               @default(false)
+  QuestionType             Int                   @default(0)
   QuestionSrc              String?
   QuestionTemplate         String?
   ItemsSourcePath          String?
   ProcessedItemsSourcePath String?
-  AnswerBudgetCountPerUser Int                 @default(0)
-  CorrectGoldenAnswerIndex Int                 @default(0)
-  AnswerReplicationCount   Int                 @default(0)
-  TotalBudget              Decimal             @default(0.0) @db.Decimal(18, 2)
+  AnswerBudgetCountPerUser Int                   @default(0)
+  CorrectGoldenAnswerIndex Int                   @default(0)
+  AnswerReplicationCount   Int                   @default(0)
+  TotalBudget              Decimal               @default(0.0) @db.Decimal(18, 2)
   TargetDefinition         TargetDefinitions[]
   DatasetItems             DatasetItems[]
   Labels                   Labels[]
@@ -93,7 +96,7 @@ model Datasets {
   Transactions             Transactions[]
   AnswerLogs               AnswerLogs[]
   UserTargets              UserTargets[]
-  QuestionLogs             QuestionLogs[]
+  QuestionLogs             QuestionRequestLogs[]
 }
 
 model DatasetItems {
@@ -119,16 +122,16 @@ model DatasetItems {
 }
 
 model Labels {
-  Id               String         @id @default(uuid())
-  CreatedAt        DateTime       @default(now())
-  UpdatedAt        DateTime?      @updatedAt
+  Id               String                @id @default(uuid())
+  CreatedAt        DateTime              @default(now())
+  UpdatedAt        DateTime?             @updatedAt
   Name             String
   DatasetId        String
-  Dataset          Datasets       @relation(fields: [DatasetId], references: [Id])
-  DatasetItems     DatasetItems[] @relation("Label")
-  FinalDatasetItem DatasetItems?  @relation("FinalLabel")
+  Dataset          Datasets              @relation(fields: [DatasetId], references: [Id])
+  DatasetItems     DatasetItems[]        @relation("Label")
+  FinalDatasetItem DatasetItems?         @relation("FinalLabel")
   AnswerLogs       AnswerLogs[]
-  QuestionLogs     QuestionLogs[]
+  QuestionLogs     QuestionRequestLogs[]
 }
 
 //model DatasetItemLabels {
@@ -156,6 +159,8 @@ model AnswerLogs {
   DeterminedLabel           Labels?      @relation(fields: [DeterminedLabelId], references: [Id])
   DurationToAnswerInSeconds BigInt       @default(0)
   CreditCalculated          Boolean      @default(false)
+  AnswerType                Int          @default(1)
+  GoldenType                Int          @default(0)
 }
 
 model AnswerOptions {
@@ -190,7 +195,7 @@ model QuestionRequestLogs {
   DatasetId    String
   Dataset      Datasets @relation(fields: [DatasetId], references: [Id])
   LabelId      String?
-  Label        Labels?   @relation(fields: [LabelId], references: [Id])
+  Label        Labels?  @relation(fields: [LabelId], references: [Id])
   Type         Int
   IsDone       Boolean  @default(false)
   DatasetItems Json

@@ -8,6 +8,12 @@ class Label extends DBModelBase {
         this.client = prisma.labels
         this.modelPublicFields = ["Name", "DatasetId"];
     }
+
+    getCleanLabelName(label) {
+        let processedLabelName = label.Name.split('_');
+        processedLabelName = processedLabelName.slice(1, processedLabelName.length).join(' ').trim();
+        return label.Name.split('_').slice(1, processedLabelName.length).join(' ').trim()
+    }
 }
 
 export default new Label;

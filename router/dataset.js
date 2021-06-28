@@ -31,7 +31,8 @@
  *           type: string
  *         LabelingStatus:
  *           type: integer
- *           enum: [0,1,2,3]
+ *           enum: [1,2,3,4,5]
+ *           description: "1.LABELING_ALLOWED\n\n 2.NO_ITEMS\n\n 3.ITEMS_COMPLETED\n\n 4.LABELING_PAUSED\n\n 5.LABELING_ENDED"
  *         AnswerBudgetCountPerUser:
  *           type: integer
  *         CorrectGoldenAnswerIndex:

@@ -10,6 +10,7 @@ import Answer from "../../prisma/models/Answer.js";
 import {validationResult} from "express-validator";
 import TargetDefinition from "../../prisma/models/TargetDefinition.js";
 import httpStatus from "http-status";
+import Dataset from "../../prisma/models/Dataset.js";
 
 const userController = {};
 
@@ -43,27 +44,34 @@ userController.activateTarget =  async (req, res) => {
             });
         }
 
-        const tmpTargets = await UserTarget.client.findMany({
-            where: {
-                OwnerId: uId,
-                DatasetId: newTargetDefinition.DatasetId
-            },
-            orderBy: {
-                CreatedAt: 'desc'
-            },
-            include: {
-                TargetDefinition: true
-            },
-            take: 1
-        });
+        const ds = await Dataset.findById(newTargetDefinition.DatasetId, 'admin');
 
-        if(!tmpTargets || !tmpTargets.length) {
+        if(ds.Labelingstatus > Dataset.labelingStatuses.LABELING_ALLOWED) {
+            return handleError(res, {status: httpStatus.EXPECTATION_FAILED, error: {code: 3300}});
+        }
+
+        const userTarget = await UserTarget.getUserCurrentTarget(uId, ds.Id);
+        // const tmpTargets = await UserTarget.client.findMany({
+        //     where: {
+        //         OwnerId: uId,
+        //         DatasetId: newTargetDefinition.DatasetId
+        //     },
+        //     orderBy: {
+        //         CreatedAt: 'desc'
+        //     },
+        //     include: {
+        //         TargetDefinition: true
+        //     },
+        //     take: 1
+        // });
+
+        if(!userTarget) {
             await UserTarget.createTarget(uId, newTargetDefinition.DatasetId, TargetDefinitionId);
             return res.send({success: true});
         } else {
-            if (tmpTargets[0].TargetDefinition) {
-                const oldTarget = tmpTargets[0].TargetDefinition;
-                if(oldTarget.Id === newTargetDefinition.Id) {
+            if (userTarget.TargetDefinition) {
+                const oldTargetDafeinition = userTarget.TargetDefinition;
+                if(oldTargetDafeinition.Id === newTargetDefinition.Id) {
                     return res.send({success: true});
                 }
 
@@ -77,15 +85,15 @@ userController.activateTarget =  async (req, res) => {
                 const userAnswersCount = await Answer.client.count({
                     where: {
                         UserId: uId,
-                        DatasetId: oldTarget.DatasetId,
+                        DatasetId: oldTargetDafeinition.DatasetId,
                         CreditCalculated: false
                     }
                 });
 
-                if(oldTarget.AnswerCount <= userAnswersCount) {
+                if(oldTargetDafeinition.AnswerCount <= userAnswersCount && !userTarget.TargetEnded) {
                     await UserTarget.client.update({
                         where: {
-                            Id: tmpTargets[0].Id
+                            Id: userTarget.Id
                         },
                         data: {
                             TargetEnded: true
@@ -98,14 +106,14 @@ userController.activateTarget =  async (req, res) => {
                     });
                 }
 
-                await UserTarget.createTarget(uId, newTargetDefinition.DatasetId, TargetDefinitionId);
+                await UserTarget.createTarget(uId, newTargetDefinition.DatasetId, newTargetDefinition.Id);
                 return res.send({success: true});
             } else {
                 return handleError(res, {
                     status: httpStatus.EXPECTATION_FAILED,
                     error: {
                         code: 1000,
-                        message: 'Target definition not existed'
+                        message: 'Target definition not exists'
                     }
                 });
             }
@@ -133,33 +141,26 @@ userController.getCurrentTargetStatus = async (req, res) => {
     }
 
     try {
-        const userTargets = await UserTarget.client.findMany({
-            where: {
-                OwnerId: uId,
-                DatasetId: DatasetId
-            },
-            orderBy: {
-                CreatedAt: 'desc'
-            },
-            include: {
-                TargetDefinition: true
-            },
-            take: 1
-        });
+        const userTarget = await UserTarget.getUserCurrentTarget(uId, DatasetId);
+        // const userTargets = await UserTarget.client.findMany({
+        //     where: {
+        //         OwnerId: uId,
+        //         DatasetId: DatasetId
+        //     },
+        //     orderBy: {
+        //         CreatedAt: 'desc'
+        //     },
+        //     include: {
+        //         TargetDefinition: true
+        //     },
+        //     take: 1
+        // });
 
         let targetEnded = false, noTarget = false;
-        if(!userTargets || !userTargets.length) {
+        if(!userTarget) {
             noTarget = true;
         } else {
-            const currentTarget = userTargets[0].TargetDefinition;
-            // const userAnswersCount = await Answer.client.count({
-            //     where: {
-            //         UserId: uId,
-            //         DatasetId: currentTarget.DatasetId,
-            //         CreditCalculated: false
-            //     }
-            // });
-            targetEnded = currentTarget.TargetEnded === null;
+            targetEnded = userTarget.TargetEnded;
         }
 
         return res.send({noTarget, targetEnded});

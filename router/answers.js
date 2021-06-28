@@ -28,12 +28,12 @@
  *           type: int
  *         AnswerType:
  *           type: integer
- *           enum: [0,1,2]
- *           description: 0.Golden 1.Normal 2.Skip 3.Report
+ *           enum: [0,1,2,3]
+ *           description:   "0.GOLDEN\n\n  1.NORMAL\n\n  2.SKIP\n\n  3.REPORT"
  *         GoldenType:
  *           type: integer
  *           enum: [0,1,2]
- *           description: 0.Is not golden 1.Positive golden 2.Negative golden
+ *           description: "0.Is not golden\n\n 1.Positive golden\n\n 2.Negative golden"
  *         QuestionObject:
  *           type: string
  *         DatasetId:
@@ -85,11 +85,11 @@
  *         AnswerType:
  *           type: integer
  *           enum: [0,1,2,3]
- *           description:   "0-GOLDEN\n\n  1-NORMAL\n\n  2-SKIP\n\n  3-REPORT"
+ *           description:   "0.GOLDEN\n\n  1.NORMAL\n\n  2.SKIP\n\n  3.REPORT"
  *         GoldenType:
  *           type: integer
  *           enum: [0,1,2]
- *           description:  "0-ISNOTGOLDEN\n\n 1-POSITIVE\n\n 2-NEGATIVE"
+ *           description:  "0.ISNOTGOLDEN\n\n 1.POSITIVE\n\n 2.NEGATIVE"
  *     SubmitBatchAnswerInput:
  *       type: object
  *       properties:

@@ -15,6 +15,7 @@ import questions from "./questions.js";
 
 import { handleError } from "../imports/errors.js";
 import httpStatus from "http-status";
+import credit from "./credit.js";
 
 const ROUTER = express.Router();
 
@@ -88,7 +89,7 @@ datasetItems(ROUTER);
 reports(ROUTER);
 answers(ROUTER);
 questions(ROUTER);
-//
+credit(ROUTER);
 // export { ROUTER };
 export default function (app) {
     app.use(ROUTER);

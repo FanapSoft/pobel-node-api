@@ -4,6 +4,7 @@ import Answer from "../../prisma/models/Answer.js";
 import Dataset from "../../prisma/models/Dataset.js";
 import DatasetItem from "../../prisma/models/DatasetItem.js";
 import QuestionRequestLog from "../../prisma/models/QuestionRequestLog.js";
+import UserTarget from "../../prisma/models/UserTarget.js";
 
 const answersController = {};
 
@@ -91,13 +92,19 @@ answersController.submitBatchAnswer = async (req, res, next) => {
         return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid QuestionId'}});
     }
 
+    const userTarget = await UserTarget.getUserCurrentTarget(question.OwnerId, question.DatasetId);
+    if(!userTarget || userTarget.TargetEnded) {
+        return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3203});
+    }
+
     for(const [index, item] of Answers.entries()) {
         try {
             //let ds = await Dataset.findById(item.DatasetId, req.decoded.Role);
             if (question.DatasetId !== item.DatasetId)
                 return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid dataset: ' + item.DatasetId}});
 
-            if(!question.DatasetItems.includes(item.DatasetItemId)) {
+            let questionItems = question.DatasetItems
+            if(!questionItems.map(item => item.Id).includes(item.DatasetItemId)) {
                 return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'This item does not belongs to current question: ' + item.DatasetItemId}});
             }
 
@@ -130,17 +137,19 @@ answersController.submitBatchAnswer = async (req, res, next) => {
                     GoldenType: goldenType
                 }
             });
-            await DatasetItem.client.update({
-                where: { Id: dsi.Id },
-                data: {
-                    AnswersCount: dsi.AnswersCount + 1
-                }
-            });
+            //We store the negative golden answer but we don't count it in the replication limit
+            if(goldenType !== Answer.goldenTypes.NEGATIVE) {
+                await DatasetItem.client.update({
+                    where: { Id: dsi.Id },
+                    data: {
+                        AnswersCount: dsi.AnswersCount + 1
+                    }
+                });
+            }
 
             storedAnswers.push({
                 id: answer.Id
             });
-
         } catch (error) {
             console.log(error);
             return handleError(res, {});

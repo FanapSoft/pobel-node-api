@@ -15,6 +15,7 @@ class QuestionRequestLog extends DBModelBase {
             GRID: 2
         };
     }
+
 }
 
 export default new QuestionRequestLog;

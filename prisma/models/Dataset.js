@@ -12,6 +12,14 @@ class Dataset extends DBModelBase {
         this.table = 'datasets';
         this.client = prisma.datasets
         this.modelPublicFields = {Id: true, Name: true, Description: true, Type: true, AnswerType: true, IsActive: true,  LabelingStatus: true};
+        this.labelingStatuses = {
+            LABELING_ALLOWED: 1,
+            NO_ITEMS: 2,
+            ITEMS_COMPLETED: 3,
+            LABELING_PAUSED: 4,
+            LABELING_ENDED: 5
+        };
+
     }
 }
 
