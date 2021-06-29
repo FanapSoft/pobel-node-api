@@ -25,47 +25,45 @@ describe('Answers', () => {
 
     it('Submit batch answer', (done) => {
         chai.request(server)
-            .post('/api/Answers/SubmitBatchAnswer')
+            .post('/api/Targets/ActivateTarget')
             .set('token', 'test')
             .set('content-type', "application/x-www-form-urlencoded")
             .send({
-                Answers: [
-                    {
-                        Ignored: true,
-                        IgnoreReason: 'No reason',
-                        DatasetId: "10B16B1A-5945-422F-C83B-08D8695976C6",
-                        DatasetItemId: "7C7A0255-18D5-4811-40A4-08D86959A6E2",
-                        AnswerIndex: 0,
-                        QuestionObject: {},
-                        DurationToAnswerInSeconds: 2
-                    },
-                    {
-                        Ignored: true,
-                        IgnoreReason: 'No reason',
-                        DatasetId: "10B16B1A-5945-422F-C83B-08D8695976C6",
-                        DatasetItemId: "7C7A0255-18D5-4811-40A4-08D86959A6E2",
-                        AnswerIndex: 0,
-                        QuestionObject: {},
-                        DurationToAnswerInSeconds: 4
-                    },
-                    {
-                        Ignored: true,
-                        IgnoreReason: 'No reason',
-                        DatasetId: "10B16B1A-5945-422F-C83B-08D8695976C6",
-                        DatasetItemId: "7C7A0255-18D5-4811-40A4-08D86959A6E2",
-                        AnswerIndex: 0,
-                        QuestionObject: {},
-                        DurationToAnswerInSeconds: 6
-                    },
-                ]
+                TargetDefinitionId: "244cc335-521c-465b-b18c-ffa414b7caf6",
             })
             .end((err, res) => {
-                if(err)
-                    console.log(err);
-
-                res.should.have.status(200);
-                res.body.should.be.a('array');
-                done();
+                chai.request(server)
+                    .get('/api/Questions/GetQuestions?DatasetId=10B16B1A-5945-422F-C83B-08D8695976C6&OnlyOneLabel=true')
+                    .set('token', 'test')
+                    .end((err, res) => {
+                        const answers = [];
+                        res.body.forEach((item, index) => {
+                            answers.push({
+                                Ignored: true,
+                                IgnoreReason: 'No reason',
+                                DatasetId: item.Label.DatasetId,//"10B16B1A-5945-422F-C83B-08D8695976C6",
+                                DatasetItemId: item.DatasetItemId,//"7C7A0255-18D5-4811-40A4-08D86959A6E2",
+                                AnswerIndex: index % 2 === 0 ? 0 : 1,
+                                QuestionObject: {},
+                                DurationToAnswerInSeconds: 2
+                            });
+                        });
+                        chai.request(server)
+                            .post('/api/Answers/SubmitBatchAnswer')
+                            .set('token', 'test')
+                            .set('content-type', "application/x-www-form-urlencoded")
+                            .send({
+                                QuestionId: res.body[0].QuestionId,
+                                Answers: answers
+                            })
+                            .end((err, res) => {
+                                if (err)
+                                    console.log(err);
+                                res.should.have.status(200);
+                                res.body.should.be.a('array');
+                                done();
+                            });
+                    });
             });
     });
     it('Stats', (done) => {

@@ -46,8 +46,11 @@ describe('TargetDefinitions', () => {
                 UMax: 2.1,
                 AnswerCount: 0,
                 GoldenCount: 0,
-                BonusFalse: 1.1,
-                BonusTrue: 2.2
+                BonusFalsePositive: 1.1,
+                BonusTruePositive: 2.2,
+                BonusFalseNegative: 1.1,
+                BonusTrueNegative: 2.2,
+
             })
             .end((err, res) => {
                 if(err) {

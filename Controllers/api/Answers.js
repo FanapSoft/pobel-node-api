@@ -5,6 +5,7 @@ import Dataset from "../../prisma/models/Dataset.js";
 import DatasetItem from "../../prisma/models/DatasetItem.js";
 import QuestionRequestLog from "../../prisma/models/QuestionRequestLog.js";
 import UserTarget from "../../prisma/models/UserTarget.js";
+import {validationResult} from "express-validator";
 
 const answersController = {};
 
@@ -16,7 +17,7 @@ answersController.findAll = async (req, res) => {
         UserId,
         From,
         To,
-        Limit = 10,
+        Limit = process.env.API_PAGED_RESULTS_DEFAULT_LIMIT,
         Skip = 0
     } = req.query;
 
@@ -85,26 +86,29 @@ answersController.submitBatchAnswer = async (req, res, next) => {
         return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid Answers array'}});
     }
 
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
     let storedAnswers = [], question;
 
-    question = QuestionRequestLog.findById(QuestionId, 'admin');
+    question = await QuestionRequestLog.findById(QuestionId, 'admin');
     if(!question) {
         return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid QuestionId'}});
     }
-
     const userTarget = await UserTarget.getUserCurrentTarget(question.OwnerId, question.DatasetId);
     if(!userTarget || userTarget.TargetEnded) {
         return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3203});
     }
-
     for(const [index, item] of Answers.entries()) {
         try {
             //let ds = await Dataset.findById(item.DatasetId, req.decoded.Role);
             if (question.DatasetId !== item.DatasetId)
                 return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid dataset: ' + item.DatasetId}});
 
-            let questionItems = question.DatasetItems
-            if(!questionItems.map(item => item.Id).includes(item.DatasetItemId)) {
+            let questionItems = question.DatasetItems;
+            if(!questionItems.map(item => item.id).includes(item.DatasetItemId)) {
                 return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'This item does not belongs to current question: ' + item.DatasetItemId}});
             }
 
@@ -122,7 +126,6 @@ answersController.submitBatchAnswer = async (req, res, next) => {
                 answerType = Answer.answerTypes.GOLDEN;
                 goldenType = Answer.goldenTypes.NEGATIVE;
             }
-
             let answer = await Answer.client.create({
                 data: {
                     UserId: req.decoded.Id,

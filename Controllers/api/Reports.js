@@ -9,7 +9,6 @@ import moment from 'jalali-moment'
 
 const reportController = {};
 
-
 reportController.answersCountTrend = async (req, res) => {
     let {
         UserId,
@@ -34,7 +33,7 @@ reportController.answersCountTrend = async (req, res) => {
    }
    const range = dif.to.diff(dif.from, 'days');
     if(range > 30 || range < 0) {
-        return handleError(res, {error: {code: 3002, message: 'Invalid from and(or) to dates'}});
+        return handleError(res, {error: {code: 3002, message: 'Invalid from and(or) to dates, Invalid range'}});
     }
 
     let userIdString = '', datasetIdString = '';
@@ -69,7 +68,7 @@ reportController.scoreboard = async (req, res) => {
         From,
         DatasetId,
         Skip = 0,
-        Limit = 10
+        Limit = process.env.API_PAGED_RESULTS_DEFAULT_LIMIT,
     } = req.query;
 
     const errors = validationResult(req);

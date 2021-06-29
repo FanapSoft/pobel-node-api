@@ -13,7 +13,7 @@ datasetController.findAll = async (req, res) => {
         Name,
         Description,
         IsActive,
-        Limit = 10,
+        Limit = process.env.API_PAGED_RESULTS_DEFAULT_LIMIT,
         Skip = 0
     } = req.query;
 
@@ -49,8 +49,6 @@ datasetController.findAll = async (req, res) => {
     }
 };
 
-
-// Get User By ID
 datasetController.findOne = async (req, res) => {
     const {
         id
@@ -70,7 +68,6 @@ datasetController.findOne = async (req, res) => {
     }
 };
 
-// Create Target
 datasetController.create = async (req, res, next) => {
     const {
         Name,
@@ -107,7 +104,6 @@ datasetController.create = async (req, res, next) => {
     }
 };
 
-// Update User By ID
 datasetController.update = async (req, res) => {
     const {
         id
@@ -140,8 +136,6 @@ datasetController.update = async (req, res) => {
     }
 };
 
-
-// Delete User By ID
 datasetController.delete = async (req, res) => {
     if(!acl.currentUserCan(req.decoded, null, 'delete')) {
         return handleError(res, {code: 2004});

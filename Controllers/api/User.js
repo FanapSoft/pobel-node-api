@@ -12,7 +12,7 @@ userController.findAll = async (req, res) => {
         Name,
         UserName,
         IsActive,
-        Limit = 10,
+        Limit = process.env.API_PAGED_RESULTS_DEFAULT_LIMIT,
         Skip = 0
     } = req.query;
 

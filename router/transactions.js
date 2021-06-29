@@ -2,15 +2,9 @@
  * @swagger
  *  components:
  *   schemas:
- *     Answer:
+ *     Transaction:
  *       type: object
  *       required:
- *         - UserId
- *         - Ignored
- *         - Answer
- *         - DatasetId
- *         - DatasetItemId
- *         - DurationToAnswerInSeconds
  *       properties:
  *         Id:
  *           type: string
@@ -18,35 +12,21 @@
  *           description: Auto generated unique id
  *         CreatedAt:
  *           type: datetime
- *         UserId:
+ *         UpdatedAt:
  *           type: string
- *         Ignored:
+ *         OwnerId:
  *           type: boolean
- *         IgnoreReason:
+ *         DebitAmount:
  *           type: string
- *         Answer:
- *           type: int
- *         AnswerType:
- *           type: integer
- *           enum: [0,1,2,3]
- *           description:   "0.GOLDEN\n\n  1.NORMAL\n\n  2.SKIP\n\n  3.REPORT"
- *         GoldenType:
- *           type: integer
- *           enum: [0,1,2]
- *           description: "0.Is not golden\n\n 1.Positive golden\n\n 2.Negative golden"
- *         QuestionObject:
+ *         CreditAmount:
  *           type: string
- *         DatasetId:
+ *         Reason:
  *           type: string
- *         DatasetItemId:
+ *         ReasonDescription:
  *           type: string
- *         DeterminedLabelId:
+ *         ReferenceDatasetId:
  *           type: string
- *         DurationToAnswerInSeconds:
- *           type: int
- *         CreditCalculated:
- *           type: boolean
- *     AnswersPaged:
+ *     TransactionsPaged:
  *       type: object
  *       properties:
  *         totalCount:
@@ -54,49 +34,8 @@
  *         items:
  *           type: array
  *           items:
- *             $ref: "#/components/schemas/Answer"
+ *             $ref: "#/components/schemas/Transaction"
  *           nullable: true
- *     AnswersStats:
- *       type: object
- *       properties:
- *         totalCount:
- *           type: integer
- *     SubmitAnswerInput:
- *       type: object
- *       properties:
- *         Ignored:
- *           type: boolean
- *         IgnoreReason:
- *           type: string
- *           nullable: true
- *         DatasetId:
- *           type: string
- *           required: true
- *         DatasetItemId:
- *           type: string
- *           required: true
- *         AnswerIndex:
- *           type: integer
- *           required: true
- *         QuestionObject:
- *           type: string
- *         DurationToAnswerInSeconds:
- *           type: string
- *         AnswerType:
- *           type: integer
- *           enum: [0,1,2,3]
- *           description:   "0.GOLDEN\n\n  1.NORMAL\n\n  2.SKIP\n\n  3.REPORT"
- *         GoldenType:
- *           type: integer
- *           enum: [0,1,2]
- *           description:  "0.ISNOTGOLDEN\n\n 1.POSITIVE\n\n 2.NEGATIVE"
- *     SubmitBatchAnswerInput:
- *       type: object
- *       properties:
- *         Answers:
- *           type: array
- *           items:
- *             $ref: "#/components/schemas/SubmitAnswerInput"
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
 import answersController from "../Controllers/api/Answers.js";
@@ -113,15 +52,17 @@ export default function (router) {
      *     produces:
      *       - application/json
      *     parameters:
-     *       - name: IncludeQuestion
+     *       - name: ReferenceDatasetId
      *         in: query
-     *       - name: DatasetId
+     *       - name: OwnerId
      *         in: query
-     *       - name: UserId
+     *       - name: CreditMin
      *         in: query
-     *       - name: From
+     *       - name: CreditMax
      *         in: query
-     *       - name: To
+     *       - name: DebitMin
+     *         in: query
+     *       - name: DebitMax
      *         in: query
      *       - name: Skip
      *         in: query
@@ -134,14 +75,12 @@ export default function (router) {
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: "#/components/schemas/AnswersPaged"
+     *               $ref: "#/components/schemas/TransactionsPaged"
      *
      */
     router.get("/api/Answers/GetAll", [
         check('DatasetId').optional({checkFalsy: true}).isLength({max: 50}).escape(),
-        check('UserId').optional({checkFalsy: true}).isLength({max: 50}).escape(),
-        check('From').optional({checkFalsy: true}).matches(/^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$/),
-        check('To').optional({checkFalsy: true}).matches(/^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$/),
+        check('OwnerId').optional({checkFalsy: true}).isLength({max: 50}).escape(),
         check('Skip').optional({checkFalsy: true}).isNumeric().toInt(),
         check('Limit').optional({checkFalsy: true}).isNumeric().toInt(),
     ], asyncWrapper(answersController.findAll));

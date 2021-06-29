@@ -10,7 +10,7 @@ const targetController = {};
 targetController.findAll = async (req, res) => {
     const {
         DatasetId,
-        Limit = 10,
+        Limit = process.env.API_PAGED_RESULTS_DEFAULT_LIMIT,
         Skip = 0
     } = req.query;
 
@@ -65,8 +65,10 @@ targetController.create = async (req, res, next) => {
         Type,
         AnswerCount,
         GoldenCount,
-        BonusFalse,
-        BonusTrue
+        BonusFalsePositive,
+        BonusTruePositive,
+        BonusFalseNegative,
+        BonusTrueNegative
     } = req.body;
 
     try {
@@ -84,8 +86,10 @@ targetController.create = async (req, res, next) => {
                 Type,
                 AnswerCount,
                 GoldenCount,
-                BonusFalse,
-                BonusTrue
+                BonusFalsePositive,
+                BonusTruePositive,
+                BonusFalseNegative,
+                BonusTrueNegative
             }
         });
 
@@ -115,7 +119,7 @@ targetController.update = async (req, res) => {
             return handleError(res, {code: 2004, status: httpStatus.FORBIDDEN});
         }
 
-        const editableParams = ["UMin", "UMax", "T", "Type", "BonusFalse", "BonusTrue", "AnswerCount", "GoldenCount"];
+        const editableParams = ["UMin", "UMax", "T", "Type", 'BonusFalsePositive', 'BonusTruePositive','BonusFalseNegative', 'BonusTrueNegative', "AnswerCount", "GoldenCount"];
         const params = {};
         editableParams.forEach(item => {
             if(req.body[item] !== null) {

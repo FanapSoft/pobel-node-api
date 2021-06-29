@@ -12,7 +12,6 @@ import DatasetItem from "../../prisma/models/DatasetItem.js";
 
 const questionsController = {};
 
-// Get All Answers
 questionsController.getQuestions = async (req, res) => {
     let {
         DatasetId,

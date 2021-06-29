@@ -8,24 +8,36 @@ import Transaction from "../../prisma/models/Transaction.js";
 
 const transactionController = {};
 
-// Get All Users
 transactionController.findAll = async (req, res) => {
     const {
-        Limit = 10,
+        CreditMin,
+        CreditMax,
+        DebitMin,
+        DebitMax,
+        OwnerId,
+        ReferenceDatasetId,
+        Limit = process.env.API_PAGED_RESULTS_DEFAULT_LIMIT,
         Skip = 0
     } = req.query;
 
+    let uId = OwnerId ? OwnerId : null;
+    if(req.decoded.Role !== 'admin' && uId) {
+        uId = req.decoded.Id
+    }
+
     let where = {};
-    if(Name)
-        where.Name = {
-            contains: Name
-        };
-    if(IsActive !== null && IsActive !== undefined)
-        where.IsActive = IsActive;
-    if(Description)
-        where.Description = {
-            contains: Description
-        };
+    if(uId)
+        where.OwnerId = uId;
+    if(ReferenceDatasetId)
+        where.ReferenceDatasetId = ReferenceDatasetId
+    if(CreditMax)
+        where.CreditAmount = {lte: CreditMax}
+    if(CreditMin)
+        where.CreditAmount = {gte: CreditMax}
+    if(DebitMax)
+        where.DebitAmount = {lte: DebitMax}
+    if(DebitMin)
+        where.DebitAmount = {gte: DebitMin}
 
     try {
         let items = await Transaction.client.findMany({
@@ -47,114 +59,19 @@ transactionController.findAll = async (req, res) => {
     }
 };
 
-
-// Get User By ID
 transactionController.findOne = async (req, res) => {
     const {
         id
     } = req.params;
 
     try {
-        let dataset = await Dataset.findById(id, req.decoded.Role);
+        let trans = await Transaction.findById(id, req.decoded.Role);
 
-        if (!dataset) {
+        if (!trans) {
             return handleError(res, {code: 3002, status: httpStatus.BAD_REQUEST});
         }
 
-        return res.send(dataset);
-    } catch (error) {
-        console.log(error);
-        return handleError(res, {});
-    }
-};
-
-// Create Target
-transactionController.create = async (req, res, next) => {
-    const {
-        Name,
-        Description,
-        Type,
-        AnswerType,
-        IsActive,
-        LabelingStatus,
-        AnswerReplicationCount,
-        AnswerBudgetCountPerUser
-    } = req.body;
-    try {
-        let dataset = await Dataset.client.create({
-            data: {
-                Name,
-                Description,
-                Type: JSON.parse(Type),
-                AnswerType: JSON.parse(AnswerType),
-                IsActive: JSON.parse(IsActive),
-                LabelingStatus: JSON.parse(LabelingStatus),
-                AnswerReplicationCount: JSON.parse(AnswerReplicationCount),
-                AnswerBudgetCountPerUser: JSON.parse(AnswerBudgetCountPerUser)
-            }
-        });
-
-        if (!dataset) {
-            return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
-        }
-
-        return res.send(dataset);
-    } catch (error) {
-        console.log(error);
-        return handleError(res, {});
-    }
-};
-
-// Update User By ID
-transactionController.update = async (req, res) => {
-    const {
-        id
-    } = req.params;
-
-    try {
-        let dataset = await Dataset.findById(id)
-
-        if (!dataset)
-            return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
-
-        const editableParams = [
-            "Name", "Description", "Type", "AnswerType", "IsActive", "LabelingStatus",
-            "AnswerReplicationCount", "AnswerBudgetCountPerUser"
-        ];
-        const params = {};
-        editableParams.forEach(item => {
-            if(req.body[item] !== undefined) {
-                params[item] = req.body[item]
-            }
-        });
-        const result = await Dataset.client.update({
-            where: { Id: dataset.Id },
-            data: params
-        });
-        return res.send(result);
-    } catch (error) {
-        console.log(error);
-        return handleError(res, {});
-    }
-};
-
-
-// Delete User By ID
-transactionController.delete = async (req, res) => {
-    if(!acl.currentUserCan(req.decoded, null, 'delete')) {
-        return handleError(res, {code: 2004});
-    }
-    const {
-        id
-    } = req.params;
-
-    if (!id)
-        return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
-
-    try {
-        let dataset = await Dataset.client.delete({where: { Id: id }});
-
-        return res.send(dataset);
+        return res.send(trans);
     } catch (error) {
         console.log(error);
         return handleError(res, {});

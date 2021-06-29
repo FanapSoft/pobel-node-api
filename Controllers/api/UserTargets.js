@@ -1,9 +1,3 @@
-// import bcrypt from "bcrypt";
-
-// import jwt from "jsonwebtoken";
-// import prisma from "../../prisma/prisma.module.js";
-// import httpStatus from "http-status";
-// import acl from "../../imports/acl.js";
 import {handleError} from "../../imports/errors.js";
 import UserTarget from "../../prisma/models/UserTarget.js";
 import Answer from "../../prisma/models/Answer.js";
@@ -75,7 +69,7 @@ userController.activateTarget =  async (req, res) => {
                     return res.send({success: true});
                 }
 
-                if(newTargetDefinition.AnswerCount < oldTarget.AnswerCount) {
+                if(newTargetDefinition.AnswerCount < oldTargetDafeinition.AnswerCount) {
                     return handleError(res, {
                         code: 3200,
                         status: httpStatus.EXPECTATION_FAILED,
@@ -142,20 +136,6 @@ userController.getCurrentTargetStatus = async (req, res) => {
 
     try {
         const userTarget = await UserTarget.getUserCurrentTarget(uId, DatasetId);
-        // const userTargets = await UserTarget.client.findMany({
-        //     where: {
-        //         OwnerId: uId,
-        //         DatasetId: DatasetId
-        //     },
-        //     orderBy: {
-        //         CreatedAt: 'desc'
-        //     },
-        //     include: {
-        //         TargetDefinition: true
-        //     },
-        //     take: 1
-        // });
-
         let targetEnded = false, noTarget = false;
         if(!userTarget) {
             noTarget = true;
@@ -169,6 +149,5 @@ userController.getCurrentTargetStatus = async (req, res) => {
         return handleError(res, {});
     }
 }
-
 
 export default userController;

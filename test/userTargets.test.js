@@ -16,8 +16,8 @@ describe('UserTargets', () => {
             .set('token', 'test')
             .set('content-type', "application/x-www-form-urlencoded")
             .send({
-                TargetDefinitionId: '81e1e92e-0d8f-4261-8e5f-abdd728def2c',
-                OwnerId: '027d23fb-f1e5-4dc0-8184-7c29dfaffaf4'
+                TargetDefinitionId: "244cc335-521c-465b-b18c-ffa414b7caf6",
+                //OwnerId: '027d23fb-f1e5-4dc0-8184-7c29dfaffaf4'
             })
             .end((err, res) => {
                 if(err)

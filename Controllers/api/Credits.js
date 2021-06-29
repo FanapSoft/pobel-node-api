@@ -9,7 +9,6 @@ import Transaction from "../../prisma/models/Transaction.js";
 
 const creditsController = {};
 
-// Get All Answers
 creditsController.getCredit = async (req, res) => {
     const {
         DatasetId,
@@ -51,7 +50,7 @@ creditsController.getCredit = async (req, res) => {
         return handleError(res, {});
     }
 };
-// Get All Answers
+
 creditsController.collectCredit = async (req, res) => {
     const {
         DatasetId,
@@ -141,6 +140,5 @@ creditsController.collectCredit = async (req, res) => {
         return handleError(res, {});
     }
 };
-
 
 export default creditsController;

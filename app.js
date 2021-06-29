@@ -1,9 +1,9 @@
 import express from "express";
-// import bodyParser from "body-parser";
-// import logger from 'morgan'
 import methodOverride from 'method-override';
 import session from  'express-session';
 import path from 'path';
+import dotenv from 'dotenv';
+dotenv.config();
 
 import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -13,7 +13,6 @@ const require = createRequire(import.meta.url);
 
 import testRoutes from './router/index.test.js'
 import realRoutes from './router/index.js'
-
 const routes = process.env.node_env === 'test' ? testRoutes : realRoutes;
 
 // import fs from 'fs'
@@ -45,23 +44,21 @@ const options = {
       }
     },
     host: `localhost:8080`,
-    basePath: '/',
-    // servers: [
-    //   {
-    //     url: "http://localhost:8080/",
-    //   },
-    // ],
+    basePath: '/'
   },
   apis: ['./router/*.js'],
 };
 
-const openapiSpecification = swaggerJsdoc(options);
+if(['development', 'test'].includes(process.env.NODE_ENV)) {
+  const openapiSpecification = swaggerJsdoc(options);
 
-app.use(
-    '/api-docs',
-    swaggerUi.serve,
-    swaggerUi.setup(openapiSpecification, { explorer: true })
-);
+  app.use(
+      '/api-docs',
+      swaggerUi.serve,
+      swaggerUi.setup(openapiSpecification, { explorer: true })
+  );
+}
+
 //let accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
 
 app.use(errorHandler());
