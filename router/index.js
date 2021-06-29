@@ -16,7 +16,8 @@ import User from "../prisma/models/User.js";
 import { handleError } from "../imports/errors.js";
 import httpStatus from "http-status";
 import credit from "./credit.js";
-
+import transactions from "./transactions.js";
+import files from "./files.js";
 
 const ROUTER = express.Router();
 
@@ -79,9 +80,10 @@ datasetItems(ROUTER);
 reports(ROUTER);
 answers(ROUTER);
 questions(ROUTER);
-credit(ROUTER)
-//
-// export { ROUTER };
+credit(ROUTER);
+transactions(ROUTER);
+files(ROUTER);
+
 export default function (app) {
     app.use(ROUTER);
 }

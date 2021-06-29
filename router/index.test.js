@@ -11,11 +11,11 @@ import reports from "./reports.js";
 import answers from "./answers.js";
 import questions from "./questions.js";
 
-// import User from "../prisma/models/User.js";
-
 import { handleError } from "../imports/errors.js";
 import httpStatus from "http-status";
 import credit from "./credit.js";
+import transactions from "./transactions.js";
+import files from "./files.js";
 
 const ROUTER = express.Router();
 
@@ -90,7 +90,9 @@ reports(ROUTER);
 answers(ROUTER);
 questions(ROUTER);
 credit(ROUTER);
-// export { ROUTER };
+transactions(ROUTER)
+files(ROUTER);
+
 export default function (app) {
     app.use(ROUTER);
 }
