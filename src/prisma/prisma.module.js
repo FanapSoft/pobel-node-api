@@ -1,4 +1,5 @@
-import p from '@prisma/client';
+// import p from '@prisma/client';
+const p = require('@prisma/client')
 import TargetDefinitionsMiddleware from "./middlewares/TargetDefinitionsMiddleware.js";
 
 const { PrismaClient } = p;

@@ -1,3 +1,6 @@
+import "core-js/stable";
+import "regenerator-runtime/runtime";
+
 import express from "express";
 import methodOverride from 'method-override';
 import session from  'express-session';
@@ -6,13 +9,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import { fileURLToPath } from 'url';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+// import { createRequire } from 'module';
+// const require = createRequire(import.meta.url);
 
 import testRoutes from './router/index.test.js'
-import realRoutes from './router/index.js'
+import realRoutes from './router'
 const routes = process.env.node_env === 'test' ? testRoutes : realRoutes;
 
 // import fs from 'fs'
@@ -46,7 +49,7 @@ const options = {
     host: `localhost:8080`,
     basePath: '/'
   },
-  apis: ['./router/*.js'],
+  apis: ['./src/router/*.js'],
 };
 
 if(['development', 'test'].includes(process.env.NODE_ENV)) {

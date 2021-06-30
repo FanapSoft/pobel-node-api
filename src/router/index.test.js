@@ -21,7 +21,7 @@ const ROUTER = express.Router();
 
 acl.config({
     filename: 'nacl.json',
-    path: 'config',
+    path: 'src/config',
     baseUrl: '/api',
     denyCallback: (res) => {
         return handleError(res, {code: 2004, status: httpStatus.FORBIDDEN})
