@@ -1,6 +1,6 @@
 
 import {asyncWrapper} from "../utils/asyncWrapper.js";
-import filesController from "../Controllers/api/Files.js";
+import filesController from "../controllers/api/Files.js";
 import {body, check, validationResult} from 'express-validator';
 
 export default function (router) {

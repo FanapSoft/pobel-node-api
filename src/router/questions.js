@@ -48,7 +48,7 @@
  *           description: 0.sentiment, 1.linear, 2.grid
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
-import questionsController from "../Controllers/api/Questions.js";
+import questionsController from "../controllers/api/Questions.js";
 import {check} from "express-validator";
 
 export default function (router) {

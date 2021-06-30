@@ -42,7 +42,7 @@
  *           type: boolean
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
-import targetController from "../Controllers/api/UserTargets.js";
+import targetController from "../controllers/api/UserTargets.js";
 import {check} from "express-validator";
 
 export default function (router) {

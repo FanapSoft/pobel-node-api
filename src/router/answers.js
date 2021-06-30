@@ -99,7 +99,7 @@
  *             $ref: "#/components/schemas/SubmitAnswerInput"
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
-import answersController from "../Controllers/api/Answers.js";
+import answersController from "../controllers/api/Answers.js";
 import {body, check, validationResult} from 'express-validator';
 
 export default function (router) {

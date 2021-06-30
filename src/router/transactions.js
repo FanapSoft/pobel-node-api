@@ -43,7 +43,7 @@
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
 import {body, check, validationResult} from 'express-validator';
-import transactionsController from "../Controllers/api/Transactions.js";
+import transactionsController from "../controllers/api/Transactions.js";
 
 export default function (router) {
     /**

@@ -40,7 +40,7 @@
  *             $ref: "#/components/schemas/User"
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
-import userController from "../Controllers/api/User.js";
+import userController from "../controllers/api/User.js";
 import {check, validationResult} from 'express-validator';
 
 export default function (router) {

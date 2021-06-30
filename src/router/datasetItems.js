@@ -56,7 +56,7 @@
  *
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
-import datasetItemsController from "../Controllers/api/DatasetItems.js";
+import datasetItemsController from "../controllers/api/DatasetItems.js";
 
 export default function (router) {
     /**

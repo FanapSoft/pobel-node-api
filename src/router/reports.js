@@ -35,7 +35,7 @@
 
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
-import reportsController from "../Controllers/api/Reports.js";
+import reportsController from "../controllers/api/Reports.js";
 import {check} from "express-validator";
 
 export default function (router) {

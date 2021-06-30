@@ -107,7 +107,7 @@
  *
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
-import datasetController from "../Controllers/api/Datasets.js";
+import datasetController from "../controllers/api/Datasets.js";
 import {body, check} from 'express-validator';
 
 export default function (router) {

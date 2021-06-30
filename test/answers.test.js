@@ -5,7 +5,6 @@ process.env.NODE_ENV = 'test';
 import chai from 'chai';
 import chaiHttp  from 'chai-http';
 import server from '../src/app.js';
-// import { expect } from "chai";
 
 let should = chai.should();
 chai.use(chaiHttp);

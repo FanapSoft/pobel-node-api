@@ -56,7 +56,7 @@
  *
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
-import targetController from "../Controllers/api/TargetDefinitions.js";
+import targetController from "../controllers/api/TargetDefinitions.js";
 import {body, check} from "express-validator";
 
 export default function (router) {

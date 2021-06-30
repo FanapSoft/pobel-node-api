@@ -10,7 +10,7 @@
  *           type: integer
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
-import creditController from "../Controllers/api/Credits.js";
+import creditController from "../controllers/api/Credits.js";
 import {check, validationResult} from 'express-validator';
 
 export default function (router) {
