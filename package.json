@@ -9,7 +9,6 @@
     "build1": "cross-env NODE_ENV=production babel src --copy-files --out-dir dist",
     "serve1": "node dist/app.js",
     "format": "prettier --write \"./**/*.js\"",
-
     "dev": "cross-env NODE_ENV=development npm-run-all server ",
     "prod": "npm-run-all clean build1 serve1",
     "test": "cross-env NODE_ENV=test mocha --experimental-json-modules -r @babel/register --timeout 10000 --debug-brk"
