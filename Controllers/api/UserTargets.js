@@ -8,13 +8,6 @@ import Dataset from "../../prisma/models/Dataset.js";
 
 const userController = {};
 
-/**
- *
- * @param OwnerId
- * @param TargetDefinitionId
- * @return {"targetEnded": true,"noTarget": true}
- * @constructor
- */
 userController.activateTarget =  async (req, res) => {
     const {
         OwnerId,
@@ -45,19 +38,6 @@ userController.activateTarget =  async (req, res) => {
         }
 
         const userTarget = await UserTarget.getUserCurrentTarget(uId, ds.Id);
-        // const tmpTargets = await UserTarget.client.findMany({
-        //     where: {
-        //         OwnerId: uId,
-        //         DatasetId: newTargetDefinition.DatasetId
-        //     },
-        //     orderBy: {
-        //         CreatedAt: 'desc'
-        //     },
-        //     include: {
-        //         TargetDefinition: true
-        //     },
-        //     take: 1
-        // });
 
         if(!userTarget) {
             await UserTarget.createTarget(uId, newTargetDefinition.DatasetId, TargetDefinitionId);

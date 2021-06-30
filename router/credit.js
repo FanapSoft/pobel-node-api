@@ -6,13 +6,7 @@
  *       type: object
  *       required:
  *       properties:
- *         Credit:
- *           type: integer
- *         Correct:
- *           type: integer
- *         Incorrect:
- *           type: integer
- *         Middle:
+ *         credit:
  *           type: integer
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
@@ -48,4 +42,33 @@ export default function (router) {
         check("DatasetId").not().isEmpty().isLength({max: 50}).trim().escape(),
         check("UserId").not().isEmpty().isLength({max: 50}).trim().escape(),
     ],asyncWrapper(creditController.getCredit));
+
+        /**
+     * @swagger
+     * /api/Credit/CollectCredit:
+     *   get:
+     *     tags:
+     *       - Credit
+     *     description: Send dataset credit to POBEL profile
+     *     produces:
+     *       - application/json
+     *     parameters:
+     *       - name: UserId
+     *         in: query
+     *       - name: DatasetId
+     *     responses:
+     *       200:
+     *         type: object
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: "#/components/schemas/Credit"
+     *
+     */
+    router.get("/api/Credit/GetCredit", [
+        check("DatasetId").not().isEmpty().isLength({max: 50}).trim().escape(),
+        check("UserId").not().isEmpty().isLength({max: 50}).trim().escape(),
+    ], asyncWrapper(creditController.collectCredit));
+
+
 }

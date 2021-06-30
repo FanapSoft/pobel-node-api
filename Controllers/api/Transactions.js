@@ -6,9 +6,9 @@ import Dataset from "../../prisma/models/Dataset.js";
 import {body} from "express-validator";
 import Transaction from "../../prisma/models/Transaction.js";
 
-const transactionController = {};
+const transactionsController = {};
 
-transactionController.findAll = async (req, res) => {
+transactionsController.findAll = async (req, res) => {
     const {
         CreditMin,
         CreditMax,
@@ -59,7 +59,7 @@ transactionController.findAll = async (req, res) => {
     }
 };
 
-transactionController.findOne = async (req, res) => {
+transactionsController.findOne = async (req, res) => {
     const {
         id
     } = req.params;
@@ -78,4 +78,4 @@ transactionController.findOne = async (req, res) => {
     }
 };
 
-export default transactionController;
+export default transactionsController;

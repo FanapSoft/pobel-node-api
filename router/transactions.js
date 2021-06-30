@@ -14,18 +14,22 @@
  *           type: datetime
  *         UpdatedAt:
  *           type: string
- *         OwnerId:
- *           type: boolean
  *         DebitAmount:
- *           type: string
+ *           type: number
+ *           format: double
  *         CreditAmount:
- *           type: string
+ *           type: number
+ *           format: double
  *         Reason:
  *           type: string
  *         ReasonDescription:
  *           type: string
  *         ReferenceDatasetId:
  *           type: string
+ *           format: uuid
+ *         OwnerId:
+ *           type: string
+ *           format: uuid
  *     TransactionsPaged:
  *       type: object
  *       properties:
@@ -38,17 +42,17 @@
  *           nullable: true
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
-import answersController from "../Controllers/api/Answers.js";
 import {body, check, validationResult} from 'express-validator';
+import transactionsController from "../Controllers/api/Transactions.js";
 
 export default function (router) {
     /**
      * @swagger
-     * /api/Answers/GetAll:
+     * /api/Transactions/Get/{id}:
      *   get:
      *     tags:
      *       - Answers
-     *     description: Get a list of answers
+     *     description: Get a list of transactions
      *     produces:
      *       - application/json
      *     parameters:
@@ -78,74 +82,34 @@ export default function (router) {
      *               $ref: "#/components/schemas/TransactionsPaged"
      *
      */
-    router.get("/api/Answers/GetAll", [
-        check('DatasetId').optional({checkFalsy: true}).isLength({max: 50}).escape(),
+    router.get("/api/Transactions/GetAll", [
+        check('ReferenceDatasetid').optional({checkFalsy: true}).isLength({max: 50}).escape(),
         check('OwnerId').optional({checkFalsy: true}).isLength({max: 50}).escape(),
         check('Skip').optional({checkFalsy: true}).isNumeric().toInt(),
         check('Limit').optional({checkFalsy: true}).isNumeric().toInt(),
-    ], asyncWrapper(answersController.findAll));
+        check('DebitMin').optional({checkFalsy: true}).isNumeric().toInt(),
+        check('DebitMax').optional({checkFalsy: true}).isNumeric().toInt(),
+        check('CreditMin').optional({checkFalsy: true}).isNumeric().toInt(),
+        check('CreditMax').optional({checkFalsy: true}).isNumeric().toInt(),
+    ], asyncWrapper(transactionsController.findAll));
     /**
      * @swagger
-     * /api/Answers/Stats:
+     * /api/Datasets/Get/{id}:
      *   get:
      *     tags:
-     *       - Answers
-     *     description: Get a list of answers
+     *       - Transactions
+     *     description: Get a transaction
      *     produces:
      *       - application/json
-     *     parameters:
-     *       - name: UserId
-     *         in: query
-     *       - name: DatasetId
-     *         in: query
      *     responses:
      *       200:
+     *         description: An object
      *         type: object
      *         content:
      *           application/json:
      *             schema:
-     *               $ref: "#/components/schemas/AnswersStats"
+     *               $ref: "#/components/schemas/Transaction"
      *
      */
-    router.get("/api/Answers/Stats", asyncWrapper(answersController.stats));
-    /**
-     * @swagger
-     * /api/Answers/SubmitBatchAnswer:
-     *   post:
-     *     tags:
-     *       - Answers
-     *     description: Submit a list of answers
-     *     produces:
-     *       - application/json
-     *           consumes
-     *             - application/json
-     *     parameters:
-     *       - in: body
-     *         schema:
-     *           $ref: "#/components/schemas/SubmitBatchAnswerInput"
-     *     responses:
-     *       200:
-     *         description: Array of inserted answers
-     *         content:
-     *           application/json:
-     *             schema:
-     *               type: array
-     *               items:
-     *                 type: object
-     *                 properties:
-     *                   id:
-     *                     type: string
-     *                     format: uuid
-     */
-    router.post("/api/Answers/SubmitBatchAnswer", [
-        check('answers.*.Ignored').notEmpty().toBoolean(),
-        check('answers.*.IgnoreReason').isString().isLength({max: 200}).escape(),
-        check('answers.*.DatasetId').isString().notEmpty().isLength({max: 50}).escape(),
-        check('answers.*.DatasetItemId').isString().notEmpty().isLength({max: 50}).escape(),
-        check('answers.*.AnswerIndex').notEmpty().toInt(),
-        check('answers.*.QuestionObject').isString().isJSON(),
-        check('answers.*.DurationToAnswerInSeconds').notEmpty().toInt(),
-        check('answers.*.AnswerType').notEmpty().toInt(),
-        check('answers.*.GoldenType').notEmpty().toInt()
-    ], asyncWrapper(answersController.submitBatchAnswer));
+    router.get("/api/Transactions/Get/:id", asyncWrapper(transactionsController.findOne));
 }

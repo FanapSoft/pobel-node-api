@@ -86,7 +86,7 @@ creditsController.collectCredit = async (req, res) => {
         let utd = userTarget.TargetDefinition;
 
         let canCollect = false;
-        //TODO: can collect if:
+        //can collect if:
         // 1.target ended
         // 2.dataset items ended
         // 3.user has reached its labeling limit on the dataset
@@ -133,8 +133,6 @@ creditsController.collectCredit = async (req, res) => {
         } else {
             return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3400});
         }
-
-
     } catch (error) {
         console.log(error)
         return handleError(res, {});
