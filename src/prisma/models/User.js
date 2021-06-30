@@ -6,7 +6,7 @@ class User extends DBModelBase {
         super();
 
         this.table = 'user';
-        //TODO: imprive this move to DBModelBase Class
+        //TODO: move this to DBModelBase Class
         this.client = prisma.user;
 
         this.modelPublicFields = {Id: true, UserName: true, Name: true, Email: true};

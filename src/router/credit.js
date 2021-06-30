@@ -65,10 +65,8 @@ export default function (router) {
      *               $ref: "#/components/schemas/Credit"
      *
      */
-    router.get("/api/Credit/GetCredit", [
+    router.get("/api/Credit/CollectCredit", [
         check("DatasetId").not().isEmpty().isLength({max: 50}).trim().escape(),
         check("UserId").not().isEmpty().isLength({max: 50}).trim().escape(),
     ], asyncWrapper(creditController.collectCredit));
-
-
 }
