@@ -8,17 +8,9 @@ import path from 'path';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { fileURLToPath } from 'url';
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-// import { createRequire } from 'module';
-// const require = createRequire(import.meta.url);
-
 import testRoutes from './router/index.test.js'
 import realRoutes from './router'
 const routes = process.env.node_env === 'test' ? testRoutes : realRoutes;
-
-// import fs from 'fs'
 
 BigInt.prototype.toJSON = function() {
   return this.toString()
@@ -29,9 +21,6 @@ import errorHandler from 'errorhandler'
 const app = express();
 
 import swaggerUi from 'swagger-ui-express'
-// const swaggerDocument = require('./config/swagger.json');
-// import * as readline from "readline";
-
 import swaggerJsdoc from 'swagger-jsdoc';
 const options = {
   definition: {
