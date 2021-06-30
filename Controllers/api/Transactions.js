@@ -20,7 +20,7 @@ transactionsController.findAll = async (req, res) => {
         Skip = 0
     } = req.query;
 
-    let uId = OwnerId ? OwnerId : null;
+    let uId = OwnerId ? OwnerId : undefined;
     if(req.decoded.Role !== 'admin' && uId) {
         uId = req.decoded.Id
     }
@@ -39,17 +39,18 @@ transactionsController.findAll = async (req, res) => {
     if(DebitMin)
         where.DebitAmount = {gte: DebitMin}
 
+
     try {
         let items = await Transaction.client.findMany({
             where,
             orderBy: {
                 CreatedAt: 'desc',
             },
-            take: Limit,
+            take: parseInt(Limit),
             skip: Skip
         });
 
-        const totalCount = await Dataset.client.count({
+        const totalCount = await Transaction.client.count({
             where,
         });
         return res.send({totalCount, items});

@@ -48,10 +48,10 @@ import transactionsController from "../Controllers/api/Transactions.js";
 export default function (router) {
     /**
      * @swagger
-     * /api/Transactions/Get/{id}:
+     * /api/Transactions/GetAll:
      *   get:
      *     tags:
-     *       - Answers
+     *       - Transactions
      *     description: Get a list of transactions
      *     produces:
      *       - application/json

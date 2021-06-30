@@ -37,7 +37,7 @@ datasetItemsController.findAll = async (req, res) => {
             orderBy: {
                 CreatedAt: 'desc',
             },
-            take: Limit,
+            take: parseInt(Limit),
             skip: Skip,
 
         });

@@ -45,7 +45,7 @@ answersController.findAll = async (req, res) => {
             orderBy: {
                 CreatedAt: 'desc',
             },
-            take: Limit,
+            take: parseInt(Limit),
             skip: Skip
         });
         const totalCount = await Answer.client.count({

@@ -33,7 +33,7 @@ userController.findAll = async (req, res) => {
                 CreatedAt: 'desc'
             },
             skip: Skip,
-            take: Limit
+            take: parseInt(Limit),
         });
         const totalCount = await User.client.count({
             where,
