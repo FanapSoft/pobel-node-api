@@ -33,12 +33,11 @@ transactionsController.findAll = async (req, res) => {
     if(CreditMax)
         where.CreditAmount = {lte: CreditMax}
     if(CreditMin)
-        where.CreditAmount = {gte: CreditMax}
+        where.CreditAmount = {gte: CreditMin}
     if(DebitMax)
         where.DebitAmount = {lte: DebitMax}
     if(DebitMin)
         where.DebitAmount = {gte: DebitMin}
-
 
     try {
         let items = await Transaction.client.findMany({
