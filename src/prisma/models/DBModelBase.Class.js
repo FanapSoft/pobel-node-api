@@ -3,11 +3,12 @@ import prisma from "../prisma.module.js";
 class DBModelBase {
     constructor() {
         this.table = '';
-        this.modelPublicFields = {};
+        this.modelPublicFields = null;
+        this.modelAdminFields = null;
 
     }
     async findById(id, role = 'guest') {
-        const select = role === 'admin' ? null : this.modelPublicFields;
+        const select = this.getFieldsByRole(role);
         return await prisma[this.table].findUnique({
             select,
             where: {
@@ -16,11 +17,23 @@ class DBModelBase {
         });
     }
     async findByObject(data, role = 'guest') {
-        const select = role === 'admin' ? null : this.modelPublicFields;
+        const select = this.getFieldsByRole(role);
         return await prisma[this.table].findFirst({
             select,
             where: data
         });
+    }
+
+    getFieldsByRole(role) {
+        switch (role) {
+            case 'admin':
+                return this.modelAdminFields;
+            case 'user':
+                return (this.modelUserFields ? this.modelUserFields : this.modelPublicFields);
+            case 'guest':
+            default:
+                return this.modelPublicFields;
+        }
     }
 }
 

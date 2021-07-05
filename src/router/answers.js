@@ -168,7 +168,10 @@ export default function (router) {
      *               $ref: "#/components/schemas/AnswersStats"
      *
      */
-    router.get("/api/Answers/Stats", asyncWrapper(answersController.stats));
+    router.get("/api/Answers/Stats", [
+        check('UserId').notEmpty().isLength({max: 50}).escape(),
+        check('DatasetId').notEmpty().isLength({max: 50}).escape(),
+    ], asyncWrapper(answersController.stats));
     /**
      * @swagger
      * /api/Answers/SubmitBatchAnswer:
@@ -199,14 +202,15 @@ export default function (router) {
      *                     format: uuid
      */
     router.post("/api/Answers/SubmitBatchAnswer", [
-        check('answers.*.Ignored').notEmpty().toBoolean(),
-        check('answers.*.IgnoreReason').isString().isLength({max: 200}).escape(),
-        check('answers.*.DatasetId').isString().notEmpty().isLength({max: 50}).escape(),
-        check('answers.*.DatasetItemId').isString().notEmpty().isLength({max: 50}).escape(),
-        check('answers.*.AnswerIndex').notEmpty().toInt(),
-        check('answers.*.QuestionObject').isString().isJSON(),
-        check('answers.*.DurationToAnswerInSeconds').notEmpty().toInt(),
-        check('answers.*.AnswerType').notEmpty().toInt(),
-        check('answers.*.GoldenType').notEmpty().toInt()
+        check('QuestionId').notEmpty().isLength({max: 50}).escape(),
+        check('Answers.*.Ignored').notEmpty().toBoolean(),
+        check('Answers.*.IgnoreReason').isString().isLength({max: 200}).escape(),
+        check('Answers.*.DatasetId').isString().notEmpty().isLength({max: 50}).escape(),
+        check('Answers.*.DatasetItemId').isString().notEmpty().isLength({max: 50}).escape(),
+        check('Answers.*.AnswerIndex').notEmpty().toInt(),
+        //check('Answers.*.QuestionObject').isJSON(), //TODO: deprecated
+        check('Answers.*.DurationToAnswerInSeconds').notEmpty().toInt(),
+        // check('Answers.*.AnswerType').notEmpty().toInt(),
+        // check('Answers.*.GoldenType').notEmpty().toInt()
     ], asyncWrapper(answersController.submitBatchAnswer));
 }

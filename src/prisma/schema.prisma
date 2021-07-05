@@ -8,6 +8,7 @@ datasource db {
 
 generator clinent {
   provider = "prisma-client-js"
+  previewFeatures = ["selectRelationCount"]
 }
 
 model User {
@@ -18,6 +19,7 @@ model User {
   Email          String?               @unique
   Name           String?
   Surname        String?
+  IsActive       Boolean               @default(true)
   PodUserId      Int                   @unique
   PodContactId   Int?
   ProfileImage   String?

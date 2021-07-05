@@ -6,7 +6,7 @@ class Answer extends DBModelBase {
         super();
         this.table = 'answerLogs';
         this.client = prisma.answerLogs
-        this.modelPublicFields = null;
+        this.modelPublicFields = this.modelUserFields = {Ignored: true, Answer: true, DatasetId: true, DatasetItemId: true, CreditCalculated: true};
 
         this.answerTypes = {
             GOLDEN: 0,

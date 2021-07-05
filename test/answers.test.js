@@ -29,10 +29,11 @@ describe('Answers', () => {
             .set('content-type', "application/x-www-form-urlencoded")
             .send({
                 TargetDefinitionId: "244cc335-521c-465b-b18c-ffa414b7caf6",
+                OwnerId: "027d23fb-f1e5-4dc0-8184-7c29dfaffaf4"
             })
             .end((err, res) => {
                 chai.request(server)
-                    .get('/api/Questions/GetQuestions?DatasetId=10B16B1A-5945-422F-C83B-08D8695976C6&OnlyOneLabel=true')
+                    .get('/api/Questions/GetQuestions?DatasetId=10B16B1A-5945-422F-C83B-08D8695976C6&OwnerId=027d23fb-f1e5-4dc0-8184-7c29dfaffaf4&OnlyOneLabel=true')
                     .set('token', 'test')
                     .end((err, res) => {
                         const answers = [];
@@ -43,7 +44,7 @@ describe('Answers', () => {
                                 DatasetId: item.Label.DatasetId,//"10B16B1A-5945-422F-C83B-08D8695976C6",
                                 DatasetItemId: item.DatasetItemId,//"7C7A0255-18D5-4811-40A4-08D86959A6E2",
                                 AnswerIndex: index % 2 === 0 ? 0 : 1,
-                                QuestionObject: {},
+                                //QuestionObject: {},
                                 DurationToAnswerInSeconds: 2
                             });
                         });
@@ -53,6 +54,7 @@ describe('Answers', () => {
                             .set('content-type', "application/x-www-form-urlencoded")
                             .send({
                                 QuestionId: res.body[0].QuestionId,
+                                OwnerId:"027d23fb-f1e5-4dc0-8184-7c29dfaffaf4",
                                 Answers: answers
                             })
                             .end((err, res) => {

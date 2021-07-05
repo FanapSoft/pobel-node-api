@@ -3,7 +3,7 @@ import httpStatus from "http-status";
 import {handleError} from "../../imports/errors.js";
 import acl from "../../imports/acl.js";
 import Dataset from "../../prisma/models/Dataset.js";
-import {body} from "express-validator";
+import {body, validationResult} from "express-validator";
 import Transaction from "../../prisma/models/Transaction.js";
 
 const transactionsController = {};
@@ -19,6 +19,12 @@ transactionsController.findAll = async (req, res) => {
         Limit = process.env.API_PAGED_RESULTS_DEFAULT_LIMIT,
         Skip = 0
     } = req.query;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
 
     let uId = OwnerId ? OwnerId : undefined;
     if(req.decoded.Role !== 'admin' && uId) {

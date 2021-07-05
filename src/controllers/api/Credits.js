@@ -55,7 +55,7 @@ creditsController.collectCredit = async (req, res) => {
     const {
         DatasetId,
         UserId
-    } = req.query;
+    } = req.body;
 
     let where = {}, include = null;
 
@@ -64,10 +64,10 @@ creditsController.collectCredit = async (req, res) => {
         uId = req.decoded.Id;
     }
 
-    where.DatasetId = DatasetId;
-    where.UserId = uId;
-    where.CreaditCalculated = false;
-    where.AnswerType = Answer.answerTypes.GOLDEN;
+    // where.DatasetId = DatasetId;
+    // where.UserId = uId;
+    // where.CreaditCalculated = false;
+    // where.AnswerType = Answer.answerTypes.GOLDEN;
 
     let credit = 0;
 
@@ -129,7 +129,7 @@ creditsController.collectCredit = async (req, res) => {
                 }
             });
 
-            return res.send({success: true});
+            return res.send({...transaction});
         } else {
             return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3400});
         }

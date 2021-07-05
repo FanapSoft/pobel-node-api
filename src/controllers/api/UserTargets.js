@@ -130,4 +130,34 @@ userController.getCurrentTargetStatus = async (req, res) => {
     }
 }
 
+userController.getCurrentTarget = async (req, res) => {
+    const {
+        UserId,
+        DatasetId
+    } = req.query;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    let uId = UserId ? UserId : req.decoded.Id;
+    if(req.decoded.Role !== 'admin') {
+        uId = req.decoded.Id;
+    }
+
+    try {
+        // const userTarget = await UserTarget.getUserCurrentTarget(uId, DatasetId);
+        const userTarget = await UserTarget.getUserCurrentTarget(uId, DatasetId);
+        if(!userTarget || userTarget.TargetEnded) {
+            return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3203});
+        }
+
+        return res.send(userTarget);
+    } catch (error) {
+        console.log(error);
+        return handleError(res, {});
+    }
+}
+
 export default userController;

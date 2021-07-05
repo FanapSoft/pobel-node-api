@@ -5,9 +5,8 @@ class Transaction extends DBModelBase {
     constructor() {
         super();
         this.table = 'transactions';
-        this.client = prisma.transactions
+        this.client = prisma.transactions;
         this.modelPublicFields = null;
-
     }
 }
 

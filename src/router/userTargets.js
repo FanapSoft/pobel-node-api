@@ -16,13 +16,15 @@
  *         TargetDefinitionId:
  *           type: string
  *           format: uuid
+ *         TargetDefinition:
+ *           type: object
+ *           $ref: "#/components/schemas/TargetDefinition"
  *         DatasetId:
  *           type: string
  *           format: uuid
  *         OwnerId:
  *           type: string
  *           format: uuid
- *
  *     UserTargetsPaged:
  *       type: object
  *       properties:
@@ -81,8 +83,45 @@ export default function (router) {
      */
     router.get("/api/Targets/GetCurrentTargetStatus", [
         check('DatasetId').notEmpty().isString().isLength({max: 80}).escape(),
-        check('UserId').optional({checkFalsy: true}).isString().isLength({max: 80}).escape()
+        check('UserId').isString().isLength({max: 80}).escape()
     ], asyncWrapper(targetController.getCurrentTargetStatus));
+    /**
+     * @swagger
+     * /api/Targets/GetCurrentTarget:
+     *   get:
+     *     security:
+     *       apiToken: []
+     *     tags:
+     *       - UserTargets
+     *     description: check user current target
+     *     produces:
+     *       - application/json
+     *     parameters:
+     *       - name: DatasetId
+     *         in: query
+     *         required: true
+     *         schema:
+     *           type: string
+     *           format: uuid
+     *       - name: UserId
+     *         in: query
+     *         description: defaults to current loggedIn user id
+     *         schema:
+     *           type: string
+     *           format: uuid
+     *     responses:
+     *       200:
+     *         description: Returns user target status
+     *         type: object
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: "#/components/schemas/UserTarget"
+     */
+    router.get("/api/Targets/GetCurrentTarget", [
+        check('DatasetId').notEmpty().isString().isLength({max: 80}).escape(),
+        check('UserId').notEmpty().isString().isLength({max: 80}).escape()
+    ], asyncWrapper(targetController.getCurrentTarget));
 
     /**
      * @swagger
@@ -114,4 +153,6 @@ export default function (router) {
         check('TargetDefinitionId').notEmpty().isString().isLength({max: 80}).escape(),
         check('OwnerId').optional({checkFalsy: true}).isString().isLength({max: 80}).escape()
     ], asyncWrapper(targetController.activateTarget));
+
+
 }

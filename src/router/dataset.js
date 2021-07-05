@@ -125,6 +125,12 @@ export default function (router) {
      *         description: Dataset Name (Full or partly)
      *         in: query
      *         type: string
+     *       - name: IncludeRandomItem
+     *         in: query
+     *         type: boolean
+     *       - name: IncludeItemsCount
+     *         in: query
+     *         type: boolean
      *       - name: Skip
      *         in: query
      *       - name: Limit
@@ -139,7 +145,14 @@ export default function (router) {
      *               $ref: "#/components/schemas/DatasetsPaged"
      *
      */
-    router.get("/api/Datasets/GetAll", asyncWrapper(datasetController.findAll));
+    router.get("/api/Datasets/GetAll", [
+        check('Name').optional({checkFalsy: true}).notEmpty().isLength({max: 50}).escape(),
+        check('Description').optional({checkFalsy: true}).notEmpty().isLength({max: 50}).escape(),
+        check('IsActive').optional({checkFalsy: true}).toBoolean(),
+        check('IncludeRandomItem').optional({checkFalsy: true}).toBoolean(),
+        check('Skip').optional({checkFalsy: true}).isNumeric().toInt(),
+        check('Limit').optional({checkFalsy: true}).isNumeric().toInt(),
+    ],asyncWrapper(datasetController.findAll));
     /**
      * @swagger
      * /api/Datasets/Get/{id}:

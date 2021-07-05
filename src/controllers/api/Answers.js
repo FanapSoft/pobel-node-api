@@ -21,6 +21,16 @@ answersController.findAll = async (req, res) => {
         Skip = 0
     } = req.query;
 
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    let uId = UserId ? UserId : req.decoded.Id;
+    if(req.decoded.Role !== 'admin') {
+        uId = req.decoded.Id;
+    }
+
     let where = {}, include = null;
     //if(IncludeQuestion !== null && IncludeQuestion !== undefined)
 
@@ -41,6 +51,7 @@ answersController.findAll = async (req, res) => {
 
     try {
         const items = await Answer.client.findMany({
+            select: Answer.getFieldsByRole(req.decoded.role),
             where,
             orderBy: {
                 CreatedAt: 'desc',
@@ -86,6 +97,7 @@ answersController.submitBatchAnswer = async (req, res, next) => {
         return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid Answers array'}});
     }
 
+    //TODO: we should submit answers with the question owner id or the current requesterID ?
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -128,13 +140,13 @@ answersController.submitBatchAnswer = async (req, res, next) => {
             }
             let answer = await Answer.client.create({
                 data: {
-                    UserId: req.decoded.Id,
+                    UserId: question.OwnerId,
                     Ignored: JSON.parse(item.Ignored),
                     IgnoreReason: item.IgnoreReason,
                     DatasetId: item.DatasetId,
                     DatasetItemId: item.DatasetItemId,
                     Answer: JSON.parse(item.AnswerIndex),
-                    QuestionObject: item.QuestionObject,
+                    //QuestionObject: item.QuestionObject,
                     DurationToAnswerInSeconds: JSON.parse(item.DurationToAnswerInSeconds),
                     AnswerType: answerType,
                     GoldenType: goldenType
@@ -157,6 +169,20 @@ answersController.submitBatchAnswer = async (req, res, next) => {
             console.log(error);
             return handleError(res, {});
         }
+    }
+
+    try {
+        await QuestionRequestLog.client.update({
+            where: {
+                Id: question.Id
+            },
+            data: {
+                IsDone: true
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        return handleError(res, {});
     }
 
     return res.send(storedAnswers);

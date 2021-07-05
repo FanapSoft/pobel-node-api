@@ -8,6 +8,8 @@ import path from 'path';
 import dotenv from 'dotenv';
 dotenv.config();
 
+import cors from "cors";
+
 import testRoutes from './router/index.test.js'
 import realRoutes from './router'
 const routes = process.env.node_env === 'test' ? testRoutes : realRoutes;
@@ -22,6 +24,7 @@ const app = express();
 
 import swaggerUi from 'swagger-ui-express'
 import swaggerJsdoc from 'swagger-jsdoc';
+
 const options = {
   definition: {
     openapi: '3.0.0',
@@ -51,7 +54,19 @@ if(['development', 'test'].includes(process.env.NODE_ENV)) {
   );
 }
 
-//let accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
+var allowedOrigins = ['http://localhost:8787',
+  'http://10.56.16.50'];
+
+app.use(cors({
+  origin: function(origin, callback){    // allow requests with no origin
+    // (like mobile apps or curl requests)
+    if(!origin) return callback(null, true);    if(allowedOrigins.indexOf(origin) === -1){
+      var msg = 'The CORS policy for this site does not ' +
+          'allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }    return callback(null, true);
+  }
+}));
 
 app.use(errorHandler());
 //app.use(express.logger());

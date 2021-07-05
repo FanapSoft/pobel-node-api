@@ -26,6 +26,7 @@ acl.config({
     path: __dirname + '/../config',
     baseUrl: '/api',
     denyCallback: (res) => {
+
         return handleError(res, {code: 2004, status: httpStatus.FORBIDDEN})
     }
 });
@@ -38,6 +39,8 @@ ROUTER.get("/", function(req, res, next) {
  * Routes that don't need acl or auth
  */
 authRoutes(ROUTER);
+
+
 /**
  * Middleware for auth
  * express-acl middleware depends on the role
@@ -45,29 +48,54 @@ authRoutes(ROUTER);
  */
 ROUTER.use(async function(req, res, next) {
     const token = req.headers['token'];
+    if (token) {
+        const user = await User.findByObject({
+            LocalToken: token,
+            TokenExpiresAt: {
+                gt: new Date().toISOString()
+            }
+        }, 'admin');
 
-    if (!token)
-        return handleError(res, {code: 2002, status: httpStatus.UNAUTHORIZED});
-
-    const user = await User.findByObject({
-        LocalToken: token,
-        TokenExpiresAt: {
-            gt: new Date().toISOString()
+        if(user) {
+            req.decoded = {
+                ...user,
+                role: user.Role
+            };
         }
-    }, 'admin');
+    }
 
-    if(!user)
-        return handleError(res, {code: 2001, status: httpStatus.UNAUTHORIZED});
+    if(!req.decoded) {
+        req.decoded = {
+            role: 'guest'
+        }
+    }
 
-    req.decoded = {
-        ...user,
-        role: user.Role
-    };
+    //console.log(req._parsedUrl.path, req.decoded)
+    //
+    // if (!token)
+    //     return handleError(res, {code: 2002, status: httpStatus.UNAUTHORIZED});
+    //
+    // const user = await User.findByObject({
+    //     LocalToken: token,
+    //     TokenExpiresAt: {
+    //         gt: new Date().toISOString()
+    //     }
+    // }, 'admin');
+    //
+    // if(!user)
+    //     return handleError(res, {code: 2001, status: httpStatus.UNAUTHORIZED});
+
+    // req.decoded = {
+    //     ...user,
+    //     role: user.Role
+    // };
 
     return next();
 });
 
-ROUTER.use(acl.authorize);
+ROUTER.use(acl.authorize.unless({
+    //path: ['/api/Datasets/GetAll']
+}));
 
 /**
  * Routes that need acl

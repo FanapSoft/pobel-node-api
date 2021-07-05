@@ -12,36 +12,31 @@
   {
     "group": "user",
     "permissions": [
-      {
-        "resource": [ "/User/Get/*",
-          "/Targets/Get/*", "/Targets/GetAll*",
-          "/TargetDefinitions/Get/*", "/TargetDefinitions/GetAll*",
-          "/Datasets/Get/*", "/Datasets/GetAll*",
-          "/DatasetItems/Get/*", "/DatasetItems/GetAll/*"
-        ],
-        "methods": ["GET"],
-        "action": "allow"
-      },
-      {
-        "resource": ["/User/Update/*" ],
-        "methods": ["PUT"],
-        "action": "allow"
-      },
-      {
-        "resource": ["/Answers/SubmitBatchAnswer"],
-        "methods": ["POST"],
-        "action": "allow"
-      }
+      {"resource": "/User/Get/*", "methods": ["GET"], "action": "allow"},
+      {"resource": "/User/Update/*", "methods": ["PUT"], "action": "allow"},
+      {"resource": "/Targets/Get/*", "methods": ["GET"], "action": "allow"},
+      {"resource": "/Targets/GetAll", "methods": ["GET"], "action": "allow"},
+      {"resource": "/TargetDefinitions/Get/*", "methods": ["GET"], "action": "allow"},
+      {"resource": "/TargetDefinitions/GetAll*", "methods": ["GET"], "action": "allow"},
+      {"resource": "/Datasets/Get/*", "methods": ["GET"], "action": "allow"},
+      {"resource": "/Datasets/GetAll*", "methods": ["GET"], "action": "allow"},
+      {"resource": "/DatasetItems/Get/*", "methods": ["GET"], "action": "allow"},
+      {"resource": "/Answers/GetAll*", "methods": ["GET"], "action": "allow"},
+      {"resource": "/Answers/Stats/", "methods": ["GET"], "action": "allow"},
+      {"resource": "/Transactions/GetAll", "methods": ["GET"], "action": "allow"},
+      {"resource": "/File/Dataset/Item/*", "methods": ["GET"], "action": "allow"},
+
+      {"resource": "/Answers/SubmitBatchAnswer", "methods": ["POST"], "action": "allow"}
     ]
   },
   {
     "group": "guest",
     "permissions": [
-      {
-        "resources": ["/", "/auth", "/SSOCallback"],
-        "methods": [ "GET"],
-        "action": "allow"
-      }
+      {"resource": "/", "methods": ["GET"], "action": "allow"},
+      {"resource": "/auth", "methods": ["GET"], "action": "allow"},
+      {"resource": "/SSOCallback", "methods": ["GET"], "action": "allow"},
+      {"resource": "/File/Dataset/Item/*", "methods": ["GET"], "action": "allow"},
+      {"resource": "/Datasets/GetAll", "methods": ["GET"], "action": "allow"}
     ]
   }
 ]

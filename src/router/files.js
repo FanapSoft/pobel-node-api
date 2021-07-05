@@ -23,7 +23,7 @@ export default function (router) {
      *
      */
     router.get("/api/File/Dataset/Item/:id", [
-        check('id').notEmpty().isLength({max:50}).escape()
+        check('id').isString().notEmpty().isLength({max:50}).escape()
     ], asyncWrapper(filesController.streamDatasetImages));
     /**
      * @swagger

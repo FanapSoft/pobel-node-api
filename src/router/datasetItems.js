@@ -57,6 +57,7 @@
  */
 import {asyncWrapper} from "../utils/asyncWrapper.js";
 import datasetItemsController from "../controllers/api/DatasetItems.js";
+import {check} from "express-validator";
 
 export default function (router) {
     /**
@@ -89,7 +90,9 @@ export default function (router) {
      *               $ref: "#/components/schemas/DatasetItemsPaged"
      *
      */
-    router.get("/api/DatasetItems/GetAll", asyncWrapper(datasetItemsController.findAll));
+    router.get("/api/DatasetItems/GetAll", [
+        check("Skip").optional({checkFalsy: true}).isNumeric().toInt()
+    ],asyncWrapper(datasetItemsController.findAll));
     /**
      * @swagger
      * /api/DatasetItems/Get/{id}:

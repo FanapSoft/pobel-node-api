@@ -8,7 +8,7 @@ import jimp from 'jimp';
 const filesController = {};
 
 filesController.streamDatasetImages = async (req, res) => {
-    const {
+    let {
         id
     } = req.params;
     const errors = validationResult(req);
@@ -16,8 +16,13 @@ filesController.streamDatasetImages = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
+    if(!id || id === 'null') {
+        return handleError(res, {status: httpStatus.EXPECTATION_FAILED, error: {code: 3002, message: 'Invalid item id'}});
+    }
+
     try {
         const item = await DatasetItem.findById(id, 'admin');
+
         if(!item)
             return handleError(res, {status: httpStatus.EXPECTATION_FAILED, error: {code: 3002, message: 'Invalid item id'}});
         if (fs.existsSync(item.FilePath)) {

@@ -54,14 +54,15 @@ export default function (router) {
             return;
         }
 
-        const user = await prisma.user.findUnique({
+        let user = await prisma.user.findUnique({
             where: {
                 PodUserId: profile.data.id
             }
         });
 
+
         if(!user) {
-            await prisma.user.create({
+            user = await prisma.user.create({
                 data:{
                     UserName: profile.data.preferred_username,
                     Email: profile.data.email,
@@ -74,7 +75,7 @@ export default function (router) {
                 }
             });
         } else {
-            await prisma.user.update({
+            user = await prisma.user.update({
                 where: {
                     PodUserId: profile.data.id
                 },
@@ -92,7 +93,7 @@ export default function (router) {
             });
         }
 
-        res.redirect("/loggedIn?token=" + tokens.data.id_token);
+        res.redirect("http://localhost:8787/loggedIn/" + user.Id + "?token=" + tokens.data.id_token);
 
         // res.json({
         //     message: { profile: profile.data, tokens: tokens.data }

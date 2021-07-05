@@ -46,7 +46,7 @@ export default function (router) {
         /**
      * @swagger
      * /api/Credit/CollectCredit:
-     *   get:
+     *   post:
      *     tags:
      *       - Credit
      *     description: Send dataset credit to POBEL profile
@@ -54,8 +54,9 @@ export default function (router) {
      *       - application/json
      *     parameters:
      *       - name: UserId
-     *         in: query
+     *         in: params
      *       - name: DatasetId
+         *     in: params
      *     responses:
      *       200:
      *         type: object
@@ -65,7 +66,7 @@ export default function (router) {
      *               $ref: "#/components/schemas/Credit"
      *
      */
-    router.get("/api/Credit/CollectCredit", [
+    router.post("/api/Credit/CollectCredit", [
         check("DatasetId").not().isEmpty().isLength({max: 50}).trim().escape(),
         check("UserId").not().isEmpty().isLength({max: 50}).trim().escape(),
     ], asyncWrapper(creditController.collectCredit));
