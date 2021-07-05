@@ -26,9 +26,8 @@ transactionsController.findAll = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-
-    let uId = OwnerId ? OwnerId : undefined;
-    if(req.decoded.Role !== 'admin' && uId) {
+    let uId = OwnerId ? OwnerId : null;
+    if(req.decoded.role !== 'admin') {
         uId = req.decoded.Id
     }
 

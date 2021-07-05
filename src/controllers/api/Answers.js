@@ -37,7 +37,7 @@ answersController.findAll = async (req, res) => {
     if(DatasetId)
         where.DatasetId = DatasetId;
     if(UserId)
-        where.UserId = UserId;
+        where.UserId = uId;
 
     if(From)
         where.CreatedAt = {

@@ -94,7 +94,7 @@ ROUTER.use(async function(req, res, next) {
 });
 
 ROUTER.use(acl.authorize.unless({
-    //path: ['/api/Datasets/GetAll']
+    //path: ['/api/Reports/ScoreBoard']
 }));
 
 /**

@@ -121,6 +121,12 @@ export default function (router) {
      *     description: Get a transaction
      *     produces:
      *       - application/json
+     *     parameters:
+     *       - name: UserId
+     *         in: query
+     *         type: string
+     *         format: uuid
+     *         description: Only for admin
      *     responses:
      *       200:
      *         description: An object

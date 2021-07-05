@@ -26,6 +26,7 @@
       {"resource": "/Transactions/GetAll", "methods": ["GET"], "action": "allow"},
       {"resource": "/Transactions/GetBalance", "methods": ["GET"], "action": "allow"},
       {"resource": "/File/Dataset/Item/*", "methods": ["GET"], "action": "allow"},
+      {"resource": "/Reports/Scoreboard", "methods": ["GET"], "action": "allow"},
 
       {"resource": "/Answers/SubmitBatchAnswer", "methods": ["POST"], "action": "allow"}
     ]
@@ -37,7 +38,8 @@
       {"resource": "/auth", "methods": ["GET"], "action": "allow"},
       {"resource": "/SSOCallback", "methods": ["GET"], "action": "allow"},
       {"resource": "/File/Dataset/Item/*", "methods": ["GET"], "action": "allow"},
-      {"resource": "/Datasets/GetAll", "methods": ["GET"], "action": "allow"}
+      {"resource": "/Datasets/GetAll", "methods": ["GET"], "action": "allow"},
+      {"resource": "/Reports/Scoreboard", "methods": ["GET"], "action": "allow"}
     ]
   }
 ]
