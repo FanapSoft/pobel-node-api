@@ -24,6 +24,7 @@
       {"resource": "/Answers/GetAll*", "methods": ["GET"], "action": "allow"},
       {"resource": "/Answers/Stats/", "methods": ["GET"], "action": "allow"},
       {"resource": "/Transactions/GetAll", "methods": ["GET"], "action": "allow"},
+      {"resource": "/Transactions/GetBalance", "methods": ["GET"], "action": "allow"},
       {"resource": "/File/Dataset/Item/*", "methods": ["GET"], "action": "allow"},
 
       {"resource": "/Answers/SubmitBatchAnswer", "methods": ["POST"], "action": "allow"}

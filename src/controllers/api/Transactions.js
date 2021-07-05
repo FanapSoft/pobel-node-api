@@ -5,6 +5,7 @@ import acl from "../../imports/acl.js";
 import Dataset from "../../prisma/models/Dataset.js";
 import {body, validationResult} from "express-validator";
 import Transaction from "../../prisma/models/Transaction.js";
+import prisma from "../../prisma/prisma.module";
 
 const transactionsController = {};
 
@@ -78,6 +79,34 @@ transactionsController.findOne = async (req, res) => {
         }
 
         return res.send(trans);
+    } catch (error) {
+        console.log(error);
+        return handleError(res, {});
+    }
+};
+transactionsController.getBalance = async (req, res) => {
+    const {
+        UserId
+    } = req.query;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    let uId = UserId ? UserId : req.decoded.Id;
+    if(req.decoded.Role !== 'admin') {
+        uId = req.decoded.Id;
+    }
+
+    try {
+        let trans = await prisma.$queryRaw("Select\n" +
+            " sum(CASE WHEN t.\"DebitAmount\" = 0 THEN t.\"CreditAmount\" ELSE 0 end) As CreditAmount,\n" +
+            " sum(CASE WHEN t.\"CreditAmount\" = 0 THEN t.\"DebitAmount\" ELSE 0 end) As DebitAmount\n" +
+            " From \"Transactions\" t\n" +
+            " WHERE \"OwnerId\"='" + uId + "'")
+
+        return res.status(200).send({creditAmount: trans[0].creditamount, debitAmount: trans[0].debitamount});
     } catch (error) {
         console.log(error);
         return handleError(res, {});

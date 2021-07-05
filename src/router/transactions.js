@@ -112,4 +112,34 @@ export default function (router) {
      *
      */
     router.get("/api/Transactions/Get/:id", asyncWrapper(transactionsController.findOne));
+    /**
+     * @swagger
+     * /api/Datasets/GetBalance:
+     *   get:
+     *     tags:
+     *       - Transactions
+     *     description: Get a transaction
+     *     produces:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: An object
+     *         type: object
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 CreditAmount:
+     *                   type: number
+     *                   format: float
+     *                 DebitAmount:
+     *                   type: number
+     *                   format: float
+     */
+    router.get("/api/Transactions/GetBalance", [
+        check('UserId').optional({checkFalsy: true}).isUUID(4)
+    ],asyncWrapper(transactionsController.getBalance));
+
+
 }
