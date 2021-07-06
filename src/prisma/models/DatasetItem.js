@@ -10,8 +10,8 @@ class DatasetItems extends DBModelBase {
         this.modelPublicFields = {Id: true, Name: true, Type: true, FileName: true, FileExtension: true, LabelId: true, AnswersCount: true};
     }
 
-    processItem(datasetItem, label = null) {
-        let itemJob = datasetItem.FilePath;
+    processItem(datasetItem, label = null, goldensPath) {
+        let itemJob = goldensPath ? goldensPath : datasetItem.FilePath;
         itemJob = itemJob.split('\\')[4];
 
         switch (itemJob) {

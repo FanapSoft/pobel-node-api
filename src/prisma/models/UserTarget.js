@@ -2,6 +2,7 @@ import prisma from '../prisma.module.js'
 import DBModelBase from "./DBModelBase.Class.js";
 import {handleError} from "../../imports/errors.js";
 import httpStatus from "http-status";
+import TargetDefinition from "./TargetDefinition";
 
 class UserTarget extends DBModelBase {
     constructor() {
@@ -33,7 +34,7 @@ class UserTarget extends DBModelBase {
         });
     }
 
-    async getUserCurrentTarget(userId, datasetId) {
+    async getUserCurrentTarget(userId, datasetId, role = 'admin') {
         const where = {
             OwnerId: userId,
             DatasetId: datasetId
@@ -42,7 +43,9 @@ class UserTarget extends DBModelBase {
         const userTargets = await this.client.findMany({
             where,
             include: {
-                TargetDefinition: true
+                TargetDefinition: {
+                    select: TargetDefinition.getFieldsByRole(role)
+                }
             },
             orderBy: {
                 CreatedAt: 'desc'

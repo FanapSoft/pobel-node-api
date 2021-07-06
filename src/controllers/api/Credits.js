@@ -129,7 +129,7 @@ creditsController.collectCredit = async (req, res) => {
                 }
             });
 
-            return res.send({...transaction});
+            return res.send(transaction);
         } else {
             return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3400});
         }

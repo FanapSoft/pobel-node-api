@@ -16,19 +16,24 @@
       {"resource": "/User/Update/*", "methods": ["PUT"], "action": "allow"},
       {"resource": "/Targets/Get/*", "methods": ["GET"], "action": "allow"},
       {"resource": "/Targets/GetAll", "methods": ["GET"], "action": "allow"},
+      {"resource": "/Targets/GetCurrentTarget", "methods": ["GET"], "action": "allow"},
       {"resource": "/TargetDefinitions/Get/*", "methods": ["GET"], "action": "allow"},
       {"resource": "/TargetDefinitions/GetAll*", "methods": ["GET"], "action": "allow"},
       {"resource": "/Datasets/Get/*", "methods": ["GET"], "action": "allow"},
       {"resource": "/Datasets/GetAll*", "methods": ["GET"], "action": "allow"},
       {"resource": "/DatasetItems/Get/*", "methods": ["GET"], "action": "allow"},
       {"resource": "/Answers/GetAll*", "methods": ["GET"], "action": "allow"},
-      {"resource": "/Answers/Stats/", "methods": ["GET"], "action": "allow"},
+      {"resource": "/Answers/Stats", "methods": ["GET"], "action": "allow"},
       {"resource": "/Transactions/GetAll", "methods": ["GET"], "action": "allow"},
       {"resource": "/Transactions/GetBalance", "methods": ["GET"], "action": "allow"},
       {"resource": "/File/Dataset/Item/*", "methods": ["GET"], "action": "allow"},
       {"resource": "/Reports/Scoreboard", "methods": ["GET"], "action": "allow"},
+      {"resource": "/Reports/AnswersCountsTrend", "methods": ["GET"], "action": "allow"},
+      {"resource": "/Credit/GetCredit", "methods": ["GET"], "action": "allow"},
+      {"resource": "/Questions/GetQuestions", "methods": ["GET"], "action": "allow"},
 
-      {"resource": "/Answers/SubmitBatchAnswer", "methods": ["POST"], "action": "allow"}
+      {"resource": "/Answers/SubmitBatchAnswer", "methods": ["POST"], "action": "allow"},
+      {"resource": "/Credit/CollectCredit", "methods": ["POST"], "action": "allow"}
     ]
   },
   {

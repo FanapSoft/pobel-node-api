@@ -25,8 +25,8 @@ class Answer extends DBModelBase {
         let credit = 0;
 
         const conf = [
-            {a: 0, at: 0, gt: 1},
-            {a: 1, at: 0, gt: 2},
+            {a: dataset.AnswerOptions[0].Index, at: 0, gt: 1},
+            {a: dataset.AnswerOptions[1].Index, at: 0, gt: 2},
         ];
 
         const results = await prisma.$queryRaw("SELECT Count(*) AS Total, \n" +

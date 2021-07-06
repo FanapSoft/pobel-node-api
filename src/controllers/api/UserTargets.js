@@ -148,7 +148,7 @@ userController.getCurrentTarget = async (req, res) => {
 
     try {
         // const userTarget = await UserTarget.getUserCurrentTarget(uId, DatasetId);
-        const userTarget = await UserTarget.getUserCurrentTarget(uId, DatasetId);
+        const userTarget = await UserTarget.getUserCurrentTarget(uId, DatasetId, req.decoded.role);
         if(!userTarget || userTarget.TargetEnded) {
             return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3203});
         }

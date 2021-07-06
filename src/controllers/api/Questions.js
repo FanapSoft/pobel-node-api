@@ -129,9 +129,14 @@ questionsController.getQuestions = async (req, res) => {
                 }
             });
 
-            for (let item of datasetItems) {
+            let goldensPath = null;
+            if(label) {
+                goldensPath = datasetItems.filter(item => item.isGoldenData);
+                goldensPath = goldensPath.length ? goldensPath[0].FilePath : null
+            }
 
-                let itemDetails = DatasetItem.processItem(item, label);
+            for (let item of datasetItems) {
+                let itemDetails = DatasetItem.processItem(item, label, goldensPath);
 
                 questions.push({
                     G: req.decoded.role === 'admin' ? item.IsGoldenData : undefined,
@@ -139,7 +144,7 @@ questionsController.getQuestions = async (req, res) => {
                     DatasetItemId: item.Id,
                     AnswerType: ds.AnswerType,
                     Title: itemDetails.title,
-                    ItemName: item.Name,
+                    ItemName: label? label.Name.replace(/[0-9]/g, "").replace(/_/g, " ") : item.Name,
                     ItemJob: itemDetails.itemJob,
                     Options: ds.AnswerOptions,
                     //QuestionType: 0,

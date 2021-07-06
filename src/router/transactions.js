@@ -58,6 +58,9 @@ export default function (router) {
      *     parameters:
      *       - name: ReferenceDatasetId
      *         in: query
+     *       - name: IncludeDataset
+     *         in: query
+     *         type: boolean
      *       - name: OwnerId
      *         in: query
      *       - name: CreditMin

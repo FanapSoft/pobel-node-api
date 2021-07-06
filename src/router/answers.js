@@ -204,7 +204,7 @@ export default function (router) {
     router.post("/api/Answers/SubmitBatchAnswer", [
         check('QuestionId').notEmpty().isLength({max: 50}).escape(),
         check('Answers.*.Ignored').notEmpty().toBoolean(),
-        check('Answers.*.IgnoreReason').isString().isLength({max: 200}).escape(),
+        check('Answers.*.IgnoreReason').optional({checkFalsy: true}).isString().isLength({max: 200}).escape(),
         check('Answers.*.DatasetId').isString().notEmpty().isLength({max: 50}).escape(),
         check('Answers.*.DatasetItemId').isString().notEmpty().isLength({max: 50}).escape(),
         check('Answers.*.AnswerIndex').notEmpty().toInt(),

@@ -17,6 +17,7 @@ transactionsController.findAll = async (req, res) => {
         DebitMax,
         OwnerId,
         ReferenceDatasetId,
+        IncludeDataset,
         Limit = process.env.API_PAGED_RESULTS_DEFAULT_LIMIT,
         Skip = 0
     } = req.query;
@@ -31,7 +32,17 @@ transactionsController.findAll = async (req, res) => {
         uId = req.decoded.Id
     }
 
-    let where = {};
+    let where = {}, select = Transaction.getFieldsByRole(req.decoded.role);
+
+    if(IncludeDataset) {
+        select = {
+            ...select,
+            ReferenceDataset: {
+                select: Dataset.getFieldsByRole(req.decoded.role)
+            }
+        }
+    }
+
     if(uId)
         where.OwnerId = uId;
     if(ReferenceDatasetId)
@@ -47,6 +58,7 @@ transactionsController.findAll = async (req, res) => {
 
     try {
         let items = await Transaction.client.findMany({
+            select,
             where,
             orderBy: {
                 CreatedAt: 'desc',
