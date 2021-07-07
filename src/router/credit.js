@@ -41,9 +41,8 @@ export default function (router) {
     router.get("/api/Credit/GetCredit", [
         check("DatasetId").not().isEmpty().isLength({max: 50}).trim().escape(),
         check("UserId").not().isEmpty().isLength({max: 50}).trim().escape(),
-    ],asyncWrapper(creditController.getCredit));
-
-        /**
+    ], asyncWrapper(creditController.getCredit));
+    /**
      * @swagger
      * /api/Credit/CollectCredit:
      *   post:

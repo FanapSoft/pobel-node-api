@@ -51,7 +51,7 @@ answersController.findAll = async (req, res) => {
 
     try {
         const items = await Answer.client.findMany({
-            select: Answer.getFieldsByRole(req.decoded.role),
+            select: {...Answer.getFieldsByRole(req.decoded.role), DeterminedLabel: true},
             where,
             orderBy: {
                 CreatedAt: 'desc',
@@ -97,7 +97,6 @@ answersController.submitBatchAnswer = async (req, res, next) => {
         return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid Answers array'}});
     }
 
-    //TODO: we should submit answers with the question owner id or the current requesterID ?
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -109,20 +108,25 @@ answersController.submitBatchAnswer = async (req, res, next) => {
     if(!question) {
         return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid QuestionId'}});
     }
-    const userTarget = await UserTarget.getUserCurrentTarget(question.OwnerId, question.DatasetId);
+    const userTarget = await UserTarget.getUserCurrentTarget(req.decoded.Id, question.DatasetId);
     if(!userTarget || userTarget.TargetEnded) {
         return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3203});
     }
+
+    let questionItems = question.DatasetItems;
+
     for(const [index, item] of Answers.entries()) {
         try {
             //let ds = await Dataset.findById(item.DatasetId, req.decoded.Role);
             if (question.DatasetId !== item.DatasetId)
                 return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid dataset: ' + item.DatasetId}});
 
-            let questionItems = question.DatasetItems;
+
             if(!questionItems.map(item => item.id).includes(item.DatasetItemId)) {
                 return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'This item does not belongs to current question: ' + item.DatasetItemId}});
             }
+
+            const qItem = questionItems.find(it => it.id === item.DatasetItemId);
 
             let dsi = await DatasetItem.findById(item.DatasetItemId, req.decoded.Role);
             if (!dsi)
@@ -130,14 +134,22 @@ answersController.submitBatchAnswer = async (req, res, next) => {
 
             let answerType = Answer.answerTypes.NORMAL, goldenType = Answer.goldenTypes.ISNOTGOLDEN;
 
-            if(dsi.IsGoldenData) {
+            if(qItem.g) {
                 answerType = Answer.answerTypes.GOLDEN;
                 goldenType = Answer.goldenTypes.POSITIVE;
-            }
-            else if(question.LabelId && dsi.LabelId !== question.LabelId) {
+            } else if(qItem.ng) {
                 answerType = Answer.answerTypes.GOLDEN;
                 goldenType = Answer.goldenTypes.NEGATIVE;
             }
+            // if(dsi.IsGoldenData) {
+            //     answerType = Answer.answerTypes.GOLDEN;
+            //     goldenType = Answer.goldenTypes.POSITIVE;
+            // }
+            // else if(question.LabelId && dsi.LabelId !== question.LabelId) {
+            //     answerType = Answer.answerTypes.GOLDEN;
+            //     goldenType = Answer.goldenTypes.NEGATIVE;
+            // }
+            //TODO: we should submit answers with the question owner id or the current requesterID ?
             let answer = await Answer.client.create({
                 data: {
                     UserId: question.OwnerId,
@@ -147,6 +159,7 @@ answersController.submitBatchAnswer = async (req, res, next) => {
                     DatasetItemId: item.DatasetItemId,
                     Answer: JSON.parse(item.AnswerIndex),
                     //QuestionObject: item.QuestionObject,
+                    DeterminedLabelId: qItem.determinedLabelId,
                     DurationToAnswerInSeconds: JSON.parse(item.DurationToAnswerInSeconds),
                     AnswerType: answerType,
                     GoldenType: goldenType

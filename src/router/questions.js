@@ -9,11 +9,21 @@
  *           type: boolean
  *         G:
  *           type: boolean
+ *           description: Only for admin (Indicates that the items is positive golden or not)
+ *         NG:
+ *           type: boolean
+ *           description: Only for admin (Indicates that the items is negative golden or not)
  *         DatasetItemId:
  *           type: string
  *           format: uuid
  *         AnswerType:
  *           type: string
+ *         ItemName:
+ *           type: string
+ *           description: If question generated for one label this is tha label name
+ *         ItemJob:
+ *           type: string
+ *           description: If question generated for one label this is tha label name
  *         Options:
  *           type: "array"
  *           items:

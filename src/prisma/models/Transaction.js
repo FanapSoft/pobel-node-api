@@ -6,7 +6,8 @@ class Transaction extends DBModelBase {
         super();
         this.table = 'transactions';
         this.client = prisma.transactions;
-        this.modelPublicFields = {Id: true, CreatedAt: true, CreditAmount: true, DebitAmount: true, Reason: true, ReasonDescription: true, };
+        this.modelAdminFields = {Id: true, CreatedAt: true, CreditAmount: true, DebitAmount: true, Reason: true, ReasonDescription: true, ReferenceDatasetId: true };
+        this.modelPublicFields = {Id: true, CreatedAt: true, CreditAmount: true, DebitAmount: true, Reason: true, ReasonDescription: true, ReferenceDatasetId: true };
     }
 }
 

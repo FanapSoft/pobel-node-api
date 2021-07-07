@@ -33,6 +33,7 @@
       {"resource": "/Questions/GetQuestions", "methods": ["GET"], "action": "allow"},
 
       {"resource": "/Answers/SubmitBatchAnswer", "methods": ["POST"], "action": "allow"},
+      {"resource": "/Targets/ActivateTarget", "methods": ["POST"], "action": "allow"},
       {"resource": "/Credit/CollectCredit", "methods": ["POST"], "action": "allow"}
     ]
   },

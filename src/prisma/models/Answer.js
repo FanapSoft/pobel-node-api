@@ -6,7 +6,7 @@ class Answer extends DBModelBase {
         super();
         this.table = 'answerLogs';
         this.client = prisma.answerLogs
-        this.modelPublicFields = this.modelUserFields = {Ignored: true, Answer: true, DatasetId: true, DatasetItemId: true, CreditCalculated: true};
+        this.modelPublicFields = this.modelUserFields = {Id: true, Ignored: true, Answer: true, DatasetId: true, DatasetItemId: true, CreditCalculated: true};
 
         this.answerTypes = {
             GOLDEN: 0,
@@ -35,12 +35,14 @@ class Answer extends DBModelBase {
             " sum(CASE WHEN \"Answer\" = " + conf[1].a + " AND \"AnswerType\" = " + conf[1].at + " AND \"GoldenType\" = " + conf[1].gt + "  then 1 else 0 end) AS CorrectNegativeGoldens, " +
             " sum(CASE WHEN \"Answer\" <> " + conf[1].a + " AND \"AnswerType\" = " + conf[1].at + " AND \"GoldenType\" = " + conf[1].gt + "  then 1 else 0 end) AS IncorrectNegativeGoldens " +
             " FROM \"AnswerLogs\"" +
-            " WHERE \"UserId\" = '"+ userId +"' AND \"DatasetId\" = '"+ dataset.Id +"'");
+            " WHERE \"UserId\" = '"+ userId +"' AND \"DatasetId\" = '"+ dataset.Id +"' AND \"CreditCalculated\" = false");
 
-        if(results[0].correctpositivegoldens > 0)
-            credit += (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * Math.pow(target.BonusTruePositive, results[0].correctpositivegoldens) * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens);
-        if(results[0].correctnegativegoldens > 0)
-            credit += (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * Math.pow(target.BonusTrueNegative, results[0].correctnegativegoldens) * Math.pow(target.BonusFalseNegative, results[0].incorrectnegativegoldens);
+        if(results[0].correctpositivegoldens + results[0].correctnegativegoldens > 0)
+            credit += (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * Math.pow(target.BonusTruePositive, results[0].correctpositivegoldens) * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens) * Math.pow(target.BonusTrueNegative, results[0].correctnegativegoldens) * Math.pow(target.BonusFalseNegative, results[0].incorrectnegativegoldens);
+
+        // if(results[0].correctnegativegoldens > 0)
+        //     credit += (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * Math.pow(target.BonusTrueNegative, results[0].correctnegativegoldens) * Math.pow(target.BonusFalseNegative, results[0].incorrectnegativegoldens);
+
         // credit += (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * results[0].correctpositivegoldens * target.BonusTruePositive + target.UMin;
         // credit += (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * results[0].correctnegativegoldens * target.BonusTrueNegative + target.UMin;
         // credit -= (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * results[0].incorrectpositivegoldens * target.BonusFalsePositive + target.UMin;
@@ -49,6 +51,9 @@ class Answer extends DBModelBase {
         if(!credit || credit < 0) {
             credit = 0;
         }
+
+        if(credit > target.UMax)
+            credit = target.UMax;
 
         return credit;
     }

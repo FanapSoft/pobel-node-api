@@ -79,7 +79,7 @@ export default function (router) {
                 where: {
                     PodUserId: profile.data.id
                 },
-                data:{
+                data: {
                     UserName: profile.data.preferred_username,
                     Email: profile.data.email,
                     Name: profile.data.given_name,

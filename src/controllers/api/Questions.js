@@ -81,6 +81,11 @@ questionsController.getQuestions = async (req, res) => {
             }
         });
 
+        if(answersCount >= userTarget.TargetDefinition.AnswerCount) {
+            await UserTarget.finishUserTarget(userTarget.Id);
+            return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3301});
+        }
+
         if(ds.AnswerBudgetCountPerUser && ds.AnswerBudgetCountPerUser <= answersCount) {
             //TODO: shall we set targetdefinition.targetended to true ? so user can collect its credit
             await UserTarget.finishUserTarget(userTarget.Id);
@@ -121,10 +126,10 @@ questionsController.getQuestions = async (req, res) => {
             const generatedQuestion = await QuestionRequestLog.client.create({
                 data: {
                     DatasetId: ds.Id,
-                    LabelId: Label ? Label.Id : null,
+                    LabelId: label ? label.Id : null,
                     Type: Label ? QuestionRequestLog.types.GRID : QuestionRequestLog.types.LINEAR,
                     OwnerId: uId,
-                    DatasetItems: datasetItems.map(item => {return {id: item.Id, g: item.IsGoldenData, ng: item.NG}}),
+                    DatasetItems: datasetItems.map(item => {return {id: item.Id, determinedLabelId: label ? label.Id : item.LabelId,  g: item.IsGoldenData ? 1 : 0, ng: item.NG  ? 1 : 0 }}),
                     ItemsCount: datasetItems.length
                 }
             });
