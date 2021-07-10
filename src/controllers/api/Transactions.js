@@ -34,14 +34,16 @@ transactionsController.findAll = async (req, res) => {
 
     let where = {}, select = Transaction.getFieldsByRole(req.decoded.role);
 
-    if(IncludeDataset) {
-        select = {
-            ...select,
-            ReferenceDataset: {
-                select: Dataset.getFieldsByRole(req.decoded.role)
-            }
-        }
-    }
+    // if(IncludeDataset) {
+    //     select = {
+    //         ...select,
+    //         ReferenceDataset: true
+    //         //TODO: prisma has bug on this line, update this to not print all dataset fields
+    //         // ReferenceDataset: {
+    //         //     select: Dataset.getFieldsByRole(req.decoded.role)
+    //         // }
+    //     }
+    // }
 
     if(uId)
         where.OwnerId = uId;
@@ -57,6 +59,7 @@ transactionsController.findAll = async (req, res) => {
         where.DebitAmount = {gte: DebitMin}
 
     try {
+
         let items = await Transaction.client.findMany({
             select,
             where,
@@ -66,6 +69,12 @@ transactionsController.findAll = async (req, res) => {
             take: parseInt(Limit),
             skip: Skip
         });
+
+        if(IncludeDataset)
+            //Hot fix for prisma bug
+            for (let item of items) {
+                item.ReferenceDataset = await Dataset.findById(item.ReferenceDatasetId, req.decoded.role)
+            }
 
         const totalCount = await Transaction.client.count({
             where,

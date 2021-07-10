@@ -4,6 +4,7 @@ class DBModelBase {
     constructor() {
         this.table = '';
         this.modelPublicFields = null;
+        this.modelUserFields = null;
         this.modelAdminFields = null;
 
     }
@@ -29,7 +30,7 @@ class DBModelBase {
             case 'admin':
                 return this.modelAdminFields;
             case 'user':
-                return (this.modelUserFields ? this.modelUserFields : this.modelPublicFields);
+                return (this.modelAdminFields ? this.modelAdminFields : this.modelPublicFields);
             case 'guest':
             default:
                 return this.modelPublicFields;

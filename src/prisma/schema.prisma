@@ -7,7 +7,7 @@ datasource db {
 }
 
 generator clinent {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["selectRelationCount"]
 }
 
@@ -185,8 +185,8 @@ model Transactions {
   CreditAmount       Float     @db.DoublePrecision
   Reason             Int
   ReasonDescription  String?
-  ReferenceDatasetId String?
-  ReferenceDataset   Datasets? @relation(fields: [ReferenceDatasetId], references: [Id])
+  ReferenceDatasetId String
+  ReferenceDataset   Datasets  @relation(fields: [ReferenceDatasetId], references: [Id])
 }
 
 model QuestionRequestLogs {
