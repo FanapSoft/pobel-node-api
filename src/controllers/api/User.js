@@ -9,7 +9,7 @@ const userController = {};
 // Get All Users
 userController.findAll = async (req, res) => {
     const {
-        Name,
+        Keyword,
         UserName,
         IsActive,
         Limit = process.env.API_PAGED_RESULTS_DEFAULT_LIMIT,
@@ -17,10 +17,29 @@ userController.findAll = async (req, res) => {
     } = req.query;
 
     let where = {};
-    if(Name)
-        where.Name = {
-            contains: Name
-        };
+    if(Keyword) {
+        where.OR = [
+            {
+                Name: {
+                    contains: Keyword,
+                    mode: "insensitive"
+                }
+            },
+            {
+                Surname: {
+                    contains: Keyword,
+                    mode: "insensitive"
+                }
+            },
+            {
+                UserName: {
+                    contains: Keyword,
+                    mode: "insensitive"
+                }
+            }
+        ]
+    }
+
     if(IsActive !== null && IsActive !== undefined)
         where.IsActive = IsActive;
     if(UserName)
@@ -32,7 +51,7 @@ userController.findAll = async (req, res) => {
             orderBy: {
                 CreatedAt: 'desc'
             },
-            skip: Skip,
+            skip: JSON.parse(Skip),
             take: parseInt(Limit),
         });
         const totalCount = await User.client.count({
@@ -45,7 +64,7 @@ userController.findAll = async (req, res) => {
     }
 };
 
-// Get User By ID
+// Get User By Id
 userController.findOne = async (req, res) => {
     const {
         id

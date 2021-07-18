@@ -107,17 +107,22 @@ datasetController.create = async (req, res, next) => {
         AnswerReplicationCount,
         AnswerBudgetCountPerUser
     } = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
     try {
         let dataset = await Dataset.client.create({
             data: {
                 Name,
                 Description,
-                Type: JSON.parse(Type),
-                AnswerType: JSON.parse(AnswerType),
-                IsActive: JSON.parse(IsActive),
-                LabelingStatus: JSON.parse(LabelingStatus),
-                AnswerReplicationCount: JSON.parse(AnswerReplicationCount),
-                AnswerBudgetCountPerUser: JSON.parse(AnswerBudgetCountPerUser)
+                Type,
+                AnswerType,
+                IsActive,
+                LabelingStatus,
+                AnswerReplicationCount,
+                AnswerBudgetCountPerUser
             }
         });
 

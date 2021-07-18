@@ -72,12 +72,11 @@ questionsController.getQuestions = async (req, res) => {
             return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3203});
         }
 
-        const answersCount = await Answer.client.count({
+        let answersCount = await Answer.client.count({
             where: {
                 DatasetId,
                 UserId: uId,
-                CreditCalculated: false,
-                //TODO: exclude negative goldens ?
+                CreditCalculated: false
             }
         });
 
@@ -86,8 +85,14 @@ questionsController.getQuestions = async (req, res) => {
             return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3301});
         }
 
+        answersCount = await Answer.client.count({
+            where: {
+                DatasetId,
+                UserId: uId
+            }
+        });
+
         if(ds.AnswerBudgetCountPerUser && ds.AnswerBudgetCountPerUser <= answersCount) {
-            //TODO: shall we set targetdefinition.targetended to true ? so user can collect its credit
             await UserTarget.finishUserTarget(userTarget.Id);
             return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3301});
         }

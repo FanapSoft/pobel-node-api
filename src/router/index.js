@@ -10,6 +10,7 @@ import datasetItems from "./datasetItems.js";
 import reports from "./reports.js";
 import answers from "./answers.js";
 import questions from "./questions.js";
+import wallet from "./wallet";
 
 import User from "../prisma/models/User.js";
 
@@ -111,6 +112,7 @@ questions(ROUTER);
 credit(ROUTER);
 transactions(ROUTER);
 files(ROUTER);
+wallet(ROUTER)
 
 export default function (app) {
     app.use(ROUTER);

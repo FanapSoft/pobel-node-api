@@ -33,7 +33,7 @@ userController.activateTarget =  async (req, res) => {
 
         const ds = await Dataset.findById(newTargetDefinition.DatasetId, 'admin');
 
-        if(ds.Labelingstatus > Dataset.labelingStatuses.LABELING_ALLOWED) {
+        if(ds.LabelingStatus > Dataset.labelingStatuses.LABELING_ALLOWED) {
             return handleError(res, {status: httpStatus.EXPECTATION_FAILED, error: {code: 3300}});
         }
 
@@ -45,7 +45,7 @@ userController.activateTarget =  async (req, res) => {
         } else {
             if (userTarget.TargetDefinition) {
                 const oldTargetDafeinition = userTarget.TargetDefinition;
-                if(oldTargetDafeinition.Id === newTargetDefinition.Id) {
+                if(oldTargetDafeinition.Id === newTargetDefinition.Id && !userTarget.TargetEnded) {
                     return res.send({success: true});
                 }
 

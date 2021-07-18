@@ -25,7 +25,7 @@ datasetItemsController.findAll = async (req, res) => {
         };
 
     if(IsGoldenData !== null && IsGoldenData !== undefined)
-        where.IsGoldenData = IsGoldenData;
+        where.IsGoldenData = JSON.parse(IsGoldenData);
 
     if(!Object.keys(include).length)
         include = null;

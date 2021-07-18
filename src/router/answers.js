@@ -159,6 +159,8 @@ export default function (router) {
      *         in: query
      *       - name: DatasetId
      *         in: query
+     *       - name: OnlyNonCalculated
+     *         in: query
      *     responses:
      *       200:
      *         type: object
@@ -171,6 +173,7 @@ export default function (router) {
     router.get("/api/Answers/Stats", [
         check('UserId').notEmpty().isLength({max: 50}).escape(),
         check('DatasetId').notEmpty().isLength({max: 50}).escape(),
+        check('OnlyNonCalculated').optional({checkFalsy: true}).isBoolean(),
     ], asyncWrapper(answersController.stats));
     /**
      * @swagger

@@ -88,7 +88,7 @@ reportController.scoreboard = async (req, res) => {
         datasetIdString = " AND AL.\"DatasetId\" = '" + DatasetId + "' ";
 
     try {
-        let result = await prisma.$queryRaw("SELECT AL.\"UserId\" , U.\"Name\", U.\"Surname\", COUNT(AL.\"Id\") AS Count\n" +
+        let result = await prisma.$queryRaw("SELECT AL.\"UserId\" , U.\"Name\", U.\"Surname\", COUNT(AL.\"Id\") AS Count, \'" + From + "\' AS From\n" +
             "FROM \"AnswerLogs\" AL\n" +
             "JOIN \"User\" U ON  U.\"Id\" = AL.\"UserId\" AND date(AL.\"CreatedAt\") > date('"+ From +"')  " + datasetIdString + " \n" +
             "GROUP BY AL.\"UserId\", U.\"Name\", U.\"Surname\"\n" +

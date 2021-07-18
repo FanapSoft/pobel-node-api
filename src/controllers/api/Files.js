@@ -26,14 +26,14 @@ filesController.streamDatasetImages = async (req, res) => {
         if(!item)
             return handleError(res, {status: httpStatus.EXPECTATION_FAILED, error: {code: 3002, message: 'Invalid item id'}});
         if (fs.existsSync(item.FilePath)) {
-            const image = await jimp.read(item.FilePath);
-
-            // Resize the image to width 150 and auto height.
-            image.resize(150, jimp.AUTO).quality(60).getBuffer(jimp.MIME_JPEG, function(err, buffer){
-                res.set("Content-Type", jimp.MIME_JPEG);
-                res.send(buffer);
-            });
-
+            // const image = await jimp.read(item.FilePath);
+            //
+            // // Resize the image to width 150 and auto height.
+            // image.resize(150, jimp.AUTO).quality(60).getBuffer(jimp.MIME_JPEG, function(err, buffer){
+            //     res.set("Content-Type", jimp.MIME_JPEG);
+            //     res.send(buffer);
+            // });
+            res.sendFile(item.FilePath);
         } else {
             return handleError(res, {status: httpStatus.NOT_FOUND, error: {code: 1000, message: 'Unable to find the item file'}});
         }
@@ -57,7 +57,7 @@ filesController.streamDatasetImagesOriginal = async (req, res) => {
         if(!item)
             return handleError(res, {status: httpStatus.EXPECTATION_FAILED, error: {code: 3002, message: 'Invalid item id'}});
         if (fs.existsSync(item.FilePath)) {
-            res.sendFile(item.FilePath)
+            res.sendFile(item.FilePath);
         } else {
             return handleError(res, {status: httpStatus.NOT_FOUND, error: {code: 1000, message: 'Unable to find the item file'}});
         }

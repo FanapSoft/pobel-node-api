@@ -9,8 +9,8 @@ class User extends DBModelBase {
         //TODO: move this to DBModelBase Class
         this.client = prisma.user;
 
-        this.modelPublicFields = {Id: true, UserName: true, Name: true, Surname: true, Email: true, IsActive: true};
-        this.modelAdminFields = {Id: true, UserName: true, Name: true, Surname: true, Email: true, IsActive: true, PodUserId: true, PodContactId: true, Role: true};
+        this.modelPublicFields = {Id: true, UserName: true, Name: true, Surname: true, Email: true, PhoneNumber: true, IsActive: true};
+        this.modelAdminFields = {Id: true, UserName: true, Name: true, Surname: true, Email: true, IsActive: true, PodUserId: true, PodContactId: true, Role: true, PhoneNumber: true};
     }
 }
 

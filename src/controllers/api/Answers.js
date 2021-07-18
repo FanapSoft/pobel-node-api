@@ -204,16 +204,30 @@ answersController.submitBatchAnswer = async (req, res, next) => {
 answersController.stats = async (req, res, next) => {
     const {
         UserId,
-        DatasetId
+        DatasetId,
+        OnlyNonCalculated
     } = req.query;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    let uId = UserId ? UserId : null;
+    if(UserId && req.decoded.Role !== 'admin') {
+        uId = req.decoded.Id;
+    }
 
     let where = {};
 
     if(UserId)
-        where.UserId = UserId
+        where.UserId = uId
 
     if(DatasetId)
         where.DatasetId = DatasetId
+
+    if(OnlyNonCalculated)
+        where.CreditCalculated = false;
 
     try {
         let result = await Answer.client.count({

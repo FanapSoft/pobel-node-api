@@ -23,7 +23,7 @@ targetController.findAll = async (req, res) => {
         let items = await TargetDefinition.client.findMany({
             where,
             orderBy: {
-                CreatedAt: 'desc'
+                AnswerCount: 'asc'
             },
             take: parseInt(Limit),
             skip: Skip
