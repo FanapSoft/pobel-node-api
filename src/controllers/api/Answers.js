@@ -108,9 +108,52 @@ answersController.submitBatchAnswer = async (req, res, next) => {
     if(!question) {
         return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid QuestionId'}});
     }
+
+    const ds = await Dataset.client.findUnique({
+        where: {
+            Id: question.DatasetId
+        },
+        include: {
+            AnswerOptions: true
+        }
+    });
+
+    if(!ds) {
+        return handleError(res, {code: 3002, status: httpStatus.BAD_REQUEST});
+    }
+
+    if(ds.LabelingStatus > Dataset.labelingStatuses.LABELING_ALLOWED) {
+        return handleError(res, {status: httpStatus.EXPECTATION_FAILED, error: {code: 3300}});
+    }
+
     const userTarget = await UserTarget.getUserCurrentTarget(req.decoded.Id, question.DatasetId);
     if(!userTarget || userTarget.TargetEnded) {
         return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3203});
+    }
+
+    let answersCount = await Answer.client.count({
+        where: {
+            DatasetId: question.DatasetId,
+            UserId: question.OwnerId,
+            CreditCalculated: false
+        }
+    });
+
+    if(answersCount >= userTarget.TargetDefinition.AnswerCount) {
+        await UserTarget.finishUserTarget(userTarget.Id);
+        return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3203});
+    }
+
+    answersCount = await Answer.client.count({
+        where: {
+            DatasetId: question.DatasetId,
+            UserId: question.OwnerId
+        }
+    });
+
+    if(ds.AnswerBudgetCountPerUser && ds.AnswerBudgetCountPerUser <= answersCount) {
+        await UserTarget.finishUserTarget(userTarget.Id);
+        return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3301});
     }
 
     let questionItems = question.DatasetItems;

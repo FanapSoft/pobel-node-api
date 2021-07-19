@@ -171,7 +171,7 @@ export default function (router) {
      *
      */
     router.get("/api/Answers/Stats", [
-        check('UserId').notEmpty().isLength({max: 50}).escape(),
+        check('UserId').optional({checkFalsy: true}).isUUID(),
         check('DatasetId').notEmpty().isLength({max: 50}).escape(),
         check('OnlyNonCalculated').optional({checkFalsy: true}).isBoolean(),
     ], asyncWrapper(answersController.stats));

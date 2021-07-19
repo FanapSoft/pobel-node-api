@@ -53,20 +53,6 @@ questionsController.getQuestions = async (req, res) => {
             return handleError(res, {status: httpStatus.EXPECTATION_FAILED, error: {code: 3300}});
         }
 
-        // const userTargets = await UserTarget.client.findMany({
-        //     where: {
-        //         OwnerId: uId,
-        //         DatasetId: ds.Id
-        //     },
-        //     include: {
-        //         TargetDefinition: true
-        //     },
-        //     orderBy: {
-        //         CreatedAt: 'desc'
-        //     },
-        //     take: 1
-        // });
-
         const userTarget = await UserTarget.getUserCurrentTarget(uId, ds.Id);
         if(!userTarget || userTarget.TargetEnded) {
             return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3203});
@@ -82,7 +68,7 @@ questionsController.getQuestions = async (req, res) => {
 
         if(answersCount >= userTarget.TargetDefinition.AnswerCount) {
             await UserTarget.finishUserTarget(userTarget.Id);
-            return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3301});
+            return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3203});
         }
 
         answersCount = await Answer.client.count({

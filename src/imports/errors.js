@@ -16,6 +16,7 @@ const errors = [
     {code: 3201, message: 'You can not change your target before converting your points to money'},
     {code: 3202, message: 'Your target ended choose a new target'},
     {code: 3203, message: 'No target Or target ended'},
+    {code: 3204, message: 'Please collect your points before choosing a new target'},
     /**
      * 3300 to 3350 is for datasets
      */

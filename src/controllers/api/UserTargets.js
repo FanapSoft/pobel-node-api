@@ -39,6 +39,18 @@ userController.activateTarget =  async (req, res) => {
 
         const userTarget = await UserTarget.getUserCurrentTarget(uId, ds.Id);
 
+        const totalAnswersCount = await Answer.client.count({
+            where: {
+                DatasetId: ds.Id,
+                UserId: uId
+            }
+        });
+        if(ds.AnswerBudgetCountPerUser && ds.AnswerBudgetCountPerUser <= totalAnswersCount) {
+            if(userTarget)
+                await UserTarget.finishUserTarget(userTarget.Id);
+            return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3301});
+        }
+
         if(!userTarget) {
             await UserTarget.createTarget(uId, newTargetDefinition.DatasetId, TargetDefinitionId);
             return res.send({success: true});
@@ -64,20 +76,19 @@ userController.activateTarget =  async (req, res) => {
                     }
                 });
 
+                //TODO: maybe unnecessary, needs more checks
                 if(oldTargetDafeinition.AnswerCount <= userAnswersCount && !userTarget.TargetEnded) {
-                    await UserTarget.client.update({
-                        where: {
-                            Id: userTarget.Id
-                        },
-                        data: {
-                            TargetEnded: true
-                        }
-                    });
+                    await UserTarget.finishUserTarget(userTarget.Id)
 
                     return handleError(res, {
                         status: httpStatus.EXPECTATION_FAILED,
                         code: 3201,
                     });
+                }
+
+                if(userAnswersCount > 0 && userTarget.TargetEnded && newTargetDefinition.AnswerCount === oldTargetDafeinition.AnswerCount) {
+                    await UserTarget.finishUserTarget(userTarget.Id);
+                    return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3204});
                 }
 
                 await UserTarget.createTarget(uId, newTargetDefinition.DatasetId, newTargetDefinition.Id);
