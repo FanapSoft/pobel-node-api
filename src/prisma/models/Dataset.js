@@ -21,7 +21,6 @@ class Dataset extends DBModelBase {
             LABELING_PAUSED: 4,
             LABELING_ENDED: 5
         };
-
     }
 }
 

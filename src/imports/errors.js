@@ -10,7 +10,7 @@ const errors = [
     {code: 3001, message: 'No results'},
     {code: 3002, message: 'Invalid parameters'},
     /**
-     * 3200 to 3300 is for userTarget
+     * 3200 to 3299 is for userTarget
      */
     {code: 3200, message: 'New target should be bigger than previous target'},
     {code: 3201, message: 'You can not change your target before converting your points to money'},
@@ -18,25 +18,29 @@ const errors = [
     {code: 3203, message: 'No target Or target ended'},
     {code: 3204, message: 'Please collect your points before choosing a new target'},
     /**
-     * 3300 to 3350 is for datasets
+     * 3300 to 3349 is for datasets
      */
     {code: 3300, message: 'Labeling on this dataset is not allowed'},
     {code: 3301, message: 'You labeling budget on current dataset reached the maximum limit. Please wait until labeling on this dataset ends, then request for cash out.'},
     /**
-     * 3350 to 3400 is for datasets
+     * 3350 to 3400 is for datasetsItems
      */
     {code: 3350, message: 'This dataset has no items to label'},
     /**
-     * 3400 to 3450 is for credit
+     * 3400 to 3449 is for credit
      */
     {code: 3400, message: 'You can not collect your credit at this time'},
     /**
-     * 3400 to 3500 is for wallet
+     * 3500 to 3599 is for wallet
      */
     {code: 3500, message: 'Add user to contacts failed'},
     {code: 3501, message: 'Transfer to wallet failed'},
     {code: 3502, message: 'You need a valid phone number to request withdraw'},
     {code: 3503, message: 'Currently we do not support withdraw funds bigger than 500,000 tomans.'},
+    /**
+     * 3600 to 3649 is for labels
+     */
+    {code: 3600, message: 'This dataset has no more labels for you.'},
 ];
 
 export function findCode(code = 1000) {

@@ -88,7 +88,7 @@ questionsController.getQuestions = async (req, res) => {
 
         const positiveGoldens = Math.floor((25 / 100) * Count);
         const negativeGoldens = Math.ceil((20 / 100) * Count);
-        const noneGoldens =  Count - (positiveGoldens + negativeGoldens);
+        const noneGoldensCount =  Count - (positiveGoldens + negativeGoldens);
 
         if (OnlyOneLabel) {
             if(LabelId) {
@@ -97,18 +97,58 @@ questionsController.getQuestions = async (req, res) => {
                     return handleError(res, {status: httpStatus.EXPECTATION_FAILED, error: {code: 3002, message: 'Invalid LabelId'}});
                 }
             } else {
-                label = await prisma.$queryRaw('SELECT * from "Labels" WHERE "DatasetId" = '+ "'" + DatasetId + "' ORDER BY random() Limit 1;");
+                label = await prisma.$queryRaw('SELECT * from "Labels" WHERE "DatasetId" = '+ "'" + DatasetId + "' AND \"ItemsDone\" = " + false + " ORDER BY random() Limit 1;");
                 label = label[0];
             }
+
             datasetItems = await prisma.$queryRaw('SELECT * FROM (' +
                 '(SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", false AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "'  AND \"IsGoldenData\" = " + true + " AND \"LabelId\" = '" + label.Id +  "' AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  "   AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + uId + "' ) ORDER BY random() LIMIT " + positiveGoldens + ")" +
                 'UNION (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", true AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"LabelId\" <> '" + label.Id +  "' AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  "  AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + uId + "' ) ORDER BY random() LIMIT  " + negativeGoldens + ")" +
-                'UNION (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", false AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"LabelId\" = '" + label.Id +  "' AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  "  AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + uId + "' ) ORDER BY random() LIMIT  " + noneGoldens + ")" +
                 ") AS T1 ORDER BY random()");
+
+
+            let noneGoldens = await prisma.$queryRaw('SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", false AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"LabelId\" = '" + label.Id +  "' AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  "  AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + uId + "' ) ORDER BY random() LIMIT " + noneGoldensCount + ";")
+
+            if(!noneGoldens || !noneGoldens.length) {
+                await Label.client.update({
+                    where: {
+                        Id: label.Id
+                    },
+                    data: {
+                        ItemsDone: true
+                    }
+                });
+
+                const remainingLabelsCount = await Label.client.count({
+                    where: {
+                        ItemsDone: false,
+                        DatasetId: ds.Id
+                    }
+                });
+
+                if(remainingLabelsCount) {
+                    req.query.LabelId = null;
+                    return questionsController.getQuestions(req, res);
+                } else {
+                    //endTheDataset(ds);
+                    await UserTarget.finishUserTarget(userTarget.Id);
+                    return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3600});
+                }
+            }
+
+            datasetItems = [
+                ...datasetItems,
+                ...noneGoldens
+            ];
+            datasetItems.sort(sortRandom);
+
+            function sortRandom(a, b) {
+                return 0.5 - Math.random();
+            }
         } else {
             datasetItems = await prisma.$queryRaw('SELECT * FROM (' +
                 '(SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "'  AND \"IsGoldenData\" = " + true + " AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  " AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + req.decoded.Id + "' ) ORDER BY random() LIMIT " + positiveGoldens + ")" +
-            'UNION (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  " AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + req.decoded.Id + "' ) ORDER BY random() LIMIT " + (negativeGoldens + noneGoldens) + ")" +
+            'UNION (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  " AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + req.decoded.Id + "' ) ORDER BY random() LIMIT " + (negativeGoldens + noneGoldensCount) + ")" +
             ") AS T1 ORDER BY random()");
         }
 
@@ -128,7 +168,7 @@ questionsController.getQuestions = async (req, res) => {
             let goldensPath = null;
             if(label) {
                 goldensPath = datasetItems.filter(item => item.isGoldenData);
-                goldensPath = goldensPath.length ? goldensPath[0].FilePath : null
+                goldensPath = goldensPath.length ? goldensPath[0].FilePath : null;
             }
 
             for (let item of datasetItems) {
@@ -144,22 +184,12 @@ questionsController.getQuestions = async (req, res) => {
                     ItemJob: itemDetails.itemJob,
                     Options: ds.AnswerOptions,
                     //QuestionType: 0,
-                    //QuestionSubjectFileSrc: null,//TODO: Idk what is it for
-                    //QuestionFileSrc: null,//TODO: put datasetitem file src so user can get the image
                     Label: label? label : undefined,
                     QuestionId: generatedQuestion.Id
                 });
             }
         } else {
-            Dataset.client.update({
-                where: {
-                    Id: ds.Id
-                },
-                data: {
-                    LabelingStatus: Dataset.labelingStatuses.NO_ITEMS
-                }
-            });
-
+            endTheDataset(ds);
             return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3350});
         }
 
@@ -169,5 +199,16 @@ questionsController.getQuestions = async (req, res) => {
         return handleError(res, {});
     }
 };
+
+async function endTheDataset(ds) {
+    await Dataset.client.update({
+        where: {
+            Id: ds.Id
+        },
+        data: {
+            LabelingStatus: Dataset.labelingStatuses.ITEMS_COMPLETED
+        }
+    });
+}
 
 export default questionsController;

@@ -130,19 +130,12 @@ model Labels {
   Name             String
   DatasetId        String
   Dataset          Datasets              @relation(fields: [DatasetId], references: [Id])
+  ItemsDone        Boolean               @default(false)
   DatasetItems     DatasetItems[]        @relation("Label")
   FinalDatasetItem DatasetItems?         @relation("FinalLabel")
   AnswerLogs       AnswerLogs[]
   QuestionLogs     QuestionRequestLogs[]
 }
-
-//model DatasetItemLabels {
-//  Id            String       @id @default(uuid())
-//  LabelId       String
-//  Label         Labels       @relation(fields: [LabelId], references: [Id])
-//  DatasetItemId String
-//  DatasetItem   DatasetItems @relation(fields: [DatasetItemId], references: [Id])
-//}
 
 model AnswerLogs {
   Id                        String       @id @default(uuid())

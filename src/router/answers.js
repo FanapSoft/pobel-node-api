@@ -211,9 +211,6 @@ export default function (router) {
         check('Answers.*.DatasetId').isString().notEmpty().isLength({max: 50}).escape(),
         check('Answers.*.DatasetItemId').isString().notEmpty().isLength({max: 50}).escape(),
         check('Answers.*.AnswerIndex').notEmpty().toInt(),
-        //check('Answers.*.QuestionObject').isJSON(), //TODO: deprecated
-        check('Answers.*.DurationToAnswerInSeconds').notEmpty().toInt(),
-        // check('Answers.*.AnswerType').notEmpty().toInt(),
-        // check('Answers.*.GoldenType').notEmpty().toInt()
+        check('Answers.*.DurationToAnswerInSeconds').notEmpty().toInt()
     ], asyncWrapper(answersController.submitBatchAnswer));
 }
