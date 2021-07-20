@@ -77,6 +77,10 @@ walletController.transferCreditToPodWallet = async (req, res, next) => {
             return handleError(res, {code: 3503});
         }
 
+        if(creditToTransfer.creditamount == 0) {
+            return handleError(res, {code: 3504});
+        }
+
         let amount = creditToTransfer.creditamount * 10;
         config.params = {
             contactId: user.PodContactId,

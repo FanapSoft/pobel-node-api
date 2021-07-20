@@ -30,15 +30,11 @@ export default function (router) {
      *         content:
      *           application/json:
      *             schema:
-     *               type: array
-     *               items:
-     *                 type: object
-     *                 properties:
-     *                   Amount:
-     *                     type: number
-     *                     format: float
-     *                   Result:
-     *                     type: boolean
+     *               type: object
+     *               properties:
+     *                 debitAmount:
+     *                   type: number
+     *                   format: float
      */
     router.post("/api/Wallet/TransferCreditToPodWallet", [
         check('UserId').optional({checkFalsy: true}).notEmpty().isUUID(),

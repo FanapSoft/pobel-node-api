@@ -37,10 +37,16 @@ const errors = [
     {code: 3501, message: 'Transfer to wallet failed'},
     {code: 3502, message: 'You need a valid phone number to request withdraw'},
     {code: 3503, message: 'Currently we do not support withdraw funds bigger than 500,000 tomans.'},
+    {code: 3504, message: 'Can not transfer this amount of money.'},
     /**
      * 3600 to 3649 is for labels
      */
     {code: 3600, message: 'This dataset has no more labels for you.'},
+        /**
+     * 3700 to 3799 is for users
+     */
+    {code: 3700, message: 'Your account is inactivated. Contact support for more info.'},
+
 ];
 
 export function findCode(code = 1000) {

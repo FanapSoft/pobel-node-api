@@ -41,7 +41,6 @@ ROUTER.get("/", function(req, res, next) {
  */
 authRoutes(ROUTER);
 
-
 /**
  * Middleware for auth
  * express-acl middleware depends on the role
@@ -58,6 +57,9 @@ ROUTER.use(async function(req, res, next) {
         }, 'admin');
 
         if(user) {
+            if(!user.IsActive) {
+                return handleError(res, {code: 3700});
+            }
             req.decoded = {
                 ...user,
                 role: user.Role
@@ -70,26 +72,6 @@ ROUTER.use(async function(req, res, next) {
             role: 'guest'
         }
     }
-
-    //console.log(req._parsedUrl.path, req.decoded)
-    //
-    // if (!token)
-    //     return handleError(res, {code: 2002, status: httpStatus.UNAUTHORIZED});
-    //
-    // const user = await User.findByObject({
-    //     LocalToken: token,
-    //     TokenExpiresAt: {
-    //         gt: new Date().toISOString()
-    //     }
-    // }, 'admin');
-    //
-    // if(!user)
-    //     return handleError(res, {code: 2001, status: httpStatus.UNAUTHORIZED});
-
-    // req.decoded = {
-    //     ...user,
-    //     role: user.Role
-    // };
 
     return next();
 });

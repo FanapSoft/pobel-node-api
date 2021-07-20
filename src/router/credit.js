@@ -28,7 +28,6 @@ export default function (router) {
      *         in: query
      *       - name: DatasetId
      *         in: query
-     *       - name: CheckTarget
      *     responses:
      *       200:
      *         type: object
@@ -66,7 +65,7 @@ export default function (router) {
      *
      */
     router.post("/api/Credit/CollectCredit", [
-        check("DatasetId").not().isEmpty().isLength({max: 50}).trim().escape(),
-        check("UserId").not().isEmpty().isLength({max: 50}).trim().escape(),
+        check("DatasetId").notEmpty().isUUID(),
+        check("UserId").notEmpty().isUUID(),
     ], asyncWrapper(creditController.collectCredit));
 }
