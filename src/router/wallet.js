@@ -17,13 +17,14 @@ export default function (router) {
      *     description:
      *     produces:
      *       - application/json
-     *           consumes
-     *             - application/json
      *     parameters:
      *       - name: UserId
      *         in: body
+     *         type: string
+     *         format: uuid
      *       - name: PhoneNumber
      *         in: body
+     *         type: number
      *     responses:
      *       200:
      *         description: transfer result

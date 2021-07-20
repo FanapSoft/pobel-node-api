@@ -54,7 +54,7 @@ export default function (router) {
      *       - name: UserId
      *         in: params
      *       - name: DatasetId
-         *     in: params
+     *         in: params
      *     responses:
      *       200:
      *         type: object
