@@ -142,11 +142,13 @@ export default function (router) {
      *     responses:
      *       200:
      *         description: Return activation result
-     *         type: object
      *         content:
      *           application/json:
      *             schema:
-     *               content:
+     *               type: object
+     *               properties:
+     *                 success:
+     *                   type: boolean
      *
      */
     router.post("/api/Targets/ActivateTarget", [
