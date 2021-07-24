@@ -24,7 +24,7 @@ export default function (router) {
      *         format: uuid
      *       - name: PhoneNumber
      *         in: body
-     *         type: number
+     *         type: string
      *     responses:
      *       200:
      *         description: transfer result
