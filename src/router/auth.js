@@ -2,10 +2,10 @@ import axios from "axios";
 import prisma from "../prisma/prisma.module.js";
 
 const config = {
-    client_id: '19503853ya6d44dd186846fa5c2f6ea9d',
-    client_secret: 'e4df0524ed104540',
+    client_id: process.env.POD_POBEL_ACCOUNT_CLIENT_ID,
+    client_secret: process.env.POD_POBEL_ACCOUNT_CLIENT_SECRET,
     redirect_uri: "http://localhost:8080/SSOCallback",
-}
+};
 
 export default function (router) {
     router.get("/auth", function (req, res) {
@@ -88,7 +88,7 @@ export default function (router) {
                     Tokens: tokens.data,
                     RefreshToken: tokens.data.refresh_token,
                     LocalToken: tokens.data.id_token,
-                    TokenExpiresAt: new Date(new Date().setDate(new Date().getDate() + 4)).toISOString()//.setDate(new Date().getDate() + 1)
+                    TokenExpiresAt: new Date(new Date().setDate(new Date().getDate() + 4)).toISOString()
                 }
             });
         }
@@ -131,8 +131,8 @@ export default function (router) {
     async function getUserData(accessToken) {
         let params = {
             // ------ REQUIRED ------
-            Client_id: '19503853ya6d44dd186846fa5c2f6ea9d',
-            Client_secret: 'e4df0524ed104540'
+            Client_id: config.client_id,
+            Client_secret: config.client_secret,
         };
 
         try {

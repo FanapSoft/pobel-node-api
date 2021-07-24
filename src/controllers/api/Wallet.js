@@ -36,7 +36,7 @@ walletController.transferCreditToPodWallet = async (req, res, next) => {
 
         let config = {
             headers: {
-                '_token_': '68b346f0c02a4e62880a2aa50ccc0303',
+                '_token_': process.env.POD_POBEL_ACCOUNT_API_TOKEN,
                 '_token_issuer_': 1,
                 'content-type': 'application/x-www-form-urlencoded'
             }
