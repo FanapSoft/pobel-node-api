@@ -91,9 +91,10 @@ questionsController.getQuestions = async (req, res, next, runCount = 0) => {
                     "where \"ItemsDone\"=false AND \"Id\"='" + LabelId + "'  " +
                     "AND EXISTS (select 1 from \"DatasetItems\"  " +
                     " where \"DatasetId\" = '" + DatasetId + "'  " +
+                    " and \"DatasetItems\".\"LabelId\"=\"Labels\".\"Id\"" +
                     " and \"DatasetItems\".\"AnswersCount\" < " + ds.AnswerReplicationCount +
                     " and \"DatasetItems\".\"IsGoldenData\"= " + false +
-                    " and not exists (select 1 from \"AnswerLogs\" al where \"DatasetItems\".\"Id\"=al.\"Id\" and al.\"UserId\"='" + uId + "' )) " +
+                    " and not exists (select 1 from \"AnswerLogs\" al where \"DatasetItems\".\"Id\"=al.\"DatasetItemId\" and al.\"UserId\"='" + uId + "' )) " +
                     "ORDER BY random()\n" +
                     "LIMIT 1");
                 if(label.length)
@@ -107,9 +108,10 @@ questionsController.getQuestions = async (req, res, next, runCount = 0) => {
                     "where \"ItemsDone\"=false \n" +
                     "AND EXISTS (select 1 from \"DatasetItems\" " +
                     " where \"DatasetId\" = '" + DatasetId + "' " +
+                    " and \"DatasetItems\".\"LabelId\"=\"Labels\".\"Id\"" +
                     " and \"DatasetItems\".\"AnswersCount\" < " + ds.AnswerReplicationCount +
                     " and \"DatasetItems\".\"IsGoldenData\"= " + false +
-                    " and not exists (select 1 from \"AnswerLogs\" al where \"DatasetItems\".\"Id\"=al.\"Id\" and al.\"UserId\"='" + uId + "' )) " +
+                    " and not exists (select 1 from \"AnswerLogs\" al where \"DatasetItems\".\"Id\"=al.\"DatasetItemId\" and al.\"UserId\"='" + uId + "' )) " +
                     "ORDER BY random() " +
                     "LIMIT 1");
 
@@ -177,7 +179,7 @@ questionsController.getQuestions = async (req, res, next, runCount = 0) => {
                     LabelId: label ? label.Id : null,
                     Type: Label ? QuestionRequestLog.types.GRID : QuestionRequestLog.types.LINEAR,
                     OwnerId: uId,
-                    DatasetItems: datasetItems.map(item => {return {id: item.Id, determinedLabelId: label ? label.Id : item.LabelId,  g: item.IsGoldenData ? 1 : 0, ng: item.NG  ? 1 : 0 }}),
+                    DatasetItems: datasetItems.map(item => {return {id: item.Id, determinedLabelId: label ? label.Id : item.LabelId,  g: item.IsGoldenData && !item.NG ? 1 : 0, ng: item.NG  ? 1 : 0 }}),
                     ItemsCount: datasetItems.length
                 }
             });
@@ -192,7 +194,7 @@ questionsController.getQuestions = async (req, res, next, runCount = 0) => {
                 let itemDetails = DatasetItem.processItem(item, label, goldensPath);
 
                 questions.push({
-                    G: req.decoded.role === 'admin' ? item.IsGoldenData : undefined,
+                    G: req.decoded.role === 'admin' ? item.IsGoldenData && !item.NG : undefined,
                     NG: req.decoded.role === 'admin' ? item.NG : undefined,
                     DatasetItemId: item.Id,
                     AnswerType: ds.AnswerType,
