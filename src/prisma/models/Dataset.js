@@ -22,6 +22,28 @@ class Dataset extends DBModelBase {
             LABELING_ENDED: 5
         };
     }
+
+    async findById(id, role = 'guest') {
+        const select = this.getFieldsByRole(role);
+        select.AnswerOptions = true
+        return await prisma[this.table].findUnique({
+            select,
+            where: {
+                Id: id
+            }
+        });
+    }
+
+    async changeDatasetLabelingStatus(id, status) {
+        await this.client.update({
+            where: {
+                Id: id
+            },
+            data: {
+                LabelingStatus: status
+            }
+        });
+    }
 }
 
 export default new Dataset;

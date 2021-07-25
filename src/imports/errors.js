@@ -42,7 +42,7 @@ const errors = [
      * 3600 to 3649 is for labels
      */
     {code: 3600, message: 'This dataset has no more labels for you.'},
-        /**
+    /**
      * 3700 to 3799 is for users
      */
     {code: 3700, message: 'Your account is inactivated. Contact support for more info.'},

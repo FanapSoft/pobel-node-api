@@ -109,14 +109,7 @@ answersController.submitBatchAnswer = async (req, res, next) => {
         return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid QuestionId'}});
     }
 
-    const ds = await Dataset.client.findUnique({
-        where: {
-            Id: question.DatasetId
-        },
-        include: {
-            AnswerOptions: true
-        }
-    });
+    const ds = await Dataset.findById(question.DatasetId, 'admin');
 
     if(!ds) {
         return handleError(res, {code: 3002, status: httpStatus.BAD_REQUEST});

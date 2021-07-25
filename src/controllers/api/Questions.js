@@ -9,10 +9,11 @@ import UserTarget from "../../prisma/models/UserTarget.js";
 import Answer from "../../prisma/models/Answer.js";
 import QuestionRequestLog from "../../prisma/models/QuestionRequestLog.js";
 import DatasetItem from "../../prisma/models/DatasetItem.js";
+import utils from "../../imports/utils";
 
 const questionsController = {};
 
-questionsController.getQuestions = async (req, res) => {
+questionsController.getQuestions = async (req, res, next, runCount = 0) => {
     let {
         DatasetId,
         OwnerId,
@@ -37,14 +38,7 @@ questionsController.getQuestions = async (req, res) => {
 
     try {
         const questions = [];
-        const ds = await Dataset.client.findUnique({
-            where: {
-                Id: DatasetId
-            },
-            include: {
-                AnswerOptions: true
-            }
-        });
+        const ds = await Dataset.findById(DatasetId, 'admin');
         if(!ds) {
             return handleError(res, {code: 3002, status: httpStatus.BAD_REQUEST});
         }
@@ -92,59 +86,82 @@ questionsController.getQuestions = async (req, res) => {
 
         if (OnlyOneLabel) {
             if(LabelId) {
-                label = await Label.findById(LabelId, 'admin');
-                if(!label) {
+                // label = await Label.findById(LabelId, 'admin');
+                label = await prisma.$queryRaw("select * from \"Labels\" " +
+                    "where \"ItemsDone\"=false AND \"Id\"='" + LabelId + "'  " +
+                    "AND EXISTS (select 1 from \"DatasetItems\"  " +
+                    " where \"DatasetId\" = '" + DatasetId + "'  " +
+                    " and \"DatasetItems\".\"AnswersCount\" < " + ds.AnswerReplicationCount +
+                    " and \"DatasetItems\".\"IsGoldenData\"= " + false +
+                    " and not exists (select 1 from \"AnswerLogs\" al where \"DatasetItems\".\"Id\"=al.\"Id\" and al.\"UserId\"='" + uId + "' )) " +
+                    "ORDER BY random()\n" +
+                    "LIMIT 1");
+                if(label.length)
+                    label = label[0];
+                else
                     return handleError(res, {status: httpStatus.EXPECTATION_FAILED, error: {code: 3002, message: 'Invalid LabelId'}});
-                }
+
             } else {
-                label = await prisma.$queryRaw('SELECT * from "Labels" WHERE "DatasetId" = '+ "'" + DatasetId + "' AND \"ItemsDone\" = " + false + " ORDER BY random() Limit 1;");
-                label = label[0];
-            }
+                // label = await prisma.$queryRaw('SELECT * from "Labels" WHERE "DatasetId" = '+ "'" + DatasetId + "' AND \"ItemsDone\" = " + false + " ORDER BY random() Limit 1;");
+                label = await prisma.$queryRaw("select * from \"Labels\" \n" +
+                    "where \"ItemsDone\"=false \n" +
+                    "AND EXISTS (select 1 from \"DatasetItems\" " +
+                    " where \"DatasetId\" = '" + DatasetId + "' " +
+                    " and \"DatasetItems\".\"AnswersCount\" < " + ds.AnswerReplicationCount +
+                    " and \"DatasetItems\".\"IsGoldenData\"= " + false +
+                    " and not exists (select 1 from \"AnswerLogs\" al where \"DatasetItems\".\"Id\"=al.\"Id\" and al.\"UserId\"='" + uId + "' )) " +
+                    "ORDER BY random() " +
+                    "LIMIT 1");
 
-            datasetItems = await prisma.$queryRaw('SELECT * FROM (' +
-                '(SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", false AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "'  AND \"IsGoldenData\" = " + true + " AND \"LabelId\" = '" + label.Id +  "' AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  "   AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + uId + "' ) ORDER BY random() LIMIT " + positiveGoldens + ")" +
-                'UNION (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", true AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"LabelId\" <> '" + label.Id +  "' AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  "  AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + uId + "' ) ORDER BY random() LIMIT  " + negativeGoldens + ")" +
-                ") AS T1 ORDER BY random()");
-
-
-            let noneGoldens = await prisma.$queryRaw('SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", false AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"LabelId\" = '" + label.Id +  "' AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  "  AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + uId + "' ) ORDER BY random() LIMIT " + noneGoldensCount + ";")
-
-            if(!noneGoldens || !noneGoldens.length) {
-                await Label.client.update({
-                    where: {
-                        Id: label.Id
-                    },
-                    data: {
-                        ItemsDone: true
-                    }
-                });
-
-                const remainingLabelsCount = await Label.client.count({
-                    where: {
-                        ItemsDone: false,
-                        DatasetId: ds.Id
-                    }
-                });
-
-                if(remainingLabelsCount) {
-                    req.query.LabelId = null;
-                    return questionsController.getQuestions(req, res);
-                } else {
-                    //endTheDataset(ds);
+                if(label.length)
+                    label = label[0];
+                else {
                     await UserTarget.finishUserTarget(userTarget.Id);
                     return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3600});
                 }
             }
 
-            datasetItems = [
+
+            datasetItems = await prisma.$queryRaw('SELECT * FROM (' +
+                '(SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", false AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "'  AND \"IsGoldenData\" = " + true + " AND \"LabelId\" = '" + label.Id +  "' AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  "   AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + uId + "' ) ORDER BY random() LIMIT " + positiveGoldens + ")" +
+                'UNION (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", true AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + true + " AND \"LabelId\" <> '" + label.Id +  "'  AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + uId + "' ) ORDER BY random() LIMIT  " + negativeGoldens + ")" +
+                'UNION (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", false AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"LabelId\" = '" + label.Id +  "' AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  "  AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + uId + "' ) ORDER BY random() LIMIT " + noneGoldensCount + ")" +
+                ") AS T1 ORDER BY random()");
+
+
+            //let noneGoldens = await prisma.$queryRaw('SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", false AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"LabelId\" = '" + label.Id +  "' AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  "  AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + uId + "' ) ORDER BY random() LIMIT " + noneGoldensCount + ";")
+
+            /*if(!noneGoldens || !noneGoldens.length) {
+                //Sets Label.ItemsDone to true if all items reached their replicationCount
+
+                await Label.maybeDoneLabel(label.Id, ds);
+
+                const remainingLabelsCount = await Label.client.count({
+                    where: {
+                        ItemsDone: false,
+                        DatasetId: ds.Id,
+                    }
+                });
+
+                if(remainingLabelsCount) {
+                    req.query.LabelId = null;
+                    //TODO: Improve this to findout the dataset items are done
+                    if(runCount < 4)
+                        return questionsController.getQuestions(req, res, next,runCount + 1);
+                    else
+                        return handleError(res, {status: httpStatus.INTERNAL_SERVER_ERROR, code: 3600});
+                } else {
+                    await Dataset.changeDatasetLabelingStatus(ds.Id, Dataset.labelingStatuses.ITEMS_C0OMPLETED);
+                    await UserTarget.finishUserTarget(userTarget.Id);
+                    return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3600});
+                }
+            }*/
+
+            /*datasetItems = [
                 ...datasetItems,
                 ...noneGoldens
             ];
-            datasetItems.sort(sortRandom);
-
-            function sortRandom(a, b) {
-                return 0.5 - Math.random();
-            }
+            datasetItems.sort(utils.sortRandom);*/
         } else {
             datasetItems = await prisma.$queryRaw('SELECT * FROM (' +
                 '(SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "'  AND \"IsGoldenData\" = " + true + " AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  " AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + req.decoded.Id + "' ) ORDER BY random() LIMIT " + positiveGoldens + ")" +
@@ -189,7 +206,7 @@ questionsController.getQuestions = async (req, res) => {
                 });
             }
         } else {
-            endTheDataset(ds);
+            await Dataset.changeDatasetLabelingStatus(ds.Id, Dataset.labelingStatuses.ITEMS_COMPLETED)
             return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3350});
         }
 
@@ -199,16 +216,5 @@ questionsController.getQuestions = async (req, res) => {
         return handleError(res, {});
     }
 };
-
-async function endTheDataset(ds) {
-    await Dataset.client.update({
-        where: {
-            Id: ds.Id
-        },
-        data: {
-            LabelingStatus: Dataset.labelingStatuses.ITEMS_COMPLETED
-        }
-    });
-}
 
 export default questionsController;
