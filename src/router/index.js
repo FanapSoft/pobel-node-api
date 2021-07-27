@@ -19,6 +19,7 @@ import httpStatus from "http-status";
 import credit from "./credit.js";
 import transactions from "./transactions.js";
 import files from "./files.js";
+import path from 'path'
 
 const ROUTER = express.Router();
 
@@ -32,9 +33,21 @@ acl.config({
     }
 });
 
-ROUTER.get("/", function(req, res, next) {
-    res.json({ message: "from index api" });
+ROUTER.get(["/", "/loggedIn/*"], function(req, res, next) {
+    if(process.env.NODE_ENV === 'production') {
+        res.sendFile(path.resolve('dist/public/index.html'));
+    } else {
+        res.sendFile(path.resolve('src/public/index.html'));
+    }
 });
+ROUTER.get(["/admin","/admin/*"], function(req, res, next) {
+    if(process.env.NODE_ENV === 'production') {
+        res.sendFile(path.resolve('dist/public/admin/index.html'));
+    } else {
+        res.sendFile(path.resolve('src/public/admin/index.html'));
+    }
+});
+
 
 /**
  * Routes that don't need acl or auth
