@@ -1,14 +1,18 @@
 import axios from "axios";
 import prisma from "../prisma/prisma.module.js";
+import {check} from "express-validator";
 
 const config = {
     client_id: process.env.POD_POBEL_ACCOUNT_CLIENT_ID,
     client_secret: process.env.POD_POBEL_ACCOUNT_CLIENT_SECRET,
-    redirect_uri: "http://localhost:8080/SSOCallback",
+    redirect_uri: process.env.HOST_ADDRESS + "/SSOCallback",
 };
 
 export default function (router) {
     router.get("/auth", function (req, res) {
+        let {
+            host
+        } = req.query;
         let loginUrlData = {
             // ------ REQUIRED ------
             client_id: config.client_id,
@@ -18,16 +22,20 @@ export default function (router) {
         };
         let loginUrl = 'https://accounts.pod.ir/oauth2/authorize/?'
             + 'client_id=' + loginUrlData.client_id
-            + '&redirect_uri=' + loginUrlData.redirect_uri
+
             + '&response_type=code'
-            + '&scope=' + loginUrlData.scope.join(' ');
+            + '&scope=' + loginUrlData.scope.join(' ')
+            + '&redirect_uri=' + loginUrlData.redirect_uri + '?host=' + encodeURI(host)
 
         res.redirect(loginUrl);
     });
 
-    router.get("/SSOCallback", async function (req, res) {
-        const {
-            code
+    router.get("/SSOCallback", [
+        check('host').optional({checkFalsy: true}).isLength({max: 50})
+    ], async function (req, res) {
+        let {
+            code,
+            host
         } = req.query;
 
         if(!code) {
@@ -42,7 +50,7 @@ export default function (router) {
             return;
         }
 
-        const tokens = await fetchUserTokens(code);
+        const tokens = await fetchUserTokens(code, host);
         if(!tokens || (tokens.response && tokens.response.data.error)) {
             res.status(500).send({error: tokens.response.data.error, message: 'POBEL Error: Unable to fetch user token'})
             return;
@@ -93,20 +101,19 @@ export default function (router) {
             });
         }
 
-        res.redirect("http://localhost:8787/loggedIn/" + user.Id + "?token=" + tokens.data.id_token);
-
-        // res.json({
-        //     message: { profile: profile.data, tokens: tokens.data }
-        // });
-
+        let conf = {
+            HOST_URL: (process.env.NODE_ENV === 'production' ? process.env.DEFAULT_CLIENT_URL_PROD : process.env.DEFAULT_CLIENT_URL_LOCAL),
+        };
+        host = host ? host : conf.HOST_URL
+        res.redirect(host + "/loggedIn/" + user.Id + "?token=" + tokens.data.id_token);
     });
 
-    async function fetchUserTokens(code) {
+    async function fetchUserTokens(code, host) {
         let params = {
             code: code,
             Client_id: config.client_id,//First char uppercase
             Client_secret: config.client_secret,//First char uppercase
-            redirect_uri: config.redirect_uri,
+            redirect_uri: config.redirect_uri + '?host=' + encodeURI(host),
             grant_type: 'authorization_code',
         };
         try {

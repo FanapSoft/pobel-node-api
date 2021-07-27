@@ -38,8 +38,19 @@ class Answer extends DBModelBase {
             " FROM \"AnswerLogs\"" +
             " WHERE \"UserId\" = '"+ userId +"' AND \"DatasetId\" = '"+ dataset.Id +"' AND \"CreditCalculated\" = false");
 
-        if(results[0].correctpositivegoldens + results[0].correctnegativegoldens > 0)
-            credit += (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * Math.pow(target.BonusTruePositive, results[0].correctpositivegoldens) * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens) * Math.pow(target.BonusTrueNegative, results[0].correctnegativegoldens) * Math.pow(target.BonusFalseNegative, results[0].incorrectnegativegoldens);
+        let totalCorrectGoldens = results[0].correctpositivegoldens + results[0].correctnegativegoldens
+        if(totalCorrectGoldens > 0) {
+            let config = {
+                bonusTruePositive: target.BonusTruePositive,
+                bonusTrueNegative: target.BonusTrueNegative,
+            };
+            //Fixes formula incorrect value when user answers more goldens than what is specified in the target
+            if(totalCorrectGoldens > target.GoldenCount) {
+                config.bonusTrueNegative = 1;
+                config.bonusTruePositive = 1;
+            }
+            credit += (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * Math.pow(config.BonusTruePositive, results[0].correctpositivegoldens) * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens) * Math.pow(config.BonusTrueNegative, results[0].correctnegativegoldens) * Math.pow(target.BonusFalseNegative, results[0].incorrectnegativegoldens);
+        }
 
         // if(results[0].correctnegativegoldens > 0)
         //     credit += (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * Math.pow(target.BonusTrueNegative, results[0].correctnegativegoldens) * Math.pow(target.BonusFalseNegative, results[0].incorrectnegativegoldens);
