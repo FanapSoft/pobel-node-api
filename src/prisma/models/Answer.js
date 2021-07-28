@@ -45,27 +45,19 @@ class Answer extends DBModelBase {
                 bonusTrueNegative: target.BonusTrueNegative,
             };
             //Fixes formula incorrect value when user answers more goldens than what is specified in the target
-            if(totalCorrectGoldens > target.GoldenCount) {
-                config.bonusTrueNegative = 1;
-                config.bonusTruePositive = 1;
+            credit = (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * Math.pow(config.bonusTruePositive, results[0].correctpositivegoldens) * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens) * Math.pow(config.bonusTrueNegative, results[0].correctnegativegoldens) * Math.pow(target.BonusFalseNegative, results[0].incorrectnegativegoldens);
+
+            if(credit > target.UMax) {
+                credit = target.UMax * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens) * Math.pow(target.BonusFalseNegative, results[0].incorrectnegativegoldens) + target.UMin
             }
-            credit += (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * Math.pow(config.BonusTruePositive, results[0].correctpositivegoldens) * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens) * Math.pow(config.BonusTrueNegative, results[0].correctnegativegoldens) * Math.pow(target.BonusFalseNegative, results[0].incorrectnegativegoldens);
         }
-
-        // if(results[0].correctnegativegoldens > 0)
-        //     credit += (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * Math.pow(target.BonusTrueNegative, results[0].correctnegativegoldens) * Math.pow(target.BonusFalseNegative, results[0].incorrectnegativegoldens);
-
-        // credit += (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * results[0].correctpositivegoldens * target.BonusTruePositive + target.UMin;
-        // credit += (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * results[0].correctnegativegoldens * target.BonusTrueNegative + target.UMin;
-        // credit -= (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * results[0].incorrectpositivegoldens * target.BonusFalsePositive + target.UMin;
-        // credit -= (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * results[0].incorrectnegativegoldens * target.BonusFalseNegative + target.UMin;
 
         if(!credit || credit < 0) {
             credit = 0;
         }
 
-        if(credit > target.UMax)
-            credit = target.UMax;
+        // if(credit > target.UMax)
+        //     credit = target.UMax;
 
         return credit;
     }
