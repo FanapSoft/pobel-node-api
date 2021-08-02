@@ -153,10 +153,8 @@ answersController.submitBatchAnswer = async (req, res, next) => {
 
     for(const [index, item] of Answers.entries()) {
         try {
-            //let ds = await Dataset.findById(item.DatasetId, req.decoded.Role);
             if (question.DatasetId !== item.DatasetId)
                 return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid dataset: ' + item.DatasetId}});
-
 
             if(!questionItems.map(item => item.id).includes(item.DatasetItemId)) {
                 return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'This item does not belongs to current question: ' + item.DatasetItemId}});
@@ -164,7 +162,7 @@ answersController.submitBatchAnswer = async (req, res, next) => {
 
             const qItem = questionItems.find(it => it.id === item.DatasetItemId);
 
-            let dsi = await DatasetItem.findById(item.DatasetItemId, req.decoded.Role);
+            let dsi = await DatasetItem.findById(item.DatasetItemId, 'admin');
             if (!dsi)
                 return handleError(res, {status: httpStatus.BAD_REQUEST, error: {code: 3002, message:'Invalid dataset item: ' + item.DatasetId}});
 
@@ -186,6 +184,16 @@ answersController.submitBatchAnswer = async (req, res, next) => {
             //     goldenType = Answer.goldenTypes.NEGATIVE;
             // }
             //TODO: we should submit answers with the question owner id or the current requesterID ?
+
+            let isCorrectAnswer = null;
+            if(answerType === Answer.answerTypes.GOLDEN && dsi.CorrectGoldenAnswerIndex) {
+                if(dsi.CorrectGoldenAnswerIndex === JSON.parse(item.AnswerIndex)) {
+                    isCorrectAnswer = true;
+                } else if(dsi.CorrectGoldenAnswerIndex !== JSON.parse(item.AnswerIndex)) {
+                    isCorrectAnswer = false;
+                }
+            }
+
             let answer = await Answer.client.create({
                 data: {
                     UserId: question.OwnerId,
@@ -198,7 +206,8 @@ answersController.submitBatchAnswer = async (req, res, next) => {
                     DeterminedLabelId: qItem.determinedLabelId,
                     DurationToAnswerInSeconds: JSON.parse(item.DurationToAnswerInSeconds),
                     AnswerType: answerType,
-                    GoldenType: goldenType
+                    GoldenType: goldenType,
+                    IsCorrect: isCorrectAnswer
                 }
             });
             //We store the negative golden answer but we don't count it in the replication limit

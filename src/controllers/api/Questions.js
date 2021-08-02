@@ -80,7 +80,7 @@ questionsController.getQuestions = async (req, res, next, runCount = 0) => {
         let datasetItems = null;
         let label = null;
 
-        const positiveGoldens = Math.floor((25 / 100) * Count);
+        const positiveGoldens = ds.Type == 1 ? Math.floor((25 / 100) * Count) : Math.floor((40 / 100) * Count);
         const negativeGoldens = Math.ceil((20 / 100) * Count);
         const noneGoldensCount =  Count - (positiveGoldens + negativeGoldens);
 
@@ -166,8 +166,8 @@ questionsController.getQuestions = async (req, res, next, runCount = 0) => {
             datasetItems.sort(utils.sortRandom);*/
         } else {
             datasetItems = await prisma.$queryRaw('SELECT * FROM (' +
-                '(SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "'  AND \"IsGoldenData\" = " + true + " AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  " AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + req.decoded.Id + "' ) ORDER BY random() LIMIT " + positiveGoldens + ")" +
-            'UNION (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  " AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + req.decoded.Id + "' ) ORDER BY random() LIMIT " + (negativeGoldens + noneGoldensCount) + ")" +
+                '(SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "Source", "Field", "Content", "IsGoldenData", "CorrectGoldenAnswerIndex", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "'  AND \"IsGoldenData\" = " + true + " AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  " AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + req.decoded.Id + "' ) ORDER BY random() LIMIT " + positiveGoldens + ")" +
+            'UNION (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "Source", "Field", "Content", "IsGoldenData", "CorrectGoldenAnswerIndex", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  " AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + req.decoded.Id + "' ) ORDER BY random() LIMIT " + (negativeGoldens + noneGoldensCount) + ")" +
             ") AS T1 ORDER BY random()");
         }
 
@@ -191,16 +191,23 @@ questionsController.getQuestions = async (req, res, next, runCount = 0) => {
             }
 
             for (let item of datasetItems) {
-                let itemDetails = DatasetItem.processItem(item, label, goldensPath);
+                let itemDetails = null;
+                if(ds.Type == Dataset.datasetTypes.FILE) {
+                    itemDetails =  DatasetItem.processItem(item, label, goldensPath);
+                }
 
                 questions.push({
                     G: req.decoded.role === 'admin' ? item.IsGoldenData && !item.NG : undefined,
                     NG: req.decoded.role === 'admin' ? item.NG : undefined,
+                    CorrectGoldenAnswerIndex: req.decoded.role === 'admin' && item.CorrectGoldenAnswerIndex ? item.CorrectGoldenAnswerIndex : undefined,
                     DatasetItemId: item.Id,
                     AnswerType: ds.AnswerType,
-                    Title: itemDetails.title,
-                    ItemName: label? label.Name.replace(/[0-9]/g, "").replace(/_/g, " ") : item.Name,
-                    ItemJob: itemDetails.itemJob,
+                    Title: itemDetails ? itemDetails.title : undefined,
+                    Field: item.Field,
+                    Source: item.Source,
+                    Content: item.Content,
+                    ItemName: label ? label.Name.replace(/[0-9]/g, "").replace(/_/g, " ") : (item.Name ? item.Name : undefined),
+                    ItemJob: itemDetails? itemDetails.itemJob : undefined,
                     Options: ds.AnswerOptions,
                     //QuestionType: 0,
                     Label: label? label : undefined,

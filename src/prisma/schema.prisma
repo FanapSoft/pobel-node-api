@@ -102,25 +102,31 @@ model Datasets {
 }
 
 model DatasetItems {
-  Id            String       @id @default(uuid())
-  CreatedAt     DateTime     @default(now())
-  UpdatedAt     DateTime?    @updatedAt
-  Name          String?
-  Content       String?
-  Type          Int
-  AnswersCount  Int          @default(0)
-  FileExtension String?      @db.VarChar(30)
-  FileName      String?
-  FilePath      String?
-  FileSize      Int?
-  LabelId       String?
-  Label         Labels?      @relation("Label", fields: [LabelId], references: [Id])
-  FinalLabelId  String?
-  FinalLabel    Labels?      @relation("FinalLabel", fields: [FinalLabelId], references: [Id])
-  IsGoldenData  Boolean
-  DatasetId     String
-  Dataset       Datasets     @relation(fields: [DatasetId], references: [Id])
-  AnswerLogs    AnswerLogs[]
+  Id                       String       @id @default(uuid())
+  CreatedAt                DateTime     @default(now())
+  UpdatedAt                DateTime?    @updatedAt
+  Name                     String?
+  Content                  String?
+  Type                     Int
+  AnswersCount             Int          @default(0)
+  FileExtension            String?      @db.VarChar(30)
+  FileName                 String?
+  FilePath                 String?
+  FileSize                 Int?
+  LabelId                  String?
+  Label                    Labels?      @relation("Label", fields: [LabelId], references: [Id])
+  FinalLabelId             String?
+  FinalLabel               Labels?      @relation("FinalLabel", fields: [FinalLabelId], references: [Id])
+  IsGoldenData             Boolean
+  CorrectGoldenAnswerIndex Int?
+  ExternalId               Int?
+  Source                   String?
+  Field                    String?
+  DatasetId                String
+  Dataset                  Datasets     @relation(fields: [DatasetId], references: [Id])
+  AnswerLogs               AnswerLogs[]
+
+  @@unique([ExternalId, DatasetId])
 }
 
 model Labels {
@@ -145,6 +151,7 @@ model AnswerLogs {
   Ignored                   Boolean
   IgnoreReason              String?
   Answer                    Int
+  IsCorrect                 Boolean?
   QuestionObject            Json?
   DatasetId                 String
   Dataset                   Datasets     @relation(fields: [DatasetId], references: [Id])

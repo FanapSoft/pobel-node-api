@@ -1,5 +1,6 @@
 import prisma from '../prisma.module.js'
 import DBModelBase from "./DBModelBase.Class.js";
+import Dataset from "./Dataset";
 
 class Answer extends DBModelBase {
     constructor() {
@@ -25,30 +26,58 @@ class Answer extends DBModelBase {
     async calculateCredit(userId, dataset, target) {
         let credit = 0;
 
-        const conf = [
-            {a: dataset.AnswerOptions[0].Index, at: 0, gt: 1},
-            {a: dataset.AnswerOptions[1].Index, at: 0, gt: 2},
-        ];
+        let conf = null, results = null;
 
-        const results = await prisma.$queryRaw("SELECT Count(*) AS Total, \n" +
-            " sum(CASE WHEN \"Answer\" = " + conf[0].a + " AND \"AnswerType\" = " + conf[0].at + " AND \"GoldenType\" = " + conf[0].gt + "  then 1 else 0 end) AS CorrectPositiveGoldens, " +
-            " sum(CASE WHEN \"Answer\" <> " + conf[0].a + " AND \"AnswerType\" = " + conf[0].at + " AND \"GoldenType\" = " + conf[0].gt + "  then 1 else 0 end) AS IncorrectPositiveGoldens, " +
-            " sum(CASE WHEN \"Answer\" = " + conf[1].a + " AND \"AnswerType\" = " + conf[1].at + " AND \"GoldenType\" = " + conf[1].gt + "  then 1 else 0 end) AS CorrectNegativeGoldens, " +
-            " sum(CASE WHEN \"Answer\" <> " + conf[1].a + " AND \"AnswerType\" = " + conf[1].at + " AND \"GoldenType\" = " + conf[1].gt + "  then 1 else 0 end) AS IncorrectNegativeGoldens " +
-            " FROM \"AnswerLogs\"" +
-            " WHERE \"UserId\" = '"+ userId +"' AND \"DatasetId\" = '"+ dataset.Id +"' AND \"CreditCalculated\" = false");
+        if(dataset.Type === Dataset.datasetTypes.FILE) {
+            conf = [
+                {a: dataset.AnswerOptions[0].Index, at: 0, gt: 1},
+                {a: dataset.AnswerOptions[1].Index, at: 0, gt: 2},
+            ];
 
-        let totalCorrectGoldens = results[0].correctpositivegoldens + results[0].correctnegativegoldens
-        if(totalCorrectGoldens > 0) {
-            let config = {
-                bonusTruePositive: target.BonusTruePositive,
-                bonusTrueNegative: target.BonusTrueNegative,
-            };
-            //Fixes formula incorrect value when user answers more goldens than what is specified in the target
-            credit = (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * Math.pow(config.bonusTruePositive, results[0].correctpositivegoldens) * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens) * Math.pow(config.bonusTrueNegative, results[0].correctnegativegoldens) * Math.pow(target.BonusFalseNegative, results[0].incorrectnegativegoldens);
+            results = await prisma.$queryRaw("SELECT Count(*) AS Total, \n" +
+                " sum(CASE WHEN \"Answer\" = " + conf[0].a + " AND \"AnswerType\" = " + conf[0].at + " AND \"GoldenType\" = " + conf[0].gt + "  then 1 else 0 end) AS CorrectPositiveGoldens, " +
+                " sum(CASE WHEN \"Answer\" <> " + conf[0].a + " AND \"AnswerType\" = " + conf[0].at + " AND \"GoldenType\" = " + conf[0].gt + "  then 1 else 0 end) AS IncorrectPositiveGoldens, " +
+                " sum(CASE WHEN \"Answer\" = " + conf[1].a + " AND \"AnswerType\" = " + conf[1].at + " AND \"GoldenType\" = " + conf[1].gt + "  then 1 else 0 end) AS CorrectNegativeGoldens, " +
+                " sum(CASE WHEN \"Answer\" <> " + conf[1].a + " AND \"AnswerType\" = " + conf[1].at + " AND \"GoldenType\" = " + conf[1].gt + "  then 1 else 0 end) AS IncorrectNegativeGoldens " +
+                " FROM \"AnswerLogs\"" +
+                " WHERE \"UserId\" = '"+ userId +"' AND \"DatasetId\" = '"+ dataset.Id +"' AND \"CreditCalculated\" = false");
 
-            if(credit > target.UMax) {
-                credit = target.UMax * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens) * Math.pow(target.BonusFalseNegative, results[0].incorrectnegativegoldens) + target.UMin
+
+            let totalCorrectGoldens = results[0].correctpositivegoldens + results[0].correctnegativegoldens
+            if(totalCorrectGoldens > 0) {
+                let config = {
+                    bonusTruePositive: target.BonusTruePositive,
+                    bonusTrueNegative: target.BonusTrueNegative,
+                };
+                //Fixes formula incorrect value when user answers more goldens than what is specified in the target
+                credit = (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * Math.pow(config.bonusTruePositive, results[0].correctpositivegoldens) * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens) * Math.pow(config.bonusTrueNegative, results[0].correctnegativegoldens) * Math.pow(target.BonusFalseNegative, results[0].incorrectnegativegoldens);
+
+                if(credit > target.UMax) {
+                    credit = (target.UMax - target.UMin) * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens) * Math.pow(target.BonusFalseNegative, results[0].incorrectnegativegoldens) + target.UMin
+                }
+            }
+        } else if(dataset.Type === Dataset.datasetTypes.TEXT) {
+            conf = [
+                {a: dataset.AnswerOptions[0].Index, at: this.answerTypes.GOLDEN, gt: this.goldenTypes.POSITIVE},
+            ];
+
+            results = await prisma.$queryRaw("SELECT Count(*) AS Total, \n" +
+                " sum(CASE WHEN \"IsCorrect\" = " + true + " AND \"AnswerType\" = " + conf[0].at + " AND \"GoldenType\" = " + conf[0].gt + "  then 1 else 0 end) AS CorrectPositiveGoldens, " +
+                " sum(CASE WHEN \"IsCorrect\" = " + false + " AND \"AnswerType\" = " + conf[0].at + " AND \"GoldenType\" = " + conf[0].gt + "  then 1 else 0 end) AS IncorrectPositiveGoldens " +
+                " FROM \"AnswerLogs\"" +
+                " WHERE \"UserId\" = '" + userId + "' AND \"DatasetId\" = '" + dataset.Id + "' AND \"CreditCalculated\" = false");
+
+            let totalCorrectGoldens = results[0].correctpositivegoldens
+            if(totalCorrectGoldens > 0) {
+                let config = {
+                    bonusTruePositive: target.BonusTruePositive,
+                };
+                //Fixes formula incorrect value when user answers more goldens than what is specified in the target
+                credit = (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * Math.pow(config.bonusTruePositive, results[0].correctpositivegoldens) * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens);
+
+                if(credit > target.UMax) {
+                    credit = (target.UMax - target.UMin) * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens) + target.UMin;
+                }
             }
         }
 

@@ -14,6 +14,24 @@ class Dataset extends DBModelBase {
         this.modelPublicFields = {Id: true, Name: true, Description: true, Type: true, AnswerType: true, IsActive: true,  LabelingStatus: true};
         this.modelAdminFields = {Id: true, Name: true, Description: true, Type: true, AnswerType: true, IsActive: true,  LabelingStatus: true, CreatedAt: true, UpdatedAt: true, ProcessedItemsSourcePath: true, AnswerReplicationCount: true, AnswerBudgetCountPerUser: true, ItemsSourcePath: true, QuestionType: true, AnswerOptions: true};
 
+        this.datasetTypes = {
+            FILE: 1,
+            TEXT: 2,
+            FILE_AND_TEXT: 3
+        };
+
+        this.typesConfig = {
+            1: {
+                hasLabel: true,
+            },
+            2:{
+                hasLabel: false,
+            },
+            3: {
+                hasLabel: true,
+            }
+        };
+
         this.labelingStatuses = {
             LABELING_ALLOWED: 1,
             NO_ITEMS: 2,
@@ -25,7 +43,11 @@ class Dataset extends DBModelBase {
 
     async findById(id, role = 'guest') {
         const select = this.getFieldsByRole(role);
-        select.AnswerOptions = true
+        select.AnswerOptions = {
+            orderBy: {
+                Index: 'asc'
+            }
+        }
         return await prisma[this.table].findUnique({
             select,
             where: {
