@@ -7,7 +7,14 @@ class DatasetItems extends DBModelBase {
         super();
         this.table = 'datasetItems';
         this.client = prisma.datasetItems;
-        this.modelPublicFields = {Id: true, Name: true, Type: true, FileName: true, FileExtension: true, LabelId: true, AnswersCount: true};
+        this.modelPublicFields = {Id: true, Name: true, Type: true, FileName: true, FileExtension: true, LabelId: true, AnswersCount: true, Field: true, Source: true, Content: true};
+
+        this.itemTypes = {
+            IMAGE: 0,
+            TEXT: 1,
+            VIDEO: 2,
+            VOICE: 3,
+        }
     }
 
     processItem(datasetItem, label = null, goldensPath) {
