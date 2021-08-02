@@ -20,6 +20,7 @@ import credit from "./credit.js";
 import transactions from "./transactions.js";
 import files from "./files.js";
 import path from 'path'
+import scripts from "./scripts";
 
 const ROUTER = express.Router();
 
@@ -107,7 +108,8 @@ questions(ROUTER);
 credit(ROUTER);
 transactions(ROUTER);
 files(ROUTER);
-wallet(ROUTER)
+wallet(ROUTER);
+scripts(ROUTER);
 
 export default function (app) {
     app.use(ROUTER);
