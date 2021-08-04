@@ -12,7 +12,8 @@ const answersController = {};
 // Get All Answers
 answersController.findAll = async (req, res) => {
     const {
-        IncludeQuestion,
+        //TODO:Still not implemented
+        IncludeDatasetItem,
         DatasetId,
         UserId,
         From,
@@ -186,13 +187,24 @@ answersController.submitBatchAnswer = async (req, res, next) => {
             //TODO: we should submit answers with the question owner id or the current requesterID ?
 
             let isCorrectAnswer = null;
-            if(answerType === Answer.answerTypes.GOLDEN && dsi.CorrectGoldenAnswerIndex) {
-                if(dsi.CorrectGoldenAnswerIndex === JSON.parse(item.AnswerIndex)) {
-                    isCorrectAnswer = true;
-                } else if(dsi.CorrectGoldenAnswerIndex !== JSON.parse(item.AnswerIndex)) {
-                    isCorrectAnswer = false;
+            if(qItem.g) {
+                if(answerType === Answer.answerTypes.GOLDEN && dsi.CorrectGoldenAnswerIndex !== null) {
+                    if(dsi.CorrectGoldenAnswerIndex === JSON.parse(item.AnswerIndex)) {
+                        isCorrectAnswer = true;
+                    } else if(dsi.CorrectGoldenAnswerIndex !== JSON.parse(item.AnswerIndex)) {
+                        isCorrectAnswer = false;
+                    }
+                }
+            } else if(qItem.ng) {
+                if(answerType === Answer.answerTypes.GOLDEN && dsi.CorrectGoldenAnswerIndex !== null) {
+                    if(dsi.CorrectGoldenAnswerIndex !== JSON.parse(item.AnswerIndex)) {
+                        isCorrectAnswer = true;
+                    } else if(dsi.CorrectGoldenAnswerIndex === JSON.parse(item.AnswerIndex)) {
+                        isCorrectAnswer = false;
+                    }
                 }
             }
+
 
             let answer = await Answer.client.create({
                 data: {
