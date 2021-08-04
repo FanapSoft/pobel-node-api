@@ -350,4 +350,150 @@ scriptsController.importSentimentGoldens = async (req, res) => {
     return res.send({success: true});
 };
 
+scriptsController.importCelebritiesGoldens = async (req, res) => {
+    // const {} = req.query;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({errors: errors.array()});
+    }
+
+    if (req.decoded.Role !== 'admin') {
+        return handleError(res, {status: httpStatus.FORBIDDEN, code: 2004});
+    }
+
+    let num = 10, i = 0;
+
+    let stream = fs.createReadStream(path.resolve("src/static/celebrities/Politicians.xlsx"));
+    let opt = {delimiter: ',', quote: '"', escape: '"', relax: true, skip_empty_lines: true};
+
+    let datasetId = '10B16B1A-5945-422F-C83B-08D8695976C6';
+
+    let workBookReader = new XlsxStreamReader();
+    workBookReader.on('error', function (error) {
+        throw(error);
+    });
+    workBookReader.on('sharedStrings', function () {
+        // do not need to do anything with these,
+        // cached and used when processing worksheets
+        console.log(workBookReader.workBookSharedStrings);
+    });
+
+    workBookReader.on('styles', function () {
+        // do not need to do anything with these
+        // but not currently handled in any other way
+        console.log(workBookReader.workBookStyles);
+    });
+
+    workBookReader.on('worksheet', async function (readedObject) {
+        if (readedObject.id > 1){
+            // we only want first sheet
+            readedObject.skip();
+            return;
+        }
+        let dataToUpdate = [];
+        let runner = readedObject.on('row',  function (row) {
+            //console.log("row:", row);
+            if (row.attributes.r == 1) {
+                // do something with row 1 like save as column names
+            } else {
+                console.log(row.values);
+                /*let extract = {
+                    fileName: row.values[1]
+                };
+                console.log(extract);*/
+
+                console.log(dataToUpdate.length);
+                if(dataToUpdate.length && Array.isArray(dataToUpdate[dataToUpdate.length - 1]) && dataToUpdate[dataToUpdate.length - 1].length < 1000) {
+                    dataToUpdate[dataToUpdate.length - 1].push(row.values[1]);
+                } else {
+                    dataToUpdate.push([row.values[1]]);
+                }
+
+                //dataToUpdate.push(row.values[1])
+
+                /*await DatasetItem.client.update({
+                    where: {
+                        ExternalId_DatasetId: {
+                            ExternalId: extract.id,
+                            DatasetId: datasetId
+                        },
+                    },
+                    data: {
+                        CorrectGoldenAnswerIndex: parseInt(extract.correctAnswer),
+                        IsGoldenData: true,
+                    }
+                });*/
+            }
+        });
+        readedObject.on('end', async function () {
+            console.log(dataToUpdate);
+            for (const rw of dataToUpdate) {
+                try {
+                    let item = await DatasetItem.client.updateMany({
+                        where: {
+                            FilePath: {
+                                contains: 'Politicians'
+                            },
+                            FileName: {
+                                in: rw
+                            },
+                            DatasetId: datasetId
+                        },
+                        data: {
+                            IsGoldenData: true,
+                            CorrectGoldenAnswerIndex: 1
+                        }
+                    });
+                    console.log("item: ", item);
+                } catch (error) {
+                    console.log("error: ",error);
+                }
+            }
+
+            console.log(readedObject.rowCount);
+        });
+
+        // call process after registering handlers
+        readedObject.process();
+    });
+    workBookReader.on('end', function () {
+        // end of workbook reached
+    });
+
+    stream.pipe(workBookReader);
+
+    return res.send({success: true});
+};
+
+
+scriptsController.removeCelebritiesGoldens = async (req, res) => {
+    // const {} = req.query;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({errors: errors.array()});
+    }
+
+    if (req.decoded.Role !== 'admin') {
+        return handleError(res, {status: httpStatus.FORBIDDEN, code: 2004});
+    }
+
+    let datasetId = '10B16B1A-5945-422F-C83B-08D8695976C6';
+
+    const result = await DatasetItem.client.updateMany({
+        where: {
+            DatasetId: datasetId,
+            IsGoldenData: true
+        },
+        data: {
+            IsGoldenData: false
+        }
+    });
+
+    console.log(result);
+
+    return res.send({success: true});
+};
+
 export default scriptsController;

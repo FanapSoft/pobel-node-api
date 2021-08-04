@@ -9,7 +9,7 @@ export default function (router) {
      *   get:
      *     tags:
      *       - Scripts
-     *     description: "Imports data from a given csv into the database, How to use: put a file named data.csv in static/sentimentData/data.csv then call this Api as an admin"
+     *     description: "Imports data from a given xlsx into the database, How to use: put a file named data.csv in static/sentimentData/data.xlsx then call this Api as an admin"
      *     produces:
      *       - application/json
      *     responses:
@@ -30,6 +30,32 @@ export default function (router) {
      *       200:
      *         description: result
      */
-    router.get("/api/Scripts/ImportSentimentGoldens", asyncWrapper(scriptsController.importSentimentGoldens));
-
+    router.get("/api/Scripts/ImportSentimentGoldens", asyncWrapper(scriptsController.importSentimentGoldens));    /**
+     * @swagger
+     * /api/Scripts/ImportCelebritiesGoldens:
+     *   get:
+     *     tags:
+     *       - Scripts
+     *     description: "Fetches and sets correct answer for golden items of celebrities data"
+     *     produces:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: result
+     */
+    router.get("/api/Scripts/ImportCelebritiesGoldens", asyncWrapper(scriptsController.importCelebritiesGoldens));
+    /**
+     * @swagger
+     * /api/Scripts/RemoveCelebritiesGoldens:
+     *   get:
+     *     tags:
+     *       - Scripts
+     *     description: "Removes IsGoldenData from all items in celebrities dataset"
+     *     produces:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: result
+     */
+    router.get("/api/Scripts/RemoveCelebritiesGoldens", asyncWrapper(scriptsController.removeCelebritiesGoldens));
 }
