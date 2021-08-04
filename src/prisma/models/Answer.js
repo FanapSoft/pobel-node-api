@@ -30,8 +30,8 @@ class Answer extends DBModelBase {
 
         if(dataset.Type === Dataset.datasetTypes.FILE) {
             conf = [
-                {a: dataset.AnswerOptions[0].Index, at: 0, gt: 1},
-                {a: dataset.AnswerOptions[1].Index, at: 0, gt: 2},
+                {a: dataset.AnswerOptions[1].Index, at: 0, gt: 1},
+                {a: dataset.AnswerOptions[0].Index, at: 0, gt: 2},
             ];
 
             results = await prisma.$queryRaw("SELECT Count(*) AS Total, \n" +
@@ -52,7 +52,7 @@ class Answer extends DBModelBase {
                 //Fixes formula incorrect value when user answers more goldens than what is specified in the target
                 credit = (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * Math.pow(config.bonusTruePositive, results[0].correctpositivegoldens) * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens) * Math.pow(config.bonusTrueNegative, results[0].correctnegativegoldens) * Math.pow(target.BonusFalseNegative, results[0].incorrectnegativegoldens);
 
-                if(credit > target.UMax) {
+                if(credit > target.UMax || totalCorrectGoldens > target.GoldenCount) {
                     credit = (target.UMax - target.UMin) * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens) * Math.pow(target.BonusFalseNegative, results[0].incorrectnegativegoldens) + target.UMin
                 }
             }
@@ -75,7 +75,7 @@ class Answer extends DBModelBase {
                 //Fixes formula incorrect value when user answers more goldens than what is specified in the target
                 credit = (target.UMax - target.UMin) * Math.pow(target.T, target.GoldenCount) * Math.pow(config.bonusTruePositive, results[0].correctpositivegoldens) * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens);
 
-                if(credit > target.UMax) {
+                if(credit > target.UMax || totalCorrectGoldens > target.GoldenCount) {
                     credit = (target.UMax - target.UMin) * Math.pow(target.BonusFalsePositive, results[0].incorrectpositivegoldens) + target.UMin;
                 }
             }
