@@ -80,8 +80,8 @@ questionsController.getQuestions = async (req, res, next, runCount = 0) => {
         let datasetItems = null;
         let label = null;
 
-        const positiveGoldens = ds.Type == 1 ? Math.floor((25 / 100) * Count) : Math.floor((40 / 100) * Count);
-        const negativeGoldens = Math.ceil((20 / 100) * Count);
+        const positiveGoldens = ds.Type == 1 ? Math.ceil((20 / 100) * Count) : Math.ceil((20 / 100) * Count);
+        const negativeGoldens = Math.ceil((10 / 100) * Count);
         const noneGoldensCount =  Count - (positiveGoldens + negativeGoldens);
 
         if (OnlyOneLabel) {
