@@ -109,6 +109,18 @@ export default function (router) {
         check('Skip').optional({checkFalsy: true}).isInt(),
     ], asyncWrapper(reportsController.scoreboard));
 
-
+    /**
+     * @swagger
+     * /api/Reports/Dashboard:
+     *   get:
+     *     tags:
+     *       - Reports
+     *     description: get system stat
+     *     produces:
+     *       - application/json
+     *     responses:
+     *       200:
+     *         description: generates statistic data  for admin
+     */
     router.get("/api/Reports/Dashboard", asyncWrapper(reportsController.dashboard));
 }
