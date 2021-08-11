@@ -32,8 +32,7 @@ answersController.findAll = async (req, res) => {
         uId = req.decoded.Id;
     }
 
-    let where = {}, include = null;
-    //if(IncludeQuestion !== null && IncludeQuestion !== undefined)
+    let where = {};
 
     if(DatasetId)
         where.DatasetId = DatasetId;
@@ -50,9 +49,19 @@ answersController.findAll = async (req, res) => {
             lte: new Date(To).toISOString()
         }
 
+    let select = {
+        ...Answer.getFieldsByRole(req.decoded.role),
+        DeterminedLabel: true
+    };
+
+    if(IncludeDatasetItem !== null && IncludeDatasetItem !== undefined){
+        select.DatasetItem = true;
+    }
+
+
     try {
         const items = await Answer.client.findMany({
-            select: {...Answer.getFieldsByRole(req.decoded.role), DeterminedLabel: true},
+            select,
             where,
             orderBy: {
                 CreatedAt: 'desc',

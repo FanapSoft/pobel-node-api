@@ -102,4 +102,23 @@ reportController.scoreboard = async (req, res) => {
     }
 };
 
+reportController.dashboard = async  (req, res) => {
+    try {
+        let result = await prisma.$queryRaw("SELECT \n" +
+            "(select count(*) as answers from \"AnswerLogs\"  ),\n" +
+            "(select count(*) as correctgoldenanswers from \"AnswerLogs\" where \"IsCorrect\" = true ),\n" +
+            "(select count(*) as datasetItems from \"DatasetItems\" ),\n" +
+            "(select count(*) as users from \"User\" ),\n" +
+            "(select count(*) as generatedQuestions from \"QuestionRequestLogs\"),\n" +
+            "(select count(*) as transactions from \"Transactions\"),\n" +
+            "\n" +
+            "(select count(*) as datasets from \"Datasets\"  )");
+
+        res.send(result[0]);
+    } catch (error) {
+        console.log(error);
+        return handleError(res, {});
+    }
+}
+
 export default reportController;
