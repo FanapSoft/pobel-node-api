@@ -30,8 +30,8 @@ class Answer extends DBModelBase {
 
         if(dataset.Type === Dataset.datasetTypes.FILE) {
             conf = [
-                {a: dataset.AnswerOptions[1].Index, at: 0, gt: 1},
-                {a: dataset.AnswerOptions[0].Index, at: 0, gt: 2},
+                {a: dataset.AnswerPack.AnswerOptions[1].Index, at: 0, gt: 1},
+                {a: dataset.AnswerPack.AnswerOptions[0].Index, at: 0, gt: 2},
             ];
 
             results = await prisma.$queryRaw("SELECT Count(*) AS Total, \n" +
@@ -58,7 +58,7 @@ class Answer extends DBModelBase {
             }
         } else if(dataset.Type === Dataset.datasetTypes.TEXT) {
             conf = [
-                {a: dataset.AnswerOptions[0].Index, at: this.answerTypes.GOLDEN, gt: this.goldenTypes.POSITIVE},
+                {a: dataset.AnswerPack.AnswerOptions[0].Index, at: this.answerTypes.GOLDEN, gt: this.goldenTypes.POSITIVE},
             ];
 
             results = await prisma.$queryRaw("SELECT Count(*) AS Total, \n" +

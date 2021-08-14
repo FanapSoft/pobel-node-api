@@ -39,6 +39,9 @@
  *           type: integer
  *         AnswerReplicationCount:
  *           type: integer
+ *         AnswerPackId:
+ *           type: string
+ *           format: uuid
  *         AnswerOptions:
  *           type: "array"
  *           items:
@@ -204,10 +207,11 @@ export default function (router) {
         body('Description').notEmpty(),
         body('Type').toInt(),
         body('IsActive').toBoolean(),
-        body('AnswerType').toInt(),
         body('AnswerReplicationCount').toInt(),
         body('AnswerBudgetCountPerUser').toInt(),
-        body('LabelingStatus').toInt()
+        body('LabelingStatus').toInt(),
+        body('AnswerPackId').isUUID()
+
     ], asyncWrapper(datasetController.create));
     /**
      * @swagger
@@ -239,10 +243,10 @@ export default function (router) {
         body('Description').optional({checkFalsy: true}).notEmpty(),
         body('Type').optional({checkFalsy: true}).toInt(),
         body('IsActive').optional({checkFalsy: true}).toBoolean(),
-        body('AnswerType').optional({checkFalsy: true}).toInt(),
         body('AnswerReplicationCount').optional({checkFalsy: true}).toInt(),
         body('AnswerBudgetCountPerUser').optional({checkFalsy: true}).toInt(),
-        body('LabelingStatus').optional({checkFalsy: true}).toInt()
+        body('LabelingStatus').optional({checkFalsy: true}).toInt(),
+        body('AnswerPackId').isUUID()
     ], asyncWrapper(datasetController.update));
     /**
      * @swagger

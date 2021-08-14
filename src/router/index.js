@@ -21,6 +21,7 @@ import transactions from "./transactions.js";
 import files from "./files.js";
 import path from 'path'
 import scripts from "./scripts";
+import answerPacks from "./answerPacks";
 
 const ROUTER = express.Router();
 
@@ -110,6 +111,7 @@ transactions(ROUTER);
 files(ROUTER);
 wallet(ROUTER);
 scripts(ROUTER);
+answerPacks(ROUTER);
 
 export default function (app) {
     app.use(ROUTER);
