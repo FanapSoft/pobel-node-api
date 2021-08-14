@@ -91,6 +91,8 @@ model Datasets {
   CorrectGoldenAnswerIndex Int                   @default(0)
   AnswerReplicationCount   Int                   @default(0)
   TotalBudget              Decimal               @default(0.0) @db.Decimal(18, 2)
+  AnswerPackId             String?
+  AnswerPack               AnswerPacks?          @relation(fields: [AnswerPackId], references: [Id])
   TargetDefinition         TargetDefinitions[]
   DatasetItems             DatasetItems[]
   Labels                   Labels[]
@@ -166,13 +168,22 @@ model AnswerLogs {
 }
 
 model AnswerOptions {
-  Id        String   @id @default(uuid())
+  Id        String       @id @default(uuid())
   Type      Int
   Title     String?
   Src       String?
   Index     Int
-  DatasetId String
-  Dataset   Datasets @relation(fields: [DatasetId], references: [Id])
+  DatasetId String?
+  Dataset   Datasets?    @relation(fields: [DatasetId], references: [Id])
+  PackId    String?
+  Pack      AnswerPacks? @relation(fields: [PackId], references: [Id])
+}
+
+model AnswerPacks {
+  Id            String          @id @default(uuid())
+  Title         String          @db.VarChar(40)
+  AnswerOptions AnswerOptions[]
+  Datasets      Datasets[]
 }
 
 model Transactions {

@@ -101,11 +101,11 @@ datasetController.create = async (req, res, next) => {
         Name,
         Description,
         Type,
-        AnswerType,
         IsActive,
         LabelingStatus,
         AnswerReplicationCount,
-        AnswerBudgetCountPerUser
+        AnswerBudgetCountPerUser,
+        AnswerPackId
     } = req.body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -118,11 +118,11 @@ datasetController.create = async (req, res, next) => {
                 Name,
                 Description,
                 Type,
-                AnswerType,
                 IsActive,
                 LabelingStatus,
                 AnswerReplicationCount,
-                AnswerBudgetCountPerUser
+                AnswerBudgetCountPerUser,
+                AnswerPackId
             }
         });
 
@@ -149,8 +149,8 @@ datasetController.update = async (req, res) => {
             return handleError(res, {code: 3000, status: httpStatus.BAD_REQUEST});
 
         const editableParams = [
-            "Name", "Description", "Type", "AnswerType", "IsActive", "LabelingStatus",
-            "AnswerReplicationCount", "AnswerBudgetCountPerUser"
+            "Name", "Description", "Type",  "IsActive", "LabelingStatus",
+            "AnswerReplicationCount", "AnswerBudgetCountPerUser", "AnswerPackId"
         ];
         const params = {};
         editableParams.forEach(item => {

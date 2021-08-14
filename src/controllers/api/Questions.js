@@ -208,7 +208,7 @@ questionsController.getQuestions = async (req, res, next, runCount = 0) => {
                     Content: item.Content,
                     ItemName: label ? label.Name.replace(/[0-9]/g, "").replace(/_/g, " ") : (item.Name ? item.Name : undefined),
                     ItemJob: itemDetails? itemDetails.itemJob : undefined,
-                    Options: ds.AnswerOptions,
+                    Options: ds.AnswerPack.AnswerOptions,
                     //QuestionType: 0,
                     Label: label? label : undefined,
                     QuestionId: generatedQuestion.Id

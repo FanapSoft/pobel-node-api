@@ -11,8 +11,34 @@ class Dataset extends DBModelBase {
         super();
         this.table = 'datasets';
         this.client = prisma.datasets
-        this.modelPublicFields = {Id: true, Name: true, Description: true, Type: true, AnswerType: true, IsActive: true,  LabelingStatus: true};
-        this.modelAdminFields = {Id: true, Name: true, Description: true, Type: true, AnswerType: true, IsActive: true,  LabelingStatus: true, CreatedAt: true, UpdatedAt: true, ProcessedItemsSourcePath: true, AnswerReplicationCount: true, AnswerBudgetCountPerUser: true, ItemsSourcePath: true, QuestionType: true, AnswerOptions: true};
+        this.modelPublicFields = {
+            Id: true, Name: true, Description: true, Type: true, AnswerType: true, IsActive: true,  LabelingStatus: true,
+            AnswerPackId: true, AnswerPack: {
+                select: {
+                    Id: true,
+                    Title: true,
+                    AnswerOptions: {
+                        orderBy: {
+                            Index: 'asc'
+                        }
+                    }
+                }
+            }
+        };
+        this.modelAdminFields = {
+            Id: true, Name: true, Description: true, Type: true, AnswerType: true, IsActive: true,  LabelingStatus: true, CreatedAt: true, UpdatedAt: true, ProcessedItemsSourcePath: true, AnswerReplicationCount: true, AnswerBudgetCountPerUser: true, ItemsSourcePath: true, QuestionType: true,
+            AnswerPackId: true, AnswerPack: {
+                select: {
+                    Id: true,
+                    Title: true,
+                    AnswerOptions: {
+                        orderBy: {
+                            Index: 'asc'
+                        }
+                    }
+                }
+            }
+        };
 
         this.datasetTypes = {
             FILE: 1,
@@ -43,11 +69,22 @@ class Dataset extends DBModelBase {
 
     async findById(id, role = 'guest') {
         const select = this.getFieldsByRole(role);
-        select.AnswerOptions = {
+        select.AnswerPack = {
+            select: {
+                Id: true,
+                Title: true,
+                AnswerOptions: {
+                    orderBy: {
+                        Index: 'asc'
+                    }
+                }
+            }
+        }
+        /*select.AnswerOptions = {
             orderBy: {
                 Index: 'asc'
             }
-        }
+        }*/
         return await prisma[this.table].findUnique({
             select,
             where: {
