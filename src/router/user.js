@@ -78,6 +78,38 @@ export default function (router) {
     router.get("/api/User/GetAll", asyncWrapper(userController.findAll));
     /**
      * @swagger
+     * /api/User/GetAllAdvanced:
+     *   get:
+     *     tags:
+     *       - User
+     *     description: Get a list of Users
+     *     produces:
+     *       - application/json
+     *     parameters:
+     *       - name: Keyword
+     *         in: query
+     *         schema:
+     *           type: string
+     *       - name: IsActive
+     *         in: query
+     *       - name: Skip
+     *         in: query
+     *       - name: Limit
+     *         in: query
+     *     responses:
+     *       200:
+     *         description: An array of Users
+     *         type: array
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: "#/components/schemas/UsersPaged"
+     *
+     *
+     */
+    router.get("/api/User/GetAllAdvanced", asyncWrapper(userController.getAllAdvanced));
+    /**
+     * @swagger
      * /api/User/Get/{id}:
      *   get:
      *     tags:

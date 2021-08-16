@@ -64,6 +64,130 @@ userController.findAll = async (req, res) => {
     }
 };
 
+userController.getAllAdvanced = async (req, res) => {
+    const {
+        Keyword,
+        UserName,
+        IsActive,
+        Limit = process.env.API_PAGED_RESULTS_DEFAULT_LIMIT,
+        Skip = 0
+    } = req.query;
+
+    let where2 = {
+        IsActive: '',
+        UserName: '',
+        keyword: '',
+        query: ''
+    }, where = {};
+
+    if(Keyword) {
+        where2.keyword = '"Name" like ' + "'%" + Keyword + "%' OR " + '"UserName" like ' + "'%" + Keyword + "%' OR  " + '"Surname" like ' + "'%" + Keyword + "%' ";
+        where.OR = [
+            {
+                Name: {
+                    contains: Keyword,
+                    mode: "insensitive"
+                }
+            },
+            {
+                Surname: {
+                    contains: Keyword,
+                    mode: "insensitive"
+                }
+            },
+            {
+                UserName: {
+                    contains: Keyword,
+                    mode: "insensitive"
+                }
+            }
+        ]
+    }
+
+    if(IsActive !== null && IsActive !== undefined) {
+        where2.IsActive = '"IsActive" = true'
+        where.IsActive = IsActive;
+    }
+
+    if(UserName){
+        where2.UserName = '"UserName" = ' + "'" +UserName + "'";
+        where.UserName = UserName;
+    }
+
+
+    if(where2.UserName.length){
+        where2.query = ' where ' + where2.UserName
+    }
+    if(where2.IsActive ) {
+        if(where2.query)
+            where2.query += ' AND ' + where2.IsActive
+        else {
+            where2.query = ' where ' + where2.IsActive
+        }
+    }
+    if(where2.keyword ){
+        if(where2.query)
+            where2.query += ' AND (' + where2.keyword + ")"
+        else {
+            where2.query = ' where ' + where2.keyword
+        }
+    }
+
+    try {
+
+        /*const items = await User.client.findMany({
+            select: {
+                Id: true,
+            },
+            where,
+            orderBy: {
+                CreatedAt: 'desc'
+            },
+            skip: JSON.parse(Skip),
+            take: parseInt(Limit),
+        });*/
+
+        /*if(items && items.length) {
+
+
+
+
+        }*/
+
+        let advancedResult = await prisma.$queryRaw("select subquery.\"Id\", subquery.\"Name\", subquery.\"Surname\", subquery.\"UserName\", subquery.debitAmount, subquery.CreditAmount, subquery.debitAmount + subquery.CreditAmount AS totalincome, subquery.totalanswers, subquery.totalcorrectgoldens, subquery.totalincorrectgoldens\n" +
+            "\n" +
+            "from (\n" +
+            "select \"Id\", \"Name\", \"Surname\", \"UserName\",\n" +
+            "\t(\n" +
+            "\t\tselect sum(\"DebitAmount\"::FLOAT) as debitAmount FROM \"Transactions\" where \"OwnerId\" = \"User\".\"Id\"\n" +
+            "\t),\n" +
+            "\t(\n" +
+            "\t\tselect sum(\"CreditAmount\"::FLOAT) as creditAmount FROM \"Transactions\" where \"OwnerId\" = \"User\".\"Id\" and \"DebitAmount\" = 0\n" +
+            "\t),\n" +
+            "\t(\n" +
+            "\t\tselect Count(*) as totalanswers FROM \"AnswerLogs\" where \"UserId\" = \"User\".\"Id\"\n" +
+            "\t),\n" +
+            "\t(\n" +
+            "\t\tselect Count(*) as totalcorrectgoldens FROM \"AnswerLogs\" where \"UserId\" = \"User\".\"Id\" and \"AnswerType\" = 0 and \"IsCorrect\" = true\n" +
+            "\t),\n" +
+            "\t(\n" +
+            "\t\tselect Count(*) as totalincorrectgoldens FROM \"AnswerLogs\" where \"UserId\" = \"User\".\"Id\" and \"AnswerType\" = 0 and \"IsCorrect\" = false\n" +
+            "\t)\n" +
+            "\t\n" +
+            "\tfrom \"User\" "+ where2.query +"  LIMIT " + Limit + " OFFSET "+ Skip +"\n" +
+            ") subquery")
+
+        const totalCount = await User.client.count({
+            where,
+        });
+        return res.send({totalCount, items: advancedResult});
+    } catch (error) {
+        console.log(error)
+        return handleError(res, {});
+    }
+};
+
+
 // Get User By Id
 userController.findOne = async (req, res) => {
     const {
