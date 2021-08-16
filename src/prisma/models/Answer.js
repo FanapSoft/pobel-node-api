@@ -7,7 +7,7 @@ class Answer extends DBModelBase {
         super();
         this.table = 'answerLogs';
         this.client = prisma.answerLogs
-        this.modelAdminFields = {Id: true, Ignored: true, Answer: true, DatasetId: true, DatasetItemId: true, CreditCalculated: true, CreatedAt: true};
+        this.modelAdminFields = {Id: true, Ignored: true, Answer: true, DatasetId: true, DatasetItemId: true, CreditCalculated: true, CreatedAt: true, AnswerType: true, GoldenType: true};
         this.modelPublicFields = this.modelUserFields = {Id: true, Ignored: true, Answer: true, DatasetId: true, DatasetItemId: true, CreditCalculated: true, CreatedAt: true};
 
         this.answerTypes = {
