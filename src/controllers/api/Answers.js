@@ -6,6 +6,8 @@ import DatasetItem from "../../prisma/models/DatasetItem.js";
 import QuestionRequestLog from "../../prisma/models/QuestionRequestLog.js";
 import UserTarget from "../../prisma/models/UserTarget.js";
 import {validationResult} from "express-validator";
+import moment from "jalali-moment";
+import prisma from "../../prisma/prisma.module";
 
 const answersController = {};
 
@@ -306,6 +308,97 @@ answersController.stats = async (req, res, next) => {
 
     } catch (error) {
         console.log(error)
+        return handleError(res, {});
+    }
+};
+
+answersController.removeAnswers = async (req, res, next) => {
+    let {
+        UserId,
+        From,
+        To,
+        DatasetId
+    } = req.query;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    let uId = UserId ? UserId : null;
+    if(UserId && req.decoded.Role !== 'admin') {
+        uId = req.decoded.Id;
+    }
+
+    let datasetIdString = '';
+    if(DatasetId) {
+        datasetIdString = "AND \"DatasetId\" = '" + DatasetId + "'"
+    }
+
+    try {
+        let dateRange = '';
+        if(From) {
+            if(From && new Date(From) < new Date()) {
+                From = moment(moment(From).toISOString()).utc(false).toISOString().split('T', 1)[0];
+            } else {
+                From = null;
+            }
+            if(To) {
+                To = moment(moment(To).toISOString()).utc(false).add(1,'days').toISOString().split('T', 1)[0];
+            }
+            if(!To && From) {
+                To = moment(moment().toISOString()).utc(false).add(1,'days').toISOString().split('T', 1)[0];
+            }
+
+            if(From)
+                dateRange = " AND \"CreatedAt\" BETWEEN '" + From + "' AND '" + To + "'";
+        }
+
+        let sqlCommand = "\n" +
+            "WITH cteids as \n" +
+            "(\n" +
+            "\t\t\tSELECT \"Id\", \"DatasetItemId\" \n" +
+            "\t\t\tFROM \"AnswerLogs\" \n" +
+            "\t\t\tWHERE \"UserId\" = " + "'" + uId + "' " + datasetIdString + " "+ dateRange +"\n" +
+            "),\n" +
+            "cteupdate as\n" +
+            "(\n" +
+            "\t\n" +
+            "\t\tUPDATE \"DatasetItems\"\n" +
+            "\t\tSET \"AnswersCount\" = \"AnswersCount\" - 1\n" +
+            "\t\tWHERE \"DatasetItems\".\"Id\" IN\n" +
+            "\t\t(\n" +
+            "\t\t\tSELECT cteids.\"DatasetItemId\" FROM cteids\n" +
+            "\t\t) AND \"AnswersCount\" > 0\n" +
+            "\t\tRETURNING *\n" +
+            "),\n" +
+            "ctedelete as\n" +
+            "(\n" +
+            "\t\n" +
+            "\t\tDELETE FROM \"AnswerLogs\"\n" +
+            "\t\tWHERE \"Id\" IN (\n" +
+            "\t\t\tSELECT cteids.\"Id\" FROM cteids\n" +
+            "\t\t) \n" +
+            "\t\tRETURNING *\n" +
+            "),\n" +
+            "cteend as(\n" +
+            "\t\tselect distinct cteids.\"Id\"\n" +
+            "\t\tfrom cteupdate,\n" +
+            "\t\t\tctedelete,\n" +
+            "\t\t\tcteids\n" +
+            ")\n" +
+            "\n" +
+            "SELECT *\n" +
+            "from cteend";
+
+        let temp = await prisma.$executeRaw(sqlCommand);
+
+        return res.send({
+            success: true,
+            affectedRows: temp
+        });
+    } catch (error) {
+        console.log(error);
         return handleError(res, {});
     }
 };

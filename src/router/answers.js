@@ -213,4 +213,39 @@ export default function (router) {
         check('Answers.*.AnswerIndex').notEmpty().toInt(),
         check('Answers.*.DurationToAnswerInSeconds').notEmpty().toInt()
     ], asyncWrapper(answersController.submitBatchAnswer));
+    /**
+     * @swagger
+     * /api/Answers/RemoveAnswers:
+     *   get:
+     *     tags:
+     *       - Answers
+     *     description: Remove user answers
+     *     produces:
+     *       - application/json
+     *           consumes
+     *             - application/json
+     *     parameters:
+     *       - in: body
+     *         schema:
+     *           $ref: "#/components/schemas/SubmitBatchAnswerInput"
+     *     responses:
+     *       200:
+     *         description: Array of inserted answers
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   id:
+     *                     type: string
+     *                     format: uuid
+     */
+    router.get("/api/Answers/RemoveAnswers", [
+        check('UserId').isUUID(),
+        check('DatasetId').isUUID(),
+        check('From').optional({checkFalsy: true}).matches(/^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$/),
+        check('To').optional({checkFalsy: true}).matches(/^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$/)
+    ], asyncWrapper(answersController.removeAnswers));
 }
