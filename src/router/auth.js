@@ -5,7 +5,7 @@ import {check} from "express-validator";
 const config = {
     client_id: process.env.POD_POBEL_ACCOUNT_CLIENT_ID,
     client_secret: process.env.POD_POBEL_ACCOUNT_CLIENT_SECRET,
-    redirect_uri: process.env.HOST_ADDRESS + "/SSOCallback",
+    redirect_uri: (process.env.NODE_ENV === 'production' ? process.env.HOST_ADDRESS : process.env.HOST_ADDRESS_LOCAL) + "/SSOCallback",
 };
 
 export default function (router) {

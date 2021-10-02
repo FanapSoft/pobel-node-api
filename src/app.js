@@ -44,7 +44,7 @@ const options = {
   apis: ['./src/router/*.js'],
 };
 
-if(['development', 'test'].includes(process.env.NODE_ENV)) {
+//if(['development', 'test'].includes(process.env.NODE_ENV)) {
   const openapiSpecification = swaggerJsdoc(options);
 
   app.use(
@@ -52,9 +52,16 @@ if(['development', 'test'].includes(process.env.NODE_ENV)) {
       swaggerUi.serve,
       swaggerUi.setup(openapiSpecification, { explorer: true })
   );
-}
+//}
 
-var allowedOrigins = ['http://localhost', 'http://localhost:8080', 'http://localhost:8787', 'http://10.56.16.50'];
+var allowedOrigins = [
+    'http://localhost',
+  'http://localhost:8080',
+  'http://localhost:8787',
+  'http://10.56.16.50',
+  'https://apipobel.pod.ir',
+  'https://tstpobel.pod.ir'
+];
 
 app.use(cors({
   origin: function(origin, callback){    // allow requests with no origin
