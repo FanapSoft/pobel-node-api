@@ -79,7 +79,9 @@ export default function (router) {
                     Role: 'user',
                     PodUserId: profile.data.id,
                     SSOProfile: profile.data,
-                    Tokens: tokens.data
+                    Tokens: tokens.data,
+                    LocalToken: tokens.data.id_token,
+                    TokenExpiresAt: new Date(new Date().setDate(new Date().getDate() + 4)).toISOString()
                 }
             });
         } else {

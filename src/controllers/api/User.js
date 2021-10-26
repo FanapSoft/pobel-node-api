@@ -154,10 +154,10 @@ userController.getAllAdvanced = async (req, res) => {
 
         }*/
 
-        let advancedResult = await prisma.$queryRaw("select subquery.\"Id\", subquery.\"Name\", subquery.\"Surname\", subquery.\"UserName\", subquery.debitAmount, subquery.CreditAmount, subquery.debitAmount + subquery.CreditAmount AS totalincome, subquery.totalanswers, subquery.totalcorrectgoldens, subquery.totalincorrectgoldens\n" +
+        let advancedResult = await prisma.$queryRaw("select subquery.\"Id\", subquery.\"Name\", subquery.\"Surname\", subquery.\"UserName\", subquery.\"CreatedAt\", subquery.debitAmount, subquery.CreditAmount, subquery.debitAmount + subquery.CreditAmount AS totalincome, subquery.totalanswers, subquery.totalcorrectgoldens, subquery.totalincorrectgoldens\n" +
             "\n" +
             "from (\n" +
-            "select \"Id\", \"Name\", \"Surname\", \"UserName\",\n" +
+            "select \"Id\", \"Name\", \"Surname\", \"UserName\", \"CreatedAt\", \n" +
             "\t(\n" +
             "\t\tselect sum(\"DebitAmount\"::FLOAT) as debitAmount FROM \"Transactions\" where \"OwnerId\" = \"User\".\"Id\"\n" +
             "\t),\n" +
@@ -174,8 +174,8 @@ userController.getAllAdvanced = async (req, res) => {
             "\t\tselect Count(*) as totalincorrectgoldens FROM \"AnswerLogs\" where \"UserId\" = \"User\".\"Id\" and \"AnswerType\" = 0 and \"IsCorrect\" = false\n" +
             "\t)\n" +
             "\t\n" +
-            "\tfrom \"User\" "+ where2.query +"  LIMIT " + Limit + " OFFSET "+ Skip +"\n" +
-            ") subquery")
+            "\tfrom \"User\" "+ where2.query +" ORDER BY \"CreatedAt\" DESC  LIMIT " + Limit + " OFFSET "+ Skip +"\n" +
+            ") subquery ")
 
         const totalCount = await User.client.count({
             where,

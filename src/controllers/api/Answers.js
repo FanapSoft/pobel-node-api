@@ -41,15 +41,14 @@ answersController.findAll = async (req, res) => {
     if(UserId)
         where.UserId = uId;
 
+    if(From || To) {
+        where.CreatedAt = {}
+    }
     if(From)
-        where.CreatedAt = {
-            gte: new Date(From).toISOString()
-        }
+        where.CreatedAt.gte = new Date(From).toISOString();
 
     if(To)
-        where.CreatedAt = {
-            lte: new Date(To).toISOString()
-        }
+        where.CreatedAt.lte = moment(To).add(1, 'days').toISOString();
 
     let select = {
         ...Answer.getFieldsByRole(req.decoded.role),
