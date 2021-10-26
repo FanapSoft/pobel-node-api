@@ -17,6 +17,7 @@ const errors = [
     {code: 3202, message: 'Your target ended choose a new target'},
     {code: 3203, message: 'No target Or target ended'},
     {code: 3204, message: 'Please collect your points before choosing a new target'},
+    {code: 3205, message: 'Please choose a bigger target or finish your current target'},
     /**
      * 3300 to 3349 is for datasets
      */
@@ -26,6 +27,8 @@ const errors = [
      * 3350 to 3400 is for datasetsItems
      */
     {code: 3350, message: 'This dataset has no items to label'},
+    {code: 3351, message: 'This dataset has no more items to label'},
+    {code: 3352, message: 'This dataset has no more items for you'},
     /**
      * 3400 to 3449 is for credit
      */
@@ -51,10 +54,10 @@ const errors = [
 
 export function findCode(code = 1000) {
     const codeObj = errors.filter(item => item.code === code);
-    return codeObj ? codeObj : {
+    return codeObj ? codeObj : [{
         code: 1000,
         message: 'Unhandled exception'
-    }
+    }]
 }
 
 export function handleError(res,  {code = 1000, status = 500, error = null}) {

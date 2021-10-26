@@ -129,6 +129,9 @@ creditsController.collectCredit = async (req, res) => {
                 }
             });
 
+            if(!userTarget.TargetEnded)
+                await UserTarget.finishUserTarget(userTarget.Id);
+
             return res.send(transaction);
         } else {
             return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3400});

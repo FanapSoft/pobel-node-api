@@ -55,45 +55,7 @@ userController.activateTarget =  async (req, res) => {
             await UserTarget.createTarget(uId, newTargetDefinition.DatasetId, TargetDefinitionId);
             return res.send({success: true});
         } else {
-            if (userTarget.TargetDefinition) {
-                const oldTargetDafeinition = userTarget.TargetDefinition;
-                if(oldTargetDafeinition.Id === newTargetDefinition.Id && !userTarget.TargetEnded) {
-                    return res.send({success: true});
-                }
-
-                if(newTargetDefinition.AnswerCount < oldTargetDafeinition.AnswerCount) {
-                    return handleError(res, {
-                        code: 3200,
-                        status: httpStatus.EXPECTATION_FAILED,
-                    });
-                }
-
-                const userAnswersCount = await Answer.client.count({
-                    where: {
-                        UserId: uId,
-                        DatasetId: oldTargetDafeinition.DatasetId,
-                        CreditCalculated: false
-                    }
-                });
-
-                //TODO: maybe unnecessary, needs more checks
-                if(oldTargetDafeinition.AnswerCount <= userAnswersCount && !userTarget.TargetEnded) {
-                    await UserTarget.finishUserTarget(userTarget.Id)
-
-                    return handleError(res, {
-                        status: httpStatus.EXPECTATION_FAILED,
-                        code: 3201,
-                    });
-                }
-
-                if(userAnswersCount > 0 && userTarget.TargetEnded && newTargetDefinition.AnswerCount === oldTargetDafeinition.AnswerCount) {
-                    await UserTarget.finishUserTarget(userTarget.Id);
-                    return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3204});
-                }
-
-                await UserTarget.createTarget(uId, newTargetDefinition.DatasetId, newTargetDefinition.Id);
-                return res.send({success: true});
-            } else {
+            if (!userTarget.TargetDefinition) {
                 return handleError(res, {
                     status: httpStatus.EXPECTATION_FAILED,
                     error: {
@@ -102,6 +64,66 @@ userController.activateTarget =  async (req, res) => {
                     }
                 });
             }
+            const oldTargetDafeinition = userTarget.TargetDefinition;
+
+            const userAnswersCount = await Answer.client.count({
+                where: {
+                    UserId: uId,
+                    DatasetId: oldTargetDafeinition.DatasetId,
+                    CreditCalculated: false
+                }
+            });
+
+            if(userTarget.TargetEnded) {
+                if(newTargetDefinition.AnswerCount <= oldTargetDafeinition.AnswerCount){
+                    if(userAnswersCount > 0) {
+                        return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3204});
+                    }
+                }
+            } else {
+                if(oldTargetDafeinition.AnswerCount === newTargetDefinition.AnswerCount) {
+                    return res.send({success: true});
+                }
+                if(newTargetDefinition.AnswerCount < oldTargetDafeinition.AnswerCount) {
+                    if(userAnswersCount > 0) {
+                        return handleError(res, {
+                            code: 3205,
+                            status: httpStatus.EXPECTATION_FAILED,
+                        });
+                    } else {
+                        await UserTarget.finishUserTarget(userTarget.Id);
+                    }
+                } else {
+                    await UserTarget.finishUserTarget(userTarget.Id)
+                }
+            }
+
+
+
+            /*if(newTargetDefinition.AnswerCount < oldTargetDafeinition.AnswerCount && (!userTarget.TargetEnded || userAnswersCount > 0)) {
+                return handleError(res, {
+                    code: 3200,
+                    status: httpStatus.EXPECTATION_FAILED,
+                });
+            }*/
+
+            //TODO: maybe unnecessary, needs more checks
+            /*if(!userTarget.TargetEnded && oldTargetDafeinition.AnswerCount < newTargetDefinition.AnswerCount) {
+                await UserTarget.finishUserTarget(userTarget.Id)
+
+                /!*return handleError(res, {
+                    status: httpStatus.EXPECTATION_FAILED,
+                    code: 3201,
+                });*!/
+            }*/
+
+            /*if(userAnswersCount > 0 && userTarget.TargetEnded && newTargetDefinition.AnswerCount === oldTargetDafeinition.AnswerCount) {
+                await UserTarget.finishUserTarget(userTarget.Id);
+                return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3204});
+            }*/
+
+            await UserTarget.createTarget(uId, newTargetDefinition.DatasetId, newTargetDefinition.Id);
+            return res.send({success: true});
         }
     } catch (error) {
         console.log(error);

@@ -44,7 +44,7 @@ questionsController.getQuestions = async (req, res, next, runCount = 0) => {
         }
 
         if(ds.LabelingStatus > Dataset.labelingStatuses.LABELING_ALLOWED) {
-            return handleError(res, {status: httpStatus.EXPECTATION_FAILED, error: {code: 3300}});
+            return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3300});
         }
 
         const userTarget = await UserTarget.getUserCurrentTarget(uId, ds.Id);
@@ -185,8 +185,26 @@ questionsController.getQuestions = async (req, res, next, runCount = 0) => {
                 });
             }
         } else {
-            await Dataset.changeDatasetLabelingStatus(ds.Id, Dataset.labelingStatuses.ITEMS_COMPLETED)
-            return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3350});
+            //await Dataset.changeDatasetLabelingStatus(ds.Id, Dataset.labelingStatuses.ITEMS_COMPLETED);
+            const count = await prisma.datasetItems.count({
+                where: {
+                    DatasetId: ds.Id,
+                    IsGoldenData: false,
+                    AnswersCount: {
+                        lt: ds.AnswerReplicationCount
+                    }
+                }
+            });
+
+            if(!userTarget.TargetEnded)
+                await UserTarget.finishUserTarget(userTarget.Id);
+
+            if(!count) {
+                await Dataset.changeDatasetLabelingStatus(ds.Id, Dataset.labelingStatuses.ITEMS_COMPLETED);
+                return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3351});
+            } else {
+                return handleError(res, {status: httpStatus.EXPECTATION_FAILED, code: 3352});
+            }
         }
 
         return res.send(questions);
