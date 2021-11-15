@@ -11,11 +11,11 @@ class Transaction extends DBModelBase {
     }
 
     async calculateBalance(userId) {
-        let trans = await prisma.$queryRaw("Select\n" +
-            " sum(CASE WHEN t.\"DebitAmount\" = 0 THEN t.\"CreditAmount\" ELSE 0 end) As CreditAmount,\n" +
-            " sum(CASE WHEN t.\"CreditAmount\" = 0 THEN t.\"DebitAmount\" ELSE 0 end) As DebitAmount\n" +
-            " From \"Transactions\" t\n" +
-            " WHERE \"OwnerId\"='" + userId + "'")
+        let trans = await prisma.$queryRaw`Select 
+             sum(CASE WHEN t."DebitAmount" = 0 THEN t."CreditAmount" ELSE 0 end) As CreditAmount,
+             sum(CASE WHEN t."CreditAmount" = 0 THEN t."DebitAmount" ELSE 0 end) As DebitAmount
+             From "Transactions" t
+            WHERE \"OwnerId\"=${userId}`;
 
         return trans[0];
     }

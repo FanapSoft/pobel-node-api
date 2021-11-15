@@ -88,16 +88,16 @@ questionsController.getQuestions = async (req, res, next, runCount = 0) => {
         if (OnlyOneLabel) {
             if(LabelId) {
                 // label = await Label.findById(LabelId, 'admin');
-                label = await prisma.$queryRaw("select * from \"Labels\" " +
-                    "where \"ItemsDone\"=false AND \"Id\"='" + LabelId + "'  " +
-                    "AND EXISTS (select 1 from \"DatasetItems\"  " +
-                    " where \"DatasetId\" = '" + DatasetId + "'  " +
-                    " and \"DatasetItems\".\"LabelId\"=\"Labels\".\"Id\"" +
-                    " and \"DatasetItems\".\"AnswersCount\" < " + ds.AnswerReplicationCount +
-                    " and \"DatasetItems\".\"IsGoldenData\"= " + false +
-                    " and not exists (select 1 from \"AnswerLogs\" al where \"DatasetItems\".\"Id\"=al.\"DatasetItemId\" and al.\"UserId\"='" + uId + "' )) " +
-                    "ORDER BY random()\n" +
-                    "LIMIT 1");
+                label = await prisma.$queryRaw`select * from "Labels" 
+                    where "ItemsDone"=false AND "Id"=${LabelId}
+                    AND EXISTS (select 1 from "DatasetItems" 
+                     where "DatasetId" =${DatasetId}  
+                     and "DatasetItems"."LabelId"="Labels"."Id"
+                     and "DatasetItems"."AnswersCount" < ${ds.AnswerReplicationCount} 
+                     and "DatasetItems"."IsGoldenData"=false 
+                     and not exists (select 1 from "AnswerLogs" al where "DatasetItems"."Id"=al."DatasetItemId" and al."UserId"=${uId} )) 
+                    ORDER BY random()
+                    LIMIT 1`;
                 if(label.length)
                     label = label[0];
                 else
@@ -105,16 +105,16 @@ questionsController.getQuestions = async (req, res, next, runCount = 0) => {
 
             } else {
                 // label = await prisma.$queryRaw('SELECT * from "Labels" WHERE "DatasetId" = '+ "'" + DatasetId + "' AND \"ItemsDone\" = " + false + " ORDER BY random() Limit 1;");
-                label = await prisma.$queryRaw("select * from \"Labels\" \n" +
-                    "where \"ItemsDone\"=false \n" +
-                    "AND EXISTS (select 1 from \"DatasetItems\" " +
-                    " where \"DatasetId\" = '" + DatasetId + "' " +
-                    " and \"DatasetItems\".\"LabelId\"=\"Labels\".\"Id\"" +
-                    " and \"DatasetItems\".\"AnswersCount\" < " + ds.AnswerReplicationCount +
-                    " and \"DatasetItems\".\"IsGoldenData\"= " + false +
-                    " and not exists (select 1 from \"AnswerLogs\" al where \"DatasetItems\".\"Id\"=al.\"DatasetItemId\" and al.\"UserId\"='" + uId + "' )) " +
-                    "ORDER BY random() " +
-                    "LIMIT 1");
+                label = await prisma.$queryRaw`select * from "Labels" 
+                    where "ItemsDone"=false 
+                    AND EXISTS (select 1 from "DatasetItems" 
+                     where "DatasetId" = ${DatasetId}
+                     and "DatasetItems"."LabelId"="Labels"."Id"
+                     and "DatasetItems"."AnswersCount" < ${ds.AnswerReplicationCount}
+                     and "DatasetItems"."IsGoldenData"= false 
+                     and not exists (select 1 from "AnswerLogs" al where "DatasetItems"."Id"=al."DatasetItemId" and al."UserId"=${uId} )) 
+                    ORDER BY random() 
+                    LIMIT 1`;
 
                 if(label.length)
                     label = label[0];
@@ -125,19 +125,18 @@ questionsController.getQuestions = async (req, res, next, runCount = 0) => {
             }
 
 
-            datasetItems = await prisma.$queryRaw('SELECT * FROM (' +
-                '(SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", false AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "'  AND \"IsGoldenData\" = " + true + " AND \"LabelId\" = '" + label.Id +  "' AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  "   AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + uId + "' ) ORDER BY random() LIMIT " + positiveGoldens + ")" +
-                'UNION (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", true AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + true + " AND \"LabelId\" <> '" + label.Id +  "'  AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + uId + "' ) ORDER BY random() LIMIT  " + negativeGoldens + ")" +
-                'UNION (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", false AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"LabelId\" = '" + label.Id +  "' AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  "  AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + uId + "' ) ORDER BY random() LIMIT " + noneGoldensCount + ")" +
-                ") AS T1 ORDER BY random()");
+            datasetItems = await prisma.$queryRaw`SELECT * FROM (
+                (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", false AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ${DatasetId}   AND "IsGoldenData" =  true  AND "LabelId" = ${label.Id} AND "AnswersCount" < ${ds.AnswerReplicationCount}  AND NOT EXISTS (Select 1 From "AnswerLogs" AL WHERE DI."Id" = AL."DatasetItemId" AND AL."UserId"=${uId} ) ORDER BY random() LIMIT ${positiveGoldens})
+                UNION (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", true AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ${DatasetId} AND "IsGoldenData" =  true  AND "LabelId" <> ${label.Id}   AND NOT EXISTS (Select 1 From "AnswerLogs" AL WHERE DI."Id" = AL."DatasetItemId" AND AL."UserId" = ${uId} ) ORDER BY random() LIMIT ${negativeGoldens} )
+                UNION (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "IsGoldenData", "Type", false AS "NG" FROM "DatasetItems" DI WHERE "DatasetId" = ${DatasetId}  AND "IsGoldenData" = false  AND "LabelId" = ${label.Id}  AND "AnswersCount" < ${ds.AnswerReplicationCount} AND NOT EXISTS (Select 1 From "AnswerLogs" AL WHERE DI."Id" = AL."DatasetItemId" AND AL."UserId"= ${uId} ) ORDER BY random() LIMIT ${noneGoldensCount})
+                ) AS T1 ORDER BY random()`;
 
             nonGoldensFound = datasetItems.filter(item => ((item.IsGoldenData !== true) && (item.NG !== true))).length;
         } else {
-            datasetItems = await prisma.$queryRaw('SELECT * FROM (' +
-                '(SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "Source", "Field", "Content", "IsGoldenData", "CorrectGoldenAnswerIndex", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "'  AND \"IsGoldenData\" = " + true + " AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  " AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + req.decoded.Id + "' ) ORDER BY random() LIMIT " + positiveGoldens + ")" +
-                'UNION (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "Source", "Field", "Content", "IsGoldenData", "CorrectGoldenAnswerIndex", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ' + "'" + DatasetId + "' AND \"IsGoldenData\" = " + false + " AND \"AnswersCount\" < " + ds.AnswerReplicationCount +  " AND NOT EXISTS (Select 1 From \"AnswerLogs\" AL WHERE DI.\"Id\" = AL.\"DatasetItemId\" AND AL.\"UserId\" = '" + req.decoded.Id + "' ) ORDER BY random() LIMIT " + (negativeGoldens + noneGoldensCount) + ")" +
-                ") AS T1 ORDER BY random()");
-
+            datasetItems = await prisma.$queryRaw`SELECT * FROM (
+                (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "Source", "Field", "Content", "IsGoldenData", "CorrectGoldenAnswerIndex", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ${DatasetId}  AND "IsGoldenData" = true  AND "AnswersCount" <  ${ds.AnswerReplicationCount} AND NOT EXISTS (Select 1 From "AnswerLogs" AL WHERE DI."Id" = AL."DatasetItemId" AND AL."UserId" = ${req.decoded.Id} ) ORDER BY random() LIMIT ${positiveGoldens})
+                UNION (SELECT "Id", "LabelId", "Name", "FileName", "FilePath", "Source", "Field", "Content", "IsGoldenData", "CorrectGoldenAnswerIndex", "Type" FROM "DatasetItems" DI WHERE "DatasetId" = ${DatasetId}  AND "IsGoldenData" =false  AND "AnswersCount" < ${ds.AnswerReplicationCount} AND NOT EXISTS (Select 1 From "AnswerLogs" AL WHERE DI."Id" = AL."DatasetItemId" AND AL."UserId" = ${req.decoded.Id}) ORDER BY random() LIMIT  (${(negativeGoldens + noneGoldensCount)}) )
+                ) AS T1 ORDER BY random()`;
             nonGoldensFound = datasetItems.filter(item => ((item.IsGoldenData !== true) && (item.NG !== true))).length;
         }
 

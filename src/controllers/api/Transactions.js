@@ -6,6 +6,7 @@ import Dataset from "../../prisma/models/Dataset.js";
 import {body, validationResult} from "express-validator";
 import Transaction from "../../prisma/models/Transaction.js";
 import prisma from "../../prisma/prisma.module";
+import transactions from "../../router/transactions";
 
 const transactionsController = {};
 
@@ -120,13 +121,9 @@ transactionsController.getBalance = async (req, res) => {
     }
 
     try {
-        let trans = await prisma.$queryRaw("Select\n" +
-            " sum(CASE WHEN t.\"DebitAmount\" = 0 THEN t.\"CreditAmount\" ELSE 0 end) As CreditAmount,\n" +
-            " sum(CASE WHEN t.\"CreditAmount\" = 0 THEN t.\"DebitAmount\" ELSE 0 end) As DebitAmount\n" +
-            " From \"Transactions\" t\n" +
-            " WHERE \"OwnerId\"='" + uId + "'")
+        let trans = await Transaction.calculateBalance(uId)
 
-        return res.status(200).send({creditAmount: trans[0].creditamount, debitAmount: trans[0].debitamount});
+        return res.status(200).send({creditAmount: trans.creditamount, debitAmount: trans.debitamount});
     } catch (error) {
         console.log(error);
         return handleError(res, {});

@@ -47,15 +47,15 @@ reportController.answersCountTrend = async (req, res) => {
     }
 
     try {
-        let result = await prisma.$queryRaw("select date(d) as day, count(\"AnswerLogs\".\"Id\") \n" +
+        let result = await prisma.$queryRawUnsafe("select date(d) as day, count(\"AnswerLogs\".\"Id\") \n" +
             "from generate_series(\n" +
             "  date('"+ From +"'), \n" +
             "  date('"+ To +"'), \n" +
             "  '1 day'\n" +
             ") d \n" +
             "\n" +
-            "left join \"AnswerLogs\" on date(\"AnswerLogs\".\"CreatedAt\") = d " + userIdString +  datasetIdString + " \n" +
-            "group by day order by day;\n");
+            "left join \"AnswerLogs\" on date(\"AnswerLogs\".\"CreatedAt\") = d " + userIdString + datasetIdString + " \n" +
+            "group by day order by day;");
         return res.send(result);
     } catch (error) {
         console.log(error)
@@ -88,7 +88,7 @@ reportController.scoreboard = async (req, res) => {
         datasetIdString = " AND AL.\"DatasetId\" = '" + DatasetId + "' ";
 
     try {
-        let result = await prisma.$queryRaw("SELECT AL.\"UserId\" , U.\"Name\", U.\"Surname\", COUNT(AL.\"Id\") AS Count, \'" + From + "\' AS From\n" +
+        let result = await prisma.$queryRawUnsafe("SELECT AL.\"UserId\" , U.\"Name\", U.\"Surname\", COUNT(AL.\"Id\") AS Count, \'" + From + "\' AS From\n" +
             "FROM \"AnswerLogs\" AL\n" +
             "JOIN \"User\" U ON  U.\"Id\" = AL.\"UserId\" AND date(AL.\"CreatedAt\") > date('"+ From +"')  " + datasetIdString + " \n" +
             "GROUP BY AL.\"UserId\", U.\"Name\", U.\"Surname\"\n" +
@@ -104,16 +104,26 @@ reportController.scoreboard = async (req, res) => {
 
 reportController.dashboard = async  (req, res) => {
     try {
-        let result = await prisma.$queryRaw("SELECT \n" +
-            "(select count(*) as answers from \"AnswerLogs\"  ),\n" +
-            "(select count(*) as correctgoldenanswers from \"AnswerLogs\" where \"IsCorrect\" = true ),\n" +
-            "(select count(*) as datasetItems from \"DatasetItems\" ),\n" +
-            "(select count(*) as users from \"User\" ),\n" +
-            "(select count(*) as generatedQuestions from \"QuestionRequestLogs\"),\n" +
-            "(select count(*) as transactions from \"Transactions\"),\n" +
-            "\n" +
-            "(select count(*) as datasets from \"Datasets\"  )");
+        let result = await prisma.$queryRaw`SELECT 
+            (select count(*) as answers from "AnswerLogs" ),
+            (select count(*) as correctgoldenanswers from "AnswerLogs" where "IsCorrect" = true ),
+            (select count(*) as datasetItems from "DatasetItems" ),
+            (select count(*) as users from "User" ),
+            (select count(*) as generatedQuestions from "QuestionRequestLogs"),
+            (select count(*) as transactions from "Transactions"),
+      
+            (select count(*) as datasets from "Datasets" )`;
 
+        res.send(result[0]);
+    } catch (error) {
+        console.log(error);
+        return handleError(res, {});
+    }
+}
+
+reportController.datasetItems = async (req, res) => {
+    try {
+        let result = await prisma.$queryRaw("");
         res.send(result[0]);
     } catch (error) {
         console.log(error);

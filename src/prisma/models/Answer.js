@@ -34,14 +34,13 @@ class Answer extends DBModelBase {
                 {a: dataset.AnswerPack.AnswerOptions[0].Index, at: 0, gt: 2},
             ];
 
-            results = await prisma.$queryRaw("SELECT Count(*) AS Total, \n" +
-                " sum(CASE WHEN \"Answer\" = " + conf[0].a + " AND \"AnswerType\" = " + conf[0].at + " AND \"GoldenType\" = " + conf[0].gt + "  then 1 else 0 end) AS CorrectPositiveGoldens, " +
-                " sum(CASE WHEN \"Answer\" <> " + conf[0].a + " AND \"AnswerType\" = " + conf[0].at + " AND \"GoldenType\" = " + conf[0].gt + "  then 1 else 0 end) AS IncorrectPositiveGoldens, " +
-                " sum(CASE WHEN \"Answer\" = " + conf[1].a + " AND \"AnswerType\" = " + conf[1].at + " AND \"GoldenType\" = " + conf[1].gt + "  then 1 else 0 end) AS CorrectNegativeGoldens, " +
-                " sum(CASE WHEN \"Answer\" <> " + conf[1].a + " AND \"AnswerType\" = " + conf[1].at + " AND \"GoldenType\" = " + conf[1].gt + "  then 1 else 0 end) AS IncorrectNegativeGoldens " +
-                " FROM \"AnswerLogs\"" +
-                " WHERE \"UserId\" = '"+ userId +"' AND \"DatasetId\" = '"+ dataset.Id +"' AND \"CreditCalculated\" = false");
-
+            results = await prisma.$queryRaw`SELECT Count(*) AS Total,
+                 sum(CASE WHEN "Answer" = " + ${conf[0].a} + " AND "AnswerType" = ${conf[0].at}  AND "GoldenType" = ${conf[0].gt}   then 1 else 0 end) AS CorrectPositiveGoldens, 
+                 sum(CASE WHEN "Answer" <> ${conf[0].a}  AND "AnswerType" = ${conf[0].at}  AND "GoldenType"= ${conf[0].gt}   then 1 else 0 end) AS IncorrectPositiveGoldens, 
+                 sum(CASE WHEN "Answer" = ${conf[1].a}  AND "AnswerType"= ${conf[1].at}  AND "GoldenType"= ${conf[1].gt}   then 1 else 0 end) AS CorrectNegativeGoldens, 
+                 sum(CASE WHEN "Answer" <>  ${conf[1].a}  AND "AnswerType"=  ${conf[1].at}  AND "GoldenType"= ${conf[1].gt}  then 1 else 0 end) AS IncorrectNegativeGoldens 
+                 FROM "AnswerLogs"
+                 WHERE "UserId" = ${userId} AND "DatasetId" = ${dataset.Id} AND "CreditCalculated" = false`;
 
             let totalCorrectGoldens = results[0].correctpositivegoldens + results[0].correctnegativegoldens
             if(totalCorrectGoldens > 0) {
@@ -61,11 +60,11 @@ class Answer extends DBModelBase {
                 {a: dataset.AnswerPack.AnswerOptions[0].Index, at: this.answerTypes.GOLDEN, gt: this.goldenTypes.POSITIVE},
             ];
 
-            results = await prisma.$queryRaw("SELECT Count(*) AS Total, \n" +
-                " sum(CASE WHEN \"IsCorrect\" = " + true + " AND \"AnswerType\" = " + conf[0].at + " AND \"GoldenType\" = " + conf[0].gt + "  then 1 else 0 end) AS CorrectPositiveGoldens, " +
-                " sum(CASE WHEN \"IsCorrect\" = " + false + " AND \"AnswerType\" = " + conf[0].at + " AND \"GoldenType\" = " + conf[0].gt + "  then 1 else 0 end) AS IncorrectPositiveGoldens " +
-                " FROM \"AnswerLogs\"" +
-                " WHERE \"UserId\" = '" + userId + "' AND \"DatasetId\" = '" + dataset.Id + "' AND \"CreditCalculated\" = false");
+            results = await prisma.$queryRaw`SELECT Count(*) AS Total, 
+                 sum(CASE WHEN "IsCorrect" =  true  AND "AnswerType" = ${conf[0].at}  AND "GoldenType" =  ${conf[0].gt}  then 1 else 0 end) AS CorrectPositiveGoldens, 
+                 sum(CASE WHEN "IsCorrect" = false  AND "AnswerType" = ${conf[0].at} AND "GoldenType" = ${conf[0].gt}  then 1 else 0 end) AS IncorrectPositiveGoldens 
+                 FROM "AnswerLogs"
+                 WHERE "UserId" = ${userId}  AND "DatasetId" =  ${dataset.Id} AND "CreditCalculated" = false`;
 
             let totalCorrectGoldens = results[0].correctpositivegoldens
             if(totalCorrectGoldens > 0) {

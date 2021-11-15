@@ -62,7 +62,7 @@ datasetController.findAll = async (req, res) => {
 
         if(IncludeRandomItem && items.length) {
             for (const item of items) {
-                const randomDsItem = await prisma.$queryRaw("SELECT \"Id\"  FROM \"DatasetItems\" WHERE \"DatasetId\"= '" + item.Id + "' ORDER  BY random() LIMIT 1;")
+                const randomDsItem = await prisma.$queryRaw`SELECT "Id"  FROM "DatasetItems" WHERE "DatasetId"=${item.Id} ORDER  BY random() LIMIT 1;`;
                 item.RandomItemId = randomDsItem.length ? randomDsItem[0].Id : null;
             }
         }

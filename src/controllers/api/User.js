@@ -154,7 +154,7 @@ userController.getAllAdvanced = async (req, res) => {
 
         }*/
 
-        let advancedResult = await prisma.$queryRaw("select subquery.\"Id\", subquery.\"Name\", subquery.\"Surname\", subquery.\"UserName\", subquery.\"CreatedAt\", subquery.debitAmount, subquery.CreditAmount, subquery.debitAmount + subquery.CreditAmount AS totalincome, subquery.totalanswers, subquery.totalcorrectgoldens, subquery.totalincorrectgoldens\n" +
+        let advancedResult = await prisma.$queryRawUnsafe("select subquery.\"Id\", subquery.\"Name\", subquery.\"Surname\", subquery.\"UserName\", subquery.\"CreatedAt\", subquery.debitAmount, subquery.CreditAmount, subquery.debitAmount + subquery.CreditAmount AS totalincome, subquery.totalanswers, subquery.totalcorrectgoldens, subquery.totalincorrectgoldens\n" +
             "\n" +
             "from (\n" +
             "select \"Id\", \"Name\", \"Surname\", \"UserName\", \"CreatedAt\", \n" +
