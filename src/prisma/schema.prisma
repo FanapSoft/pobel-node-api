@@ -7,7 +7,7 @@ datasource db {
 }
 
 generator clinent {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
   previewFeatures = ["selectRelationCount"]
 }
 
@@ -118,7 +118,7 @@ model DatasetItems {
   FileSize                 Int?
   LabelId                  String?
   Label                    Labels?      @relation("Label", fields: [LabelId], references: [Id])
-  FinalLabelId             String?
+  FinalLabelId             String?      @unique
   FinalLabel               Labels?      @relation("FinalLabel", fields: [FinalLabelId], references: [Id])
   IsGoldenData             Boolean
   CorrectGoldenAnswerIndex Int?
@@ -217,7 +217,7 @@ model QuestionRequestLogs {
   ItemsCount   Int
 }
 
-model options {
+model Options {
   Key   String @unique
   Value String
 }

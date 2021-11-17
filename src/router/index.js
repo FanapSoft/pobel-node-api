@@ -22,6 +22,7 @@ import files from "./files.js";
 import path from 'path'
 import scripts from "./scripts";
 import answerPacks from "./answerPacks";
+import datasetResults from "./datasetResults";
 
 const ROUTER = express.Router();
 
@@ -112,6 +113,7 @@ files(ROUTER);
 wallet(ROUTER);
 scripts(ROUTER);
 answerPacks(ROUTER);
+datasetResults(ROUTER);
 
 export default function (app) {
     app.use(ROUTER);

@@ -23,6 +23,7 @@ const errors = [
      */
     {code: 3300, message: 'Labeling on this dataset is not allowed'},
     {code: 3301, message: 'You labeling budget on current dataset reached the maximum limit. Please wait until labeling on this dataset ends, then request for cash out.'},
+    {code: 3302, message: 'This dataset has no items'},
     /**
      * 3350 to 3400 is for datasetsItems
      */
@@ -49,6 +50,12 @@ const errors = [
      * 3700 to 3799 is for users
      */
     {code: 3700, message: 'Your account is inactivated. Contact support for more info.'},
+
+    /**
+     * 3800 to 3899 is for datasetResults
+     */
+    {code: 3800, message: 'First calculate the dataset results.'},
+
 
 ];
 
