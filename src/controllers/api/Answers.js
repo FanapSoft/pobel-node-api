@@ -15,6 +15,8 @@ const answersController = {};
 answersController.findAll = async (req, res) => {
     const {
         //TODO:Still not implemented
+        IncludeUser,
+        IncludeDataset,
         IncludeDatasetItem,
         DatasetId,
         UserId,
@@ -55,8 +57,28 @@ answersController.findAll = async (req, res) => {
         DeterminedLabel: true
     };
 
+    if(IncludeDataset !== null && IncludeDataset !== undefined){
+        select.Dataset = {
+            include: {
+                AnswerPack: {
+                    include: {
+                        AnswerOptions: true
+                    }
+                }
+            }
+        };
+    }
     if(IncludeDatasetItem !== null && IncludeDatasetItem !== undefined){
         select.DatasetItem = true;
+    }
+    if(IncludeUser !== null && IncludeUser !== undefined){
+        select.User = {
+            select: {
+                Id: true,
+                UserName: true,
+                Name: true
+            }
+        };
     }
 
 
@@ -390,7 +412,7 @@ answersController.removeAnswers = async (req, res, next) => {
             "SELECT *\n" +
             "from cteend";
 
-        let temp = await prisma.$executeRaw(sqlCommand);
+        let temp = await prisma.$executeRawUnsafe(sqlCommand);
 
         return res.send({
             success: true,

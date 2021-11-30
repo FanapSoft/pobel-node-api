@@ -35,7 +35,7 @@ class Answer extends DBModelBase {
             ];
 
             results = await prisma.$queryRaw`SELECT Count(*) AS Total,
-                 sum(CASE WHEN "Answer" = " + ${conf[0].a} + " AND "AnswerType" = ${conf[0].at}  AND "GoldenType" = ${conf[0].gt}   then 1 else 0 end) AS CorrectPositiveGoldens, 
+                 sum(CASE WHEN "Answer" = ${conf[0].a} AND "AnswerType" = ${conf[0].at}  AND "GoldenType" = ${conf[0].gt}   then 1 else 0 end) AS CorrectPositiveGoldens, 
                  sum(CASE WHEN "Answer" <> ${conf[0].a}  AND "AnswerType" = ${conf[0].at}  AND "GoldenType"= ${conf[0].gt}   then 1 else 0 end) AS IncorrectPositiveGoldens, 
                  sum(CASE WHEN "Answer" = ${conf[1].a}  AND "AnswerType"= ${conf[1].at}  AND "GoldenType"= ${conf[1].gt}   then 1 else 0 end) AS CorrectNegativeGoldens, 
                  sum(CASE WHEN "Answer" <>  ${conf[1].a}  AND "AnswerType"=  ${conf[1].at}  AND "GoldenType"= ${conf[1].gt}  then 1 else 0 end) AS IncorrectNegativeGoldens 

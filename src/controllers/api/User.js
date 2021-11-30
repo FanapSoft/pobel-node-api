@@ -110,7 +110,7 @@ userController.getAllAdvanced = async (req, res) => {
     }
 
     if(UserName){
-        where2.UserName = '"UserName" = ' + "'" +UserName + "'";
+        where2.UserName = '"UserName" = ' + "'" + UserName + "'";
         where.UserName = UserName;
     }
 
