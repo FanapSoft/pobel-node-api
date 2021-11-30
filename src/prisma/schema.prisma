@@ -7,7 +7,7 @@ datasource db {
 }
 
 generator clinent {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["selectRelationCount"]
 }
 
@@ -101,7 +101,7 @@ model Datasets {
   AnswerLogs               AnswerLogs[]
   UserTargets              UserTargets[]
   QuestionLogs             QuestionRequestLogs[]
-  DatasetType1Results      DatasetType1Results[]
+  DatasetResults           DatasetResults[]
 }
 
 model DatasetItems {
@@ -129,7 +129,7 @@ model DatasetItems {
   Dataset                  Datasets     @relation(fields: [DatasetId], references: [Id])
   AnswerLogs               AnswerLogs[]
 
-  DatasetType1Results DatasetType1Results[]
+  DatasetResults DatasetResults[]
   @@unique([ExternalId, DatasetId])
 }
 
@@ -222,7 +222,7 @@ model Options {
   Value String
 }
 
-model DatasetType1Results {
+model DatasetResults {
   Id                   String       @id @default(uuid())
   CreatedAt            DateTime     @default(now())
   DatasetId            String
@@ -233,7 +233,9 @@ model DatasetType1Results {
   TotalAnswers         Int          @default(0)
   TotalYesAnswers      Int          @default(0)
   TotalNoAnswers       Int          @default(0)
+  TotalNoIdeaAnswers   Int          @default(0)
   OverAllResult        String
   OverAllResultPercent Int
   RequiredReplication  Int
+  FileName             String?
 }

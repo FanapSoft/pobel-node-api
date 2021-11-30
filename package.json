@@ -39,7 +39,8 @@
     "swagger-jsdoc": "^6.1.0",
     "swagger-ui-express": "^4.1.6",
     "uuid": "^8.3.2",
-    "xlsx-stream-reader": "^1.1.1"
+    "xlsx-stream-reader": "^1.1.1",
+    "csv": "^5.5.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.3",
@@ -49,7 +50,6 @@
     "@babel/register": "^7.13.16",
     "chai": "^4.3.4",
     "chai-http": "^4.3.0",
-    "csv": "^5.5.0",
     "errorhandler": "^1.5.1",
     "faker": "^5.5.3",
     "mocha": "^8.4.0",

@@ -85,8 +85,6 @@ app.use(session({ resave: true, saveUninitialized: true,
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(express.static(path.join(__dirname, 'public')));
-
 /**
  * Registers all routes
  */
@@ -94,7 +92,7 @@ routes(app);
 
 /* final catch-all route to index.html defined last */
 app.get('/*', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
+  res.sendFile(__dirname + 'public/index.html');
 });
 
 app.listen(8080,  () => {

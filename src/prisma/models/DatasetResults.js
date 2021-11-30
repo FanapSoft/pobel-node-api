@@ -2,11 +2,11 @@ import prisma from '../prisma.module.js'
 import DBModelBase from "./DBModelBase.Class.js";
 
 
-class DatasetType1Results extends DBModelBase {
+class DatasetResults extends DBModelBase {
     constructor() {
         super();
-        this.table = 'datasetType1Results';
-        this.client = prisma.datasetType1Results
+        this.table = 'datasetResults';
+        this.client = prisma.datasetResults
         this.modelPublicFields = null;
         this.modelAdminFields = {
             Id: true,
@@ -25,4 +25,4 @@ class DatasetType1Results extends DBModelBase {
     }
 }
 
-export default new DatasetType1Results;
+export default new DatasetResults;

@@ -23,15 +23,19 @@ import path from 'path'
 import scripts from "./scripts";
 import answerPacks from "./answerPacks";
 import datasetResults from "./datasetResults";
+import app from "../app";
 
 const ROUTER = express.Router();
+
+ROUTER.use('/public/export.csv', function (req, res) {
+    res.sendFile(path.join(__dirname, '/../public/export.csv'))
+});
 
 acl.config({
     filename: 'nacl.json',
     path: __dirname + '/../config',
     baseUrl: '/api',
     denyCallback: (res) => {
-
         return handleError(res, {code: 2004, status: httpStatus.FORBIDDEN})
     }
 });

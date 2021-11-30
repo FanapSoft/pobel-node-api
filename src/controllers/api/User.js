@@ -219,7 +219,8 @@ userController.update = async (req, res) => {
     } = req.params;
     const {
         Name,
-        IsActive
+        IsActive,
+        Role
     } = req.body;
     try {
         let user = await User.findById(id)
@@ -235,6 +236,10 @@ userController.update = async (req, res) => {
             user.IsActive = IsActive;
         if(Name !== null)
             user.Name = Name;
+
+        if(Role) {
+            user.Role = Role;
+        }
 
         const result = await prisma.user.update({
             where: { Id: user.Id },
