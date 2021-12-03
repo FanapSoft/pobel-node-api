@@ -238,4 +238,5 @@ model DatasetResults {
   OverAllResultPercent Int
   RequiredReplication  Int
   FileName             String?
+  ExternalId           Int?
 }

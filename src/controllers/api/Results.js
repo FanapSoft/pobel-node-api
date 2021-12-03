@@ -365,6 +365,7 @@ async function execCalculation(datasetId, offset, limit) {
                     subquery."TotalAnswers",
                     subquery."TotalYesAnswers",
                     subquery."TotalNoAnswers",
+                    0,
             case
                 WHEN subquery."TotalYesAnswers" * 100 / subquery.replicationCount > 50 THEN 'yes'
                 WHEN subquery."TotalNoAnswers" * 100 / subquery.replicationCount > 50 THEN 'no'
@@ -484,10 +485,11 @@ async function execCalculationType2(datasetId, offset, limit) {
                 ELSE 0
                 END AS "OverAllResultPercent",
             subquery.replicationCount as "RequiredReplication",
-            subquery."FileName"
+            subquery."FileName",
+            subquery."ExternalId"
         from (
             select dsitems."DatasetItemId", dsitems."AnswerReplicationCount" as replicationCount, dsitems."DatasetId",
-            dsitems."FileName",
+            dsitems."FileName", dsitems."ExternalId",
             (
                 select Count(*) as "TotalAnswers" 
                 FROM "AnswerLogs" 
@@ -517,7 +519,7 @@ async function execCalculationType2(datasetId, offset, limit) {
 
             FROM (
                 select "DatasetItems"."Id" as "DatasetItemId", "Datasets"."AnswerReplicationCount" as "AnswerReplicationCount",
-                "Datasets"."Id" as "DatasetId", "DatasetItems"."FileName" as "FileName" 
+                "Datasets"."Id" as "DatasetId", "DatasetItems"."FileName" as "FileName", "DatasetItems"."ExternalId" as "ExternalId"
                 from "DatasetItems"
                 JOIN "Datasets" ON "DatasetItems"."DatasetId" = "Datasets"."Id"
                 WHERE "DatasetId" = ${datasetId} AND "IsGoldenData" = FALSE
