@@ -2,7 +2,7 @@ import httpStatus from "http-status";
 import {handleError} from "../../imports/errors.js";
 import Answer from "../../prisma/models/Answer.js";
 import {validationResult} from "express-validator";
-import AnswerPack from "../../prisma/models/AnswerPack";
+import AnswerPack from "../../prisma/models/AnswerPack.js";
 
 const answerPacksController = {};
 

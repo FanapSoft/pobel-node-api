@@ -20,8 +20,8 @@
     "axios": "^0.21.1",
     "core-js": "^3.15.2",
     "cors": "^2.8.5",
-    "cron": "^1.8.2",
     "cross-env": "^7.0.3",
+    "csv": "^5.5.0",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "express-acl": "^2.0.8",
@@ -39,8 +39,7 @@
     "swagger-jsdoc": "^6.1.0",
     "swagger-ui-express": "^4.1.6",
     "uuid": "^8.3.2",
-    "xlsx-stream-reader": "^1.1.1",
-    "csv": "^5.5.0"
+    "xlsx-stream-reader": "^1.1.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.3",

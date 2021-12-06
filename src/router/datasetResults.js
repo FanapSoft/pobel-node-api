@@ -1,7 +1,6 @@
 import {asyncWrapper} from "../utils/asyncWrapper.js";
-import reportsController from "../controllers/api/Reports.js";
 import {check} from "express-validator";
-import resultsController from "../controllers/api/Results";
+import resultsController from "../controllers/api/Results.js";
 
 export default function (router) {
     router.get("/api/DatasetsResults/GetAll", [

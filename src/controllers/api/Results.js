@@ -1,13 +1,12 @@
-import {CronJob} from "cron"
-import Options from "../../prisma/models/Options";
-import Dataset from "../../prisma/models/Dataset";
-import {handleError} from "../../imports/errors";
+import Options from "../../prisma/models/Options.js";
+import Dataset from "../../prisma/models/Dataset.js";
+import {handleError} from "../../imports/errors.js";
 import httpStatus from "http-status";
-import prisma from "../../prisma/prisma.module";
-import DatasetItem from "../../prisma/models/DatasetItem";
-import {Result, validationResult} from "express-validator";
-import DatasetResults from "../../prisma/models/DatasetResults";
-import moment from "jalali-moment";
+import prisma from "../../prisma/prisma.module.js";
+import DatasetItem from "../../prisma/models/DatasetItem.js";
+import {validationResult} from "express-validator";
+import DatasetResults from "../../prisma/models/DatasetResults.js";
+// import moment from "jalali-moment";
 import * as fs from "fs";
 import * as csv from "csv";
 
@@ -418,7 +417,7 @@ async function execCalculation(datasetId, offset, limit) {
         if(optData.canContinue) {
             if(optData.limit + optData.offset < optData.totalCount) {
                 optData.offset = optData.limit + optData.offset;
-                opt.Value[DatasetId] = optData;
+                opt.Value[datasetId] = optData;
                 await Options.updateOption("datasetsResultCalculationData", opt.Value);
                 return await execCalculation(datasetId, optData.offset, optData.limit);
             } else {

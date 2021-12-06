@@ -4,8 +4,8 @@ import {handleError} from "../../imports/errors.js";
 import acl from "../../imports/acl.js";
 import Dataset from "../../prisma/models/Dataset.js";
 import {body, validationResult} from "express-validator";
-import DatasetItem from "../../prisma/models/DatasetItem";
-import prisma from "../../prisma/prisma.module";
+// import DatasetItem from "../../prisma/models/DatasetItem.js";
+import prisma from "../../prisma/prisma.module.js";
 
 const datasetController = {};
 
